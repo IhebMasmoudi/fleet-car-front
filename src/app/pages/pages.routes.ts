@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { StarterComponent } from './starter/starter.component';
 import { UsersComponent } from './users/users.component';
 import { CarsComponent } from './cars/cars.component';
+import { RolesComponent } from './roles/roles.component';
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -28,6 +29,14 @@ export const PagesRoutes: Routes = [
     data: {
       title: 'Cars',
       urls: [{ title: 'Cars', url: '/Cars' }, { title: 'Cars' }],
+    },
+  },
+  {
+    path: 'roles',
+    component: RolesComponent, 
+    data: {
+      title: 'Roles',
+      urls: [{ title: 'Roles', url: '/Roles' }, { title: 'Roles' }],
     },
   },
 ];

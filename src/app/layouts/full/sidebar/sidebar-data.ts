@@ -10,14 +10,24 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    displayName: 'cars',
+    iconName: 'solar:atom-line-duotone',
+    route: '/cars',  
+  },
+  {
+    navCap: 'Settings',
+    divider: true
+  },
+  {
     displayName: 'users',
     iconName: 'solar:atom-line-duotone',
     route: '/users',  
   },
+ 
   {
-    displayName: 'cars',
+    displayName: 'roles',
     iconName: 'solar:atom-line-duotone',
-    route: '/cars',  
+    route: '/roles',  
   },
   
  

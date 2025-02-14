@@ -1,0 +1,89 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>Roles</mat-card-title>
+
+    <!-- Form View: Shown when showForm is true -->
+    <ng-container *ngIf="showForm">
+      <!-- Add Role Form (when not editing) -->
+      <form #roleForm="ngForm" (ngSubmit)="addRole()" *ngIf="!isEditing">
+        <div class="col-lg-6">
+          <mat-label class="f-w-600 m-b-8 d-block">Role Name</mat-label>
+          <mat-form-field appearance="outline" class="w-100" color="primary">
+            <input
+              matInput
+              type="text"
+              placeholder="Enter role name"
+              [(ngModel)]="newRole.name"
+              name="name"
+              required
+            />
+          </mat-form-field>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button mat-raised-button color="primary" type="submit">Add Role</button>
+          <button mat-raised-button color="warn" type="button" (click)="closeForm()">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Edit Role Form (when editing) -->
+      <form #editForm="ngForm" (ngSubmit)="saveEditedRole()" *ngIf="isEditing">
+        <div class="col-lg-6">
+          <mat-label class="f-w-600 m-b-8 d-block">Role Name</mat-label>
+          <mat-form-field appearance="outline" class="w-100" color="primary">
+            <input
+              matInput
+              type="text"
+              placeholder="Edit role name"
+              [(ngModel)]="editedRole.name"
+              name="name"
+              required
+            />
+          </mat-form-field>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button mat-raised-button color="accent" type="submit">Save Changes</button>
+          <button mat-raised-button color="warn" type="button" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </ng-container>
+
+    <!-- Table View: Shown only when the form is hidden -->
+    <ng-container *ngIf="!showForm">
+      <div class="table-responsive">
+        <table mat-table [dataSource]="roles" class="w-100">
+          <!-- Role ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">ID</th>
+            <td mat-cell *matCellDef="let role">{{ role.id }}</td>
+          </ng-container>
+
+          <!-- Role Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Name</th>
+            <td mat-cell *matCellDef="let role">{{ role.name }}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Actions</th>
+            <td mat-cell *matCellDef="let role">
+              <button mat-icon-button (click)="startEdit(role)" class="edit-button">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteRole(role.id)" class="delete-button">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+      <!-- Button to open the Add Role Form -->
+      <div class="d-flex justify-content-end mt-3">
+        <button mat-raised-button color="primary" (click)="openAddForm()">Add Role</button>
+      </div>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import {IRole } from '../interfaces/IRole'; // Assuming you have a Role model
+import { catchError, map } from 'rxjs/operators';
+import { IRole } from '../interfaces/IRole'; // Assuming you have a Role model
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +18,7 @@ export class RoleService {
    */
   getAllRoles(): Observable<IRole[]> {
     return this.http.get<IRole[]>(this.apiUrl).pipe(
-      catchError(this.handleError)
+      this.handleResponse()
     );
   }
 
@@ -30,7 +30,7 @@ export class RoleService {
   getRoleById(id: number): Observable<IRole> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.get<IRole>(url).pipe(
-      catchError(this.handleError)
+      this.handleResponse()
     );
   }
 
@@ -41,7 +41,7 @@ export class RoleService {
    */
   createRole(role: IRole): Observable<IRole> {
     return this.http.post<IRole>(this.apiUrl, role).pipe(
-      catchError(this.handleError)
+      this.handleResponse()
     );
   }
 
@@ -54,7 +54,7 @@ export class RoleService {
   updateRole(id: number, updatedRole: IRole): Observable<IRole> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.put<IRole>(url, updatedRole).pipe(
-      catchError(this.handleError)
+      this.handleResponse()
     );
   }
 
@@ -66,25 +66,29 @@ export class RoleService {
   deleteRole(id: number): Observable<void> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete<void>(url).pipe(
-      catchError(this.handleError)
+      this.handleResponse()
     );
   }
 
   /**
-   * Error handling function for HTTP requests.
-   * @param error The error response from the server.
-   * @returns An observable with the error message.
+   * Handle HTTP response and only throw errors for non-200 statuses.
    */
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred!';
-    if (error.error instanceof ErrorEvent) {
-      // Client-side or network error
-      errorMessage = `Client-side error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      errorMessage = `Server returned code ${error.status}, error message: ${error.message}`;
-    }
-    console.error(errorMessage);
-    return throwError(errorMessage);
+  private handleResponse<T>() {
+    return (source: Observable<T>) => source.pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Only throw errors for non-200 statuses
+        if (error.status !== 200) {
+          console.error('Error:', error);
+          return throwError(() => new Error(error.message || 'An unknown error occurred'));
+        }
+        // For 200 OK, return the response without throwing an error
+        return [error];
+      }),
+      map((response: any) => {
+        // Optionally log the response for debugging
+        console.log('Response:', response);
+        return response;
+      })
+    );
   }
 }
