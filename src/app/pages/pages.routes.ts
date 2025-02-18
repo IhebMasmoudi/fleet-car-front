@@ -3,6 +3,7 @@ import { StarterComponent } from './starter/starter.component';
 import { UsersComponent } from './users/users.component';
 import { CarsComponent } from './cars/cars.component';
 import { RolesComponent } from './roles/roles.component';
+import { TiresComponent } from './tires/tires.component';
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -37,6 +38,14 @@ export const PagesRoutes: Routes = [
     data: {
       title: 'Roles',
       urls: [{ title: 'Roles', url: '/Roles' }, { title: 'Roles' }],
+    },
+  },
+  {
+    path: 'tires',
+    component: TiresComponent, 
+    data: {
+      title: 'Tires',
+      urls: [{ title: 'Tires', url: '/Tires' }, { title: 'Tires' }],
     },
   },
 ];

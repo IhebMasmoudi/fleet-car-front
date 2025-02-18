@@ -10,9 +10,18 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Garage',
+    divider: true
+  },
+  {
     displayName: 'cars',
     iconName: 'solar:atom-line-duotone',
     route: '/cars',  
+  },
+  {
+    displayName: 'tires',
+    iconName: 'solar:atom-line-duotone',
+    route: '/tires',  
   },
   {
     navCap: 'Settings',
