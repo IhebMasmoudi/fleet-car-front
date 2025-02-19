@@ -1,0 +1,111 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+      <mat-card-title>Maintenance Records</mat-card-title>
+  
+      <!-- Add/Edit Form -->
+      <div *ngIf="showAddForm" class="form-container">
+        <mat-card class="form-card">
+          <mat-card-title>{{ isEditing ? 'Edit Maintenance Record' : 'Add Maintenance Record' }}</mat-card-title>
+          <mat-card-content>
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Type</mat-label>
+              <input matInput [(ngModel)]="maintenanceType" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Cost</mat-label>
+              <input matInput type="number" [(ngModel)]="maintenanceCost" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Maintenance Date</mat-label>
+              <input matInput [matDatepicker]="picker" [(ngModel)]="maintenanceDate" required />
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Notes</mat-label>
+              <textarea matInput [(ngModel)]="maintenanceNotes"></textarea>
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Vehicle</mat-label>
+              <mat-select [(ngModel)]="maintenanceVehicleID" required>
+                <mat-option *ngFor="let car of cars" [value]="car.id">
+                  {{ car.model }} ({{ car.licensePlate }})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+  
+            <div class="form-actions">
+              <button mat-raised-button color="primary" (click)="isEditing ? saveEditedMaintenance() : addMaintenance()">
+                {{ isEditing ? 'Save Changes' : 'Add Maintenance' }}
+              </button>
+              <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Maintenance Table -->
+      <div *ngIf="!showAddForm" class="table-responsive">
+        <button mat-raised-button color="primary" class="add-btn" (click)="toggleAddForm()">Add Maintenance</button>
+        <table mat-table [dataSource]="dataSource" class="w-100">
+  
+          <!-- Type Column -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <td mat-cell *matCellDef="let record"> {{ record.type }} </td>
+          </ng-container>
+  
+          <!-- Cost Column -->
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef> Cost </th>
+            <td mat-cell *matCellDef="let record"> {{ record.cost | currency }} </td>
+          </ng-container>
+  
+          <!-- Date Column -->
+          <ng-container matColumnDef="maintenanceDate">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let record"> {{ record.maintenanceDate | date }} </td>
+          </ng-container>
+  
+          <!-- Notes Column -->
+          <ng-container matColumnDef="notes">
+            <th mat-header-cell *matHeaderCellDef> Notes </th>
+            <td mat-cell *matCellDef="let record"> {{ record.notes }} </td>
+          </ng-container>
+  
+          <!-- Vehicle Column -->
+          <ng-container matColumnDef="vehicle">
+            <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+            <td mat-cell *matCellDef="let record">
+              {{ getVehicleModel(record.vehicleID) }}
+            </td>
+          </ng-container>
+  
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let record">
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="startEdit(record)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item (click)="deleteMaintenance(record.id)">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+  
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>

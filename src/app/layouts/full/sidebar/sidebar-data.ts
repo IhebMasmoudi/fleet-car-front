@@ -19,6 +19,16 @@ export const navItems: NavItem[] = [
     route: '/cars',  
   },
   {
+    displayName: 'Maintenance',
+    iconName: 'solar:atom-line-duotone',
+    route: '/maintenance',  
+  },
+  {
+    displayName: 'Fuel Consumption',
+    iconName: 'solar:atom-line-duotone',
+    route: '/fuelconsumption',  
+  },
+  {
     displayName: 'tires',
     iconName: 'solar:atom-line-duotone',
     route: '/tires',  

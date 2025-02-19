@@ -15,7 +15,7 @@ import { CarsService } from '../../services/Cars.service';
 import { ICars } from '../../interfaces/ICars';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
-
+import { MatMenuModule } from '@angular/material/menu';
 @Component({
   selector: 'app-tires',
   templateUrl: './tires.component.html',
@@ -33,7 +33,8 @@ import { MatSelectModule } from '@angular/material/select';
     MatDatepickerModule,
     MatNativeDateModule,
     MatOptionModule,
-    MatSelectModule
+    MatSelectModule,
+    MatMenuModule
   ],
 })
 export class TiresComponent implements OnInit {

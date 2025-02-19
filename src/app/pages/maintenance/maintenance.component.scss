@@ -1,0 +1,90 @@
+// Container styling
+.card-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  // Form styling
+  .form-card {
+    padding: 20px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  
+    .record-image {
+      display: block;
+      margin: 10px auto;
+      max-width: 100px;
+    }
+  
+    .w-100 {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+  
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+  }
+  
+  // Button container
+  .add-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }
+  
+  // Record cards
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .record-card {
+    padding: 15px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  
+    .record-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  
+    .record-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+  
+    mat-card-content {
+      p {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+    }
+  
+    mat-card-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+  }
+  
+  // Responsive design
+  @media (max-width: 768px) {
+    .cards-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  

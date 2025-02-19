@@ -26,7 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
   ],
 })
 export class UsersComponent implements OnInit {
-  displayedColumns: string[] = ['username', 'email', 'role', 'actions'];
+  displayedColumns: string[] = ['photo', 'username', 'email', 'role', 'actions'];
   dataSource = new MatTableDataSource<IUser>([]);
   errorMessage: string = '';
 
@@ -68,7 +68,10 @@ export class UsersComponent implements OnInit {
   fetchUsers(): void {
     this.userService.getAllUsers().subscribe({
       next: (users: IUser[]) => {
-        this.dataSource.data = users;
+        this.dataSource.data = users.map(user => ({
+          ...user,
+          photo: this.getRandomPhoto()
+        }));
       },
       error: (err) => {
         console.error('Error fetching users:', err);
@@ -199,5 +202,13 @@ export class UsersComponent implements OnInit {
    */
   changing(event: any): void {
     console.log('Role selection changed:', event.value);
+  }
+
+  /**
+   * Get a random photo from the assets/profile directory.
+   */
+  getRandomPhoto(): string {
+    const randomIndex = Math.floor(Math.random() * 10) + 1;
+    return `assets/images/profile/user-${randomIndex}.jpg`;
   }
 }

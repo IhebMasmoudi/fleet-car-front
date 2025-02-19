@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-
+import { MatMenuModule } from '@angular/material/menu';
 @Component({
   selector: 'app-roles',
   templateUrl: './roles.component.html',
@@ -25,7 +25,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatSelectModule,
     FormsModule,
     CommonModule,
-    MatIconModule
+    MatIconModule,
+    MatMenuModule
   ],
 })
 export class RolesComponent implements OnInit {

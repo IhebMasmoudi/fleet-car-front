@@ -1,9 +1,9 @@
 export interface IMaintenance {
 
-    id: number;
+    id?: number;
     type: string;
     cost: number;
-    maintenanceDate: Date;
+    maintenanceDate: string;
     notes: string;
     vehicleID: number;
 }

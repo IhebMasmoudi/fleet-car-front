@@ -15,6 +15,14 @@
 
       <div class="table-responsive">
         <table mat-table [dataSource]="dataSource" class="w-100" matSort>
+          <!-- Photo Column -->
+          <ng-container matColumnDef="photo">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let user">
+              <img [src]="user.photo" alt="User Photo" class="rounded-circle object-cover icon-40 profile-dd" width="35" >
+            </td>
+          </ng-container>
+
           <!-- Username Column -->
           <ng-container matColumnDef="username">
             <th mat-header-cell *matHeaderCellDef>Username</th>

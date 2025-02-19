@@ -1,0 +1,118 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+      <mat-card-title>Fuel Consumption Records</mat-card-title>
+  
+      <!-- Add/Edit Form -->
+      <div *ngIf="showAddForm" class="form-container">
+        <mat-card class="form-card">
+          <mat-card-title>{{ isEditing ? 'Edit Fuel Consumption' : 'Add Fuel Consumption' }}</mat-card-title>
+          <mat-card-content>
+            
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Amount (Liters)</mat-label>
+              <input matInput type="number" [(ngModel)]="fuelAmount" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Cost TND</mat-label>
+              <input matInput type="number" [(ngModel)]="fuelCost" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Mileage</mat-label>
+              <input matInput type="number" [(ngModel)]="fuelMileage" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Date</mat-label>
+              <input matInput [matDatepicker]="picker" [(ngModel)]="fuelDate" required />
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Time</mat-label>
+              <input matInput type="time" [(ngModel)]="fuelTime" required />
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Vehicle</mat-label>
+              <mat-select [(ngModel)]="fuelVehicleID" required>
+                <mat-option *ngFor="let car of cars" [value]="car.id">
+                  {{ car.model }} ({{ car.licensePlate }})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+  
+            <div class="form-actions">
+              <button mat-raised-button color="primary" (click)="isEditing ? saveEditedFuelConsumption() : addFuelConsumption()">
+                {{ isEditing ? 'Save Changes' : 'Add Fuel Consumption' }}
+              </button>
+              <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
+            </div>
+            
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Fuel Consumption Table -->
+      <div *ngIf="!showAddForm" class="table-responsive">
+        <button mat-raised-button color="primary" class="add-btn" (click)="toggleAddForm()">Add Fuel Consumption</button>
+        <table mat-table [dataSource]="dataSource" class="w-100">
+  
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let record"> {{ record.date | date:'yyyy-MM-dd HH:mm' }} </td>
+          </ng-container>
+  
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef> Amount (Liters) </th>
+            <td mat-cell *matCellDef="let record"> {{ record.amount }} </td>
+          </ng-container>
+  
+          <!-- Cost Column -->
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef> Cost TND </th>
+            <td mat-cell *matCellDef="let record"> {{ record.cost | currency }} </td>
+          </ng-container>
+  
+          <!-- Mileage Column -->
+          <ng-container matColumnDef="mileage">
+            <th mat-header-cell *matHeaderCellDef> Mileage </th>
+            <td mat-cell *matCellDef="let record"> {{ record.mileage }} </td>
+          </ng-container>
+  
+          <!-- Vehicle Column -->
+          <ng-container matColumnDef="vehicle">
+            <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+            <td mat-cell *matCellDef="let record">
+              {{ getVehicleModel(record.vehicleID) }}
+            </td>
+          </ng-container>
+  
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let record">
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="startEdit(record)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item (click)="deleteFuelConsumption(record.id)">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+  
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>

@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-
+import { MatMenuModule } from '@angular/material/menu';
 @Component({
   selector: 'app-cars',
   templateUrl: './cars.component.html',
@@ -24,6 +24,7 @@ import { MatIconModule } from '@angular/material/icon';
     FormsModule,
     CommonModule,
     MatIconModule,
+    MatMenuModule
   ],
 })
 export class CarsComponent implements OnInit {

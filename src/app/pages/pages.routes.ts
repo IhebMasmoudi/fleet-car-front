@@ -4,7 +4,9 @@ import { UsersComponent } from './users/users.component';
 import { CarsComponent } from './cars/cars.component';
 import { RolesComponent } from './roles/roles.component';
 import { TiresComponent } from './tires/tires.component';
-import { ParkingslotComponent } from './parkingslot/parkingslot.component'; // Ensure this path is correct and the file exists
+import { ParkingslotComponent } from './parkingslot/parkingslot.component';
+import { MaintenanceComponent } from './maintenance/maintenance.component';
+import { FuelConsumptionComponent } from './fuelconsumption/fuelconsumption.component';
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -57,4 +59,21 @@ export const PagesRoutes: Routes = [
       urls: [{ title: 'ParkingSlot', url: '/ParkingSlot' }, { title: 'ParkingSlot' }],
     },
   },
+  {
+    path: 'maintenance',
+    component: MaintenanceComponent, 
+    data: {
+      title: 'Maintenances',
+      urls: [{ title: 'Maintenances', url: '/Maintenances' }, { title: 'Maintenances' }],
+    },
+  },
+  {
+    path: 'fuelconsumption',
+    component: FuelConsumptionComponent, 
+    data: {
+      title: 'FuelConsumption',
+      urls: [{ title: 'FuelConsumption', url: '/FuelConsumption' }, { title: 'FuelConsumption' }],
+    },
+  },
+
 ];
