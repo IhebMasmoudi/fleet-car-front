@@ -8,6 +8,5 @@ export interface ICars {
     mileage: number;
     status: string; // Available, In Maintenance, Assigned
     type: string; // Car, Truck, Van
-    missionsID: number;
-    maintenanceRecordsID: number;
+   
   }

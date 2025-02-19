@@ -39,8 +39,7 @@ export class CarsComponent implements OnInit {
     mileage: 0,
     status: '',
     type: '',
-    missionsID: 0,
-    maintenanceRecordsID: 0,
+    
   };
   editedCar: ICars = {
     id: undefined,
@@ -52,8 +51,7 @@ export class CarsComponent implements OnInit {
     mileage: 0,
     status: '',
     type: '',
-    missionsID: 0,
-    maintenanceRecordsID: 0,
+   
   };
   isEditing = false;
   showForm = false;
@@ -94,8 +92,7 @@ export class CarsComponent implements OnInit {
       mileage: 0,
       status: '',
       type: '',
-      missionsID: 0,
-      maintenanceRecordsID: 0,
+     
     };
   }
 
@@ -127,8 +124,7 @@ export class CarsComponent implements OnInit {
           mileage: 0,
           status: '',
           type: '',
-          missionsID: 0,
-          maintenanceRecordsID: 0,
+         
         };
         alert('Car added successfully!');
         this.closeForm();

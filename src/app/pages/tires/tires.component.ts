@@ -15,6 +15,7 @@ import { CarsService } from '../../services/Cars.service';
 import { ICars } from '../../interfaces/ICars';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
+
 @Component({
   selector: 'app-tires',
   templateUrl: './tires.component.html',
@@ -45,7 +46,7 @@ export class TiresComponent implements OnInit {
     installationDate: '',
     mileageAtInstallation: 0,
     replacementReason: '',
-    carId: 0,
+    vehicleId: 0,
   };
   editedTire: ITire = {
     id: 0,
@@ -54,7 +55,7 @@ export class TiresComponent implements OnInit {
     installationDate: '',
     mileageAtInstallation: 0,
     replacementReason: '',
-    carId: 0,
+   vehicleId: 0,
   };
   isEditing = false;
   showForm = false;
@@ -106,7 +107,7 @@ export class TiresComponent implements OnInit {
       installationDate: '',
       mileageAtInstallation: 0,
       replacementReason: '',
-      carId: 0,
+      vehicleId: 0,
     };
   }
 
@@ -124,7 +125,8 @@ export class TiresComponent implements OnInit {
    * Add a new tire.
    */
   addTire(): void {
-    if (!this.newTire.brand.trim() || !this.newTire.model.trim() || !this.newTire.carId) return;
+    if (!this.newTire.brand.trim() || !this.newTire.model.trim() || !this.newTire.
+    vehicleId) return;
   
     const formattedTire = { ...this.newTire, installationDate: this.formatDate(this.newTire.installationDate) };
     console.log('Tire added:', formattedTire);
@@ -143,7 +145,8 @@ export class TiresComponent implements OnInit {
   }
   
   saveEditedTire(): void {
-    if (!this.editedTire.brand.trim() || !this.editedTire.model.trim() || !this.editedTire.carId) return;
+    if (!this.editedTire.brand.trim() || !this.editedTire.model.trim() || !this.editedTire.
+    vehicleId) return;
   
     const formattedTire = { ...this.editedTire, installationDate: this.formatDate(this.editedTire.installationDate) };
   

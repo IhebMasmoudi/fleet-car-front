@@ -24,6 +24,11 @@ export const navItems: NavItem[] = [
     route: '/tires',  
   },
   {
+    displayName: 'Parking Slot',
+    iconName: 'solar:atom-line-duotone',
+    route: '/parkingSlot',  
+  },
+  {
     navCap: 'Settings',
     divider: true
   },

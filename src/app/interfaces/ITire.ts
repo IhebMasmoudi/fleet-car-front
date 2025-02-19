@@ -5,5 +5,5 @@ export interface ITire {
   installationDate: string; // Use string for date representation
   mileageAtInstallation: number;
   replacementReason: string;
-  carId: number;
+vehicleId: number;
 }

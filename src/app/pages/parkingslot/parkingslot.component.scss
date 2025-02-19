@@ -1,0 +1,56 @@
+.card-container {
+  margin: 20px;
+  padding: 20px;
+}
+
+.add-slot-card {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.add-slot-button {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.slot-card {
+  width: 300px;
+  text-align: center;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.spot-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.spot-image {
+  width: 150px;
+  height: 150px;
+  margin: 10px auto;
+  display: block;
+  object-fit: cover;
+}
+
+.available-card {
+  background-color: #f8d7da; /* Red-ish background for available slots */
+}
+
+.reserved-card {
+  background-color: #d4edda; /* Green-ish background for reserved slots */
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
