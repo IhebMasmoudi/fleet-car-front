@@ -1,5 +1,5 @@
 export interface ISupplier {
-    id: number;
+    id?: number;
     name: string;
     contactInfo: string;
     servicesOffered: string; 

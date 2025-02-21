@@ -21,7 +21,17 @@ export class UserService {
       tap((users) => console.log('Fetched users:', users))
     );
   }
+  /**
+   * Get users with the role "Driver".
+   */
+  getUsersByRoleDriver(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/drivers`).pipe(
+      this.handleResponse(),
+      tap((users) => console.log('Fetched driver users:', users))
+    );
+  }
 
+  
   /**
    * Get a user by their ID.
    *
@@ -92,4 +102,6 @@ export class UserService {
       })
     );
   }
+
+
 }

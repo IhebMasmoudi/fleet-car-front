@@ -7,6 +7,10 @@ import { TiresComponent } from './tires/tires.component';
 import { ParkingslotComponent } from './parkingslot/parkingslot.component';
 import { MaintenanceComponent } from './maintenance/maintenance.component';
 import { FuelConsumptionComponent } from './fuelconsumption/fuelconsumption.component';
+import { SupplierComponent } from './supplier/supplier.component';
+import { InvoiceComponent } from './invoice/invoice.component';
+import { DriversComponent } from './drivers/drivers.component';
+import { MissionsComponent } from './missions/missions.component';
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -75,5 +79,39 @@ export const PagesRoutes: Routes = [
       urls: [{ title: 'FuelConsumption', url: '/FuelConsumption' }, { title: 'FuelConsumption' }],
     },
   },
+  {
+    path: 'supplier',
+    component: SupplierComponent, 
+    data: {
+      title: 'Supplier',
+      urls: [{ title: 'Supplier', url: '/Supplier' }, { title: 'Supplier' }],
+    },
+  },
+  {
+    path: 'invoice',
+    component: InvoiceComponent, 
+    data: {
+      title: 'Invoice',
+      urls: [{ title: 'Invoice', url: '/Invoice' }, { title: 'Invoice' }],
+    },
+  },
+  {
+    path: 'drivers',
+    component: DriversComponent, 
+    data: {
+      title: 'Drivers',
+      urls: [{ title: 'Drivers', url: '/Drivers' }, { title: 'Drivers' }],
+    },
+  },
+  {
+    path: 'missions',
+    component: MissionsComponent, 
+    data: {
+      title: 'Missions',
+      urls: [{ title: 'Missions', url: '/Missions' }, { title: 'Missions' }],
+    },
+  },
+
+
 
 ];

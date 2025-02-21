@@ -10,6 +10,20 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Fleet Management',
+    divider: true
+  },
+  {
+    displayName: 'Drivers',
+    iconName: 'solar:atom-line-duotone',
+    route: '/drivers',  
+  },
+  {
+    displayName: 'Missions',
+    iconName: 'solar:atom-line-duotone',
+    route: '/missions',  
+  },
+  {
     navCap: 'Garage',
     divider: true
   },
@@ -19,12 +33,12 @@ export const navItems: NavItem[] = [
     route: '/cars',  
   },
   {
-    displayName: 'Maintenance',
+    displayName: 'Maintenances',
     iconName: 'solar:atom-line-duotone',
     route: '/maintenance',  
   },
   {
-    displayName: 'Fuel Consumption',
+    displayName: 'Fuel Consumptions',
     iconName: 'solar:atom-line-duotone',
     route: '/fuelconsumption',  
   },
@@ -34,10 +48,25 @@ export const navItems: NavItem[] = [
     route: '/tires',  
   },
   {
-    displayName: 'Parking Slot',
+    displayName: 'Parking Slots',
     iconName: 'solar:atom-line-duotone',
     route: '/parkingSlot',  
   },
+  {
+    navCap: 'Accounting',
+    divider: true
+  },
+  {
+    displayName: 'Suppliers',
+    iconName: 'solar:atom-line-duotone',
+    route: '/supplier',  
+  },
+  {
+    displayName: 'Invoices',
+    iconName: 'solar:atom-line-duotone',
+    route: '/invoice',  
+  },
+  
   {
     navCap: 'Settings',
     divider: true
