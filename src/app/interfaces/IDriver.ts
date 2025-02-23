@@ -3,7 +3,7 @@ export interface IDriver  {
     licenseNumber: string;
     phoneNumber: string;
     status: string;
-    userID: number;
+    userId: number;
 
 
 }

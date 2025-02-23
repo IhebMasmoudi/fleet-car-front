@@ -1,6 +1,6 @@
 export interface IMission { 
 
-id:number;
+id?:number;
 destination:string;
 startDate:Date;
 endDate:Date;

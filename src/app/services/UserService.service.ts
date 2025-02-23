@@ -24,10 +24,11 @@ export class UserService {
   /**
    * Get users with the role "Driver".
    */
-  getUsersByRoleDriver(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/users/drivers`).pipe(
-      this.handleResponse(),
-      tap((users) => console.log('Fetched driver users:', users))
+  getUsersByRoleDriver(): Observable<IUser[]> {
+    return this.http.get(`${this.apiUrl}/drivers`).pipe(
+      // Convert response to array if needed
+      map((res: any) => Array.isArray(res) ? res : Object.values(res)),
+      tap((users) => console.log('Fetched driver users:', users)),
     );
   }
 

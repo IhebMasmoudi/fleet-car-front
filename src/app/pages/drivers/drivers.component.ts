@@ -21,25 +21,24 @@ import { MatNativeDateModule } from '@angular/material/core';
   selector: 'app-driver',
   templateUrl: './drivers.component.html',
   styleUrls: ['./drivers.component.scss'],
-    imports: [
-      MatTableModule,
-      MatCardModule,
-      MatButtonModule,
-      CommonModule,
-      MatIconModule,
-      MatOptionModule,
-      MatSelectModule,
-      FormsModule,
-      MatFormFieldModule,
-      MatInputModule,
-      MatDatepickerModule,
-      MatMenuModule,
-      MatNativeDateModule
-    ]
+  imports: [
+    MatTableModule,
+    MatCardModule,
+    MatButtonModule,
+    CommonModule,
+    MatIconModule,
+    MatOptionModule,
+    MatSelectModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatMenuModule,
+    MatNativeDateModule
+  ]
 })
 export class DriversComponent implements OnInit {
   drivers: IDriver[] = [];
-  // Users with driver role fetched from UserService.getUsersByRoleDriver()
   users: any[] = [];
   errorMessage: string = '';
 
@@ -51,13 +50,13 @@ export class DriversComponent implements OnInit {
   licenseNumber: string = '';
   phoneNumber: string = '';
   status: string = '';
-  userID: number | null = null;
+  userId: number | null = null;
 
   displayedColumns: string[] = ['id', 'licenseNumber', 'phoneNumber', 'status', 'user', 'actions'];
   dataSource = new MatTableDataSource<IDriver>(this.drivers);
 
-  // Cache to store fetched usernames by userID
-  userNameCache: { [key: number]: string } = {};
+  // Cache for storing usernames by userId
+  userNames: { [key: number]: string } = {};
 
   constructor(
     private driverService: DriverService,
@@ -74,7 +73,7 @@ export class DriversComponent implements OnInit {
       (drivers) => {
         this.drivers = drivers;
         this.dataSource.data = this.drivers;
-        console.log('Fetched drivers:', drivers);
+        console.log('Fetched drivers:', this.drivers);
       },
       (error) => {
         console.error('Error fetching drivers:', error);
@@ -83,7 +82,6 @@ export class DriversComponent implements OnInit {
     );
   }
 
-  // Get users with role "Driver" using your UserService function
   fetchDriverUsers(): void {
     this.userService.getUsersByRoleDriver().subscribe(
       (users) => {
@@ -96,117 +94,103 @@ export class DriversComponent implements OnInit {
     );
   }
 
-  toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) {
-      this.resetForm();
+  // Using the correct property "userId"
+  getUserName(userId: number): string {
+    if (this.userNames[userId]) {
+      return this.userNames[userId];
     }
-  }
-
-  resetForm(): void {
-    this.isEditing = false;
-    this.selectedDriver = null;
-    this.licenseNumber = '';
-    this.phoneNumber = '';
-    this.status = '';
-    this.userID = null;
+    
+    this.userService.getUserById(userId).subscribe(
+      (user) => {
+        console.log('Fetched user:', user);
+        this.userNames[userId] = user.username;
+      },
+      error => {
+        console.error('Error fetching user:', error);
+        this.userNames[userId] = 'Error';
+      }
+    );
+    
+    return 'Loading...';
   }
 
   addDriver(): void {
-    if (!this.licenseNumber.trim() || !this.phoneNumber.trim() || !this.status.trim() || !this.userID) {
-      alert('Please fill in all required fields.');
-      return;
+    if (this.licenseNumber && this.phoneNumber && this.status && this.userId !== null) {
+      const newDriver: IDriver = {
+        licenseNumber: this.licenseNumber,
+        phoneNumber: this.phoneNumber,
+        status: this.status,
+        userId: this.userId
+      };
+
+      this.driverService.createDriver(newDriver).subscribe(
+        (driver) => {
+          this.drivers.push(driver);
+          this.dataSource.data = this.drivers;
+          this.showAddForm = false;
+        },
+        (error) => {
+          console.error('Error adding driver:', error);
+        }
+      );
     }
-    const newDriver: IDriver = {
-      licenseNumber: this.licenseNumber,
-      phoneNumber: this.phoneNumber,
-      status: this.status,
-      userID: this.userID
-    };
-    this.driverService.createDriver(newDriver).subscribe(
-      (driver) => {
-        this.drivers.push(driver);
-        this.dataSource.data = this.drivers;
-        this.resetForm();
-        this.showAddForm = false;
-        alert('Driver added successfully!');
-      },
-      (error) => {
-        console.error('Error adding driver:', error);
-        alert('Failed to add driver.');
-      }
-    );
   }
 
-  startEdit(driver: IDriver): void {
-    this.selectedDriver = { ...driver };
-    this.isEditing = true;
-    this.showAddForm = true;
+  editDriver(driver: IDriver): void {
+    this.selectedDriver = driver;
     this.licenseNumber = driver.licenseNumber;
     this.phoneNumber = driver.phoneNumber;
     this.status = driver.status;
-    this.userID = driver.userID;
+    this.userId = driver.userId;
+    this.isEditing = true;
+    this.showAddForm = true;
   }
 
-  saveEditedDriver(): void {
-    if (!this.selectedDriver) return;
-    if (!this.licenseNumber.trim() || !this.phoneNumber.trim() || !this.status.trim() || !this.userID) {
-      alert('Please fill in all required fields.');
-      return;
-    }
-    const updatedDriver: IDriver = {
-      ...this.selectedDriver,
-      licenseNumber: this.licenseNumber,
-      phoneNumber: this.phoneNumber,
-      status: this.status,
-      userID: this.userID
-    };
-    this.driverService.updateDriver(this.selectedDriver.id!, updatedDriver).subscribe(
-      () => {
-        const index = this.drivers.findIndex(d => d.id === this.selectedDriver!.id);
-        if (index !== -1) {
-          this.drivers[index] = updatedDriver;
-          this.dataSource.data = this.drivers;
+  updateDriver(): void {
+    if (this.selectedDriver) {
+      const updatedDriver: IDriver = {
+        ...this.selectedDriver,
+        licenseNumber: this.licenseNumber,
+        phoneNumber: this.phoneNumber,
+        status: this.status,
+        userId: this.userId!
+      };
+
+      this.driverService.updateDriver(updatedDriver.id!, updatedDriver).subscribe(
+        () => {
+          const index = this.drivers.findIndex(d => d.id === updatedDriver.id);
+          if (index !== -1) {
+            this.drivers[index] = updatedDriver;
+            this.dataSource.data = this.drivers;
+          }
+          this.cancelEdit();
+        },
+        (error) => {
+          console.error('Error updating driver:', error);
         }
-        this.cancelEdit();
-        alert('Driver updated successfully!');
+      );
+    }
+  }
+
+  deleteDriver(id: number): void {
+    this.driverService.deleteDriver(id).subscribe(
+      () => {
+        this.drivers = this.drivers.filter(driver => driver.id !== id);
+        this.dataSource.data = this.drivers;
       },
       (error) => {
-        console.error('Error updating driver:', error);
-        alert('Failed to update driver.');
+        console.error('Error deleting driver:', error);
       }
     );
   }
 
   cancelEdit(): void {
-    this.resetForm();
+    this.isEditing = false;
     this.showAddForm = false;
-  }
-
-  deleteDriver(id: number): void {
-    if (!confirm('Are you sure you want to delete this driver?')) return;
-    this.driverService.deleteDriver(id).subscribe(
-      () => {
-        this.drivers = this.drivers.filter(d => d.id !== id);
-        this.dataSource.data = this.drivers;
-        alert('Driver deleted successfully!');
-      },
-      (error) => {
-        console.error('Error deleting driver:', error);
-        alert('Failed to delete driver.');
-      }
-    );
-  }
-
-  // Instead of using local users array, fetch username via getUserById with caching.
-  getUserName(userID: number): string {
-    if (this.userNameCache[userID]) {
-      return this.userNameCache[userID];
-    } else {
-      this.userService.getUserById(userID).subscribe(user => {
-        this.userNameCache[userID] = user.username;
-      });
-      return 'Loading...';
-    }
+    this.selectedDriver = null;
+    this.licenseNumber = '';
+    this.phoneNumber = '';
+    this.status = '';
+    this.userId = null;
   }
 }

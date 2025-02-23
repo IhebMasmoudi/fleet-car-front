@@ -33,9 +33,19 @@ export class HeaderComponent {
   @Output() toggleMobileNav = new EventEmitter<void>();
   constructor(private authService: AuthService, private router: Router) {}
 
+
+ /**
+   * Navigate to the profile page.
+   */
+ navigateToProfile(): void {
+  this.router.navigate(['/extra/profile']);
+}
   logout() {
     this.authService.logout(); // Clear the token
     this.router.navigate(['/authentication/login']); // Redirect to login page
     console.log('Logged out');
+    
   }
-}
+
+
+  }
