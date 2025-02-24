@@ -1,21 +1,18 @@
-<mat-card class="profile-card">
-    <mat-card-header>
-      <div mat-card-avatar class="profile-avatar">
-        <!-- You can replace this with an actual image if available -->
-        <mat-icon>person</mat-icon>
-      </div>
-      <mat-card-title>{{ user?.username }}</mat-card-title>
-      <mat-card-subtitle>{{ user?.role }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="profile-details">
-        <p><strong>Email:</strong> {{ user?.email }}</p>
-        <p><strong>User ID:</strong> {{ user?.id }}</p>
-      </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary">Edit Profile</button>
-      <button mat-button color="accent">Change Password</button>
-    </mat-card-actions>
-  </mat-card>
-  
+<mat-card class="example-card" appearance="outlined">
+  <mat-card-header>
+    <div mat-card-avatar class="example-header-image"></div>
+    <mat-card-title>MY Profile</mat-card-title>
+    <mat-card-subtitle>{{ user?.role }}</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image [src]="photoUrl" alt="User Photo" >
+  <mat-card-content>
+    <p>
+      Welcome to your profile
+    </p>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Email:</strong> {{ user?.email }}</li>
+      <li class="list-group-item"><strong>User name:</strong> {{ user?.username }}</li>
+      <li class="list-group-item"><strong>Role:</strong> {{ user?.role }}</li>
+    </ul>
+  </mat-card-content>
+</mat-card>

@@ -5,7 +5,7 @@
     <!-- Table View: Shown only when the form is hidden -->
     <ng-container *ngIf="!showForm">
       <div class="table-responsive">
-        <table mat-table [dataSource]="cars" class="w-100">
+        <table mat-table [dataSource]="cars" class="w-100" [trackBy]="trackByCarId">
           <!-- Car ID Column -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">ID</th>
@@ -51,25 +51,28 @@
             <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Type</th>
             <td mat-cell *matCellDef="let car">{{ car.type }}</td>
           </ng-container>
-       <!-- Actions Column -->
-<ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Actions</th>
-  <td mat-cell *matCellDef="let car">
-    <!-- Dropdown Menu Trigger -->
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <!-- Dropdown Menu -->
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="startEdit(car)">
-        <mat-icon>edit</mat-icon> Edit
-      </button>
-      <button mat-menu-item (click)="deleteCar(car.id)">
-        <mat-icon>delete</mat-icon> Delete
-      </button>
-    </mat-menu>
-  </td>
-</ng-container>
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Actions</th>
+            <td mat-cell *matCellDef="let car">
+              <!-- Dropdown Menu Trigger -->
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <!-- Dropdown Menu -->
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="startEdit(car)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item (click)="deleteCar(car.id)">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+                <button mat-menu-item (click)="seeDetails(car.id)">
+                  <mat-icon>info</mat-icon> See Details
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
@@ -82,11 +85,10 @@
 
     <!-- Form View: Shown when showForm is true -->
     <ng-container *ngIf="showForm">
-      <!-- Add Car Form (when not editing) -->
-      <form #carForm="ngForm" (ngSubmit)="addCar()" *ngIf="!isEditing">
+      <form [formGroup]="carForm" (ngSubmit)="isEditing ? saveEditedCar() : addCar()">
         <mat-card class="cardWithShadow theme-card">
           <mat-card-header>
-            <mat-card-title class="m-b-0">Add Car</mat-card-title>
+            <mat-card-title class="m-b-0">{{ isEditing ? 'Edit Car' : 'Add Car' }}</mat-card-title>
           </mat-card-header>
           <mat-card-content class="b-t-1">
             <div class="row">
@@ -98,8 +100,7 @@
                     matInput
                     type="text"
                     placeholder="Enter car brand"
-                    [(ngModel)]="newCar.brand"
-                    name="brand"
+                    formControlName="brand"
                     required
                   />
                 </mat-form-field>
@@ -111,8 +112,7 @@
                     matInput
                     type="text"
                     placeholder="Enter car model"
-                    [(ngModel)]="newCar.model"
-                    name="model"
+                    formControlName="model"
                     required
                   />
                 </mat-form-field>
@@ -126,8 +126,7 @@
                     matInput
                     type="text"
                     placeholder="Enter license plate"
-                    [(ngModel)]="newCar.licensePlate"
-                    name="licensePlate"
+                    formControlName="licensePlate"
                     required
                   />
                 </mat-form-field>
@@ -139,8 +138,7 @@
                     matInput
                     type="number"
                     placeholder="Enter car year"
-                    [(ngModel)]="newCar.year"
-                    name="year"
+                    formControlName="year"
                     required
                   />
                 </mat-form-field>
@@ -154,8 +152,7 @@
                     matInput
                     type="text"
                     placeholder="Enter fuel type"
-                    [(ngModel)]="newCar.fuelType"
-                    name="fuelType"
+                    formControlName="fuelType"
                     required
                   />
                 </mat-form-field>
@@ -167,8 +164,7 @@
                     matInput
                     type="number"
                     placeholder="Enter mileage"
-                    [(ngModel)]="newCar.mileage"
-                    name="mileage"
+                    formControlName="mileage"
                     required
                   />
                 </mat-form-field>
@@ -182,8 +178,7 @@
                     matInput
                     type="text"
                     placeholder="Enter status"
-                    [(ngModel)]="newCar.status"
-                    name="status"
+                    formControlName="status"
                     required
                   />
                 </mat-form-field>
@@ -195,8 +190,7 @@
                     matInput
                     type="text"
                     placeholder="Enter type"
-                    [(ngModel)]="newCar.type"
-                    name="type"
+                    formControlName="type"
                     required
                   />
                 </mat-form-field>
@@ -205,138 +199,8 @@
 
             <!-- Submit and Cancel Buttons -->
             <div class="m-t-12 d-flex justify-content-between">
-              <button mat-flat-button color="primary" class="m-r-8" [disabled]="carForm.invalid">Add Car</button>
+              <button mat-flat-button color="primary" class="m-r-8" [disabled]="carForm.invalid">{{ isEditing ? 'Save Changes' : 'Add Car' }}</button>
               <button mat-stroked-button color="warn" (click)="closeForm()">Cancel</button>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </form>
-
-      <!-- Edit Car Form (when editing) -->
-      <form #editForm="ngForm" (ngSubmit)="saveEditedCar()" *ngIf="isEditing">
-        <mat-card class="cardWithShadow theme-card">
-          <mat-card-header>
-            <mat-card-title class="m-b-0">Edit Car</mat-card-title>
-          </mat-card-header>
-          <mat-card-content class="b-t-1">
-            <div class="row">
-              <!-- Brand and Model -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Brand</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit car brand"
-                    [(ngModel)]="editedCar.brand"
-                    name="brand"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Model</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit car model"
-                    [(ngModel)]="editedCar.model"
-                    name="model"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-
-              <!-- License Plate and Year -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">License Plate</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit license plate"
-                    [(ngModel)]="editedCar.licensePlate"
-                    name="licensePlate"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Year</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Edit car year"
-                    [(ngModel)]="editedCar.year"
-                    name="year"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-
-              <!-- Fuel Type and Mileage -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Fuel Type</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit fuel type"
-                    [(ngModel)]="editedCar.fuelType"
-                    name="fuelType"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Mileage</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Edit mileage"
-                    [(ngModel)]="editedCar.mileage"
-                    name="mileage"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-
-              <!-- Status and Type -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Status</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit status"
-                    [(ngModel)]="editedCar.status"
-                    name="status"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Type</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit type"
-                    [(ngModel)]="editedCar.type"
-                    name="type"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-            </div>
-
-            <!-- Submit and Cancel Buttons -->
-            <div class="m-t-12 d-flex justify-content-between">
-              <button mat-flat-button color="accent" class="m-r-8" [disabled]="editForm.invalid">Save Changes</button>
-              <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
             </div>
           </mat-card-content>
         </mat-card>

@@ -28,7 +28,7 @@ export const navItems: NavItem[] = [
     divider: true
   },
   {
-    displayName: 'cars',
+    displayName: 'Cars',
     iconName: 'solar:atom-line-duotone',
     route: '/cars',  
   },
@@ -43,7 +43,7 @@ export const navItems: NavItem[] = [
     route: '/fuelconsumption',  
   },
   {
-    displayName: 'tires',
+    displayName: 'Tires',
     iconName: 'solar:atom-line-duotone',
     route: '/tires',  
   },
@@ -72,13 +72,13 @@ export const navItems: NavItem[] = [
     divider: true
   },
   {
-    displayName: 'users',
+    displayName: 'Users',
     iconName: 'solar:atom-line-duotone',
     route: '/users',  
   },
  
   {
-    displayName: 'roles',
+    displayName: 'Roles',
     iconName: 'solar:atom-line-duotone',
     route: '/roles',  
   },

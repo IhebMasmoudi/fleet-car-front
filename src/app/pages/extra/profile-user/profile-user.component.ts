@@ -20,31 +20,33 @@ import { MatNativeDateModule } from '@angular/material/core';
   selector: 'app-profile-user',
   templateUrl: './profile-user.component.html',
   styleUrls: ['./profile-user.component.scss'],
-   imports: [
-      MatTableModule,
-      MatCardModule,
-      MatButtonModule,
-      CommonModule,
-      MatIconModule,
-      MatOptionModule,
-      MatSelectModule,
-      FormsModule,
-      MatFormFieldModule,
-      MatInputModule,
-      MatDatepickerModule,
-      MatMenuModule,
-      MatNativeDateModule
-    ]
+  imports: [
+    MatTableModule,
+    MatCardModule,
+    MatButtonModule,
+    CommonModule,
+    MatIconModule,
+    MatOptionModule,
+    MatSelectModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatMenuModule,
+    MatNativeDateModule
+  ]
 })
 export class ProfileUserComponent implements OnInit {
   user: IUser | null = null;
   token: string | null = null;
+  photoUrl: string = '';
 
   constructor(private authService: AuthService, private userService: UserService) {}
 
   ngOnInit(): void {
     this.loadToken();
     this.loadUserProfile();
+    this.photoUrl = this.getRandomPhoto();
   }
 
   /**
@@ -109,5 +111,13 @@ export class ProfileUserComponent implements OnInit {
       console.error('Failed to decode token:', error);
       return null;
     }
+  }
+
+  /**
+   * Get a random photo from the assets/profile directory.
+   */
+  getRandomPhoto(): string {
+    const randomIndex = Math.floor(Math.random() * 10) + 1;
+    return `assets/images/profile/user-${randomIndex}.jpg`;
   }
 }

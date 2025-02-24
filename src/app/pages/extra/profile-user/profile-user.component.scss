@@ -1,62 +1,10 @@
-/* Overall card styling */
-.profile-card {
-    max-width: 400px;
-    margin: 2rem auto;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.example-card {
+    max-width: 300px; /* Increased the max-width to make the card larger */
+    margin:  auto; /* Center the card horizontally */
   }
   
-  /* Header with gradient background */
-  mat-card-header {
-    background: linear-gradient(135deg, #6b73ff 0%, #000dff 100%);
-    color: #fff;
-    padding: 16px;
+  .example-header-image {
+    background-image: url('src/assets/images/blog/blog-img2.jpg');
+    background-size: cover;
+    border-radius: 50%; /* Make the avatar image circular */
   }
-  
-  /* Circular avatar styling */
-  .profile-avatar {
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    mat-icon {
-      color: #000dff;
-      font-size: 28px;
-    }
-  }
-  
-  /* Title and subtitle styling */
-  mat-card-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-  }
-  
-  mat-card-subtitle {
-    font-size: 1rem;
-    opacity: 0.85;
-  }
-  
-  /* Profile details styling */
-  .profile-details {
-    font-size: 1rem;
-    padding: 1rem 0;
-    p {
-      margin: 0.5rem 0;
-      strong {
-        color: #000dff;
-      }
-    }
-  }
-  
-  /* Actions area styling */
-  mat-card-actions {
-    display: flex;
-    justify-content: space-around;
-    background-color: #f5f5f5;
-    padding: 16px;
-  }
-  

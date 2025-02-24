@@ -1,15 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { CarsService } from '../../services/Cars.service';
-import { ICars } from '../../interfaces/ICars';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CarsService } from 'src/app/services/Cars.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { ICars } from 'src/app/interfaces/ICars';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+
 @Component({
   selector: 'app-cars',
   templateUrl: './cars.component.html',
@@ -21,7 +25,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    FormsModule,
+    ReactiveFormsModule,
     CommonModule,
     MatIconModule,
     MatMenuModule
@@ -30,34 +34,28 @@ import { MatMenuModule } from '@angular/material/menu';
 export class CarsComponent implements OnInit {
   cars: ICars[] = [];
   displayedColumns: string[] = ['id', 'model', 'brand', 'licensePlate', 'year', 'fuelType', 'mileage', 'status', 'type', 'actions'];
-  newCar: ICars = {
-    id: undefined,
-    model: '',
-    brand: '',
-    licensePlate: '',
-    year: 0,
-    fuelType: '',
-    mileage: 0,
-    status: '',
-    type: '',
-    
-  };
-  editedCar: ICars = {
-    id: undefined,
-    model: '',
-    brand: '',
-    licensePlate: '',
-    year: 0,
-    fuelType: '',
-    mileage: 0,
-    status: '',
-    type: '',
-   
-  };
+  carForm: FormGroup;
   isEditing = false;
   showForm = false;
 
-  constructor(private carsService: CarsService) {}
+  constructor(
+    private carsService: CarsService, 
+    private fb: FormBuilder, 
+    private router: Router,
+    private documentService: DocumentService  // Inject DocumentService
+  ) {
+    this.carForm = this.fb.group({
+      id: [null],
+      model: ['', Validators.required],
+      brand: ['', Validators.required],
+      licensePlate: ['', Validators.required],
+      year: [0, Validators.required],
+      fuelType: ['', Validators.required],
+      mileage: [0, Validators.required],
+      status: ['', Validators.required],
+      type: ['', Validators.required],
+    });
+  }
 
   ngOnInit(): void {
     this.fetchCars();
@@ -83,18 +81,7 @@ export class CarsComponent implements OnInit {
   openAddForm(): void {
     this.showForm = true;
     this.isEditing = false;
-    this.newCar = {
-      id: undefined,
-      model: '',
-      brand: '',
-      licensePlate: '',
-      year: 0,
-      fuelType: '',
-      mileage: 0,
-      status: '',
-      type: '',
-     
-    };
+    this.carForm.reset();
   }
 
   /**
@@ -102,7 +89,7 @@ export class CarsComponent implements OnInit {
    * @param car The car to edit.
    */
   startEdit(car: ICars): void {
-    this.editedCar = { ...car };
+    this.carForm.patchValue(car);
     this.isEditing = true;
     this.showForm = true;
   }
@@ -111,22 +98,10 @@ export class CarsComponent implements OnInit {
    * Add a new car.
    */
   addCar(): void {
-    if (!this.newCar.model.trim() || this.newCar.year === 0) return;
-    this.carsService.createVehicle(this.newCar).subscribe(
+    if (this.carForm.invalid) return;
+    this.carsService.createVehicle(this.carForm.value).subscribe(
       (car) => {
         this.cars.push(car);
-        this.newCar = {
-          id: undefined,
-          model: '',
-          brand: '',
-          licensePlate: '',
-          year: 0,
-          fuelType: '',
-          mileage: 0,
-          status: '',
-          type: '',
-         
-        };
         alert('Car added successfully!');
         this.closeForm();
       },
@@ -141,12 +116,12 @@ export class CarsComponent implements OnInit {
    * Save the edited car.
    */
   saveEditedCar(): void {
-    if (!this.editedCar.model.trim() || this.editedCar.year === 0) return;
-    this.carsService.updateVehicle(this.editedCar.id!, this.editedCar).subscribe(
+    if (this.carForm.invalid) return;
+    this.carsService.updateVehicle(this.carForm.value.id, this.carForm.value).subscribe(
       () => {
-        const index = this.cars.findIndex((car) => car.id === this.editedCar.id);
+        const index = this.cars.findIndex((car) => car.id === this.carForm.value.id);
         if (index !== -1) {
-          this.cars[index] = this.editedCar;
+          this.cars[index] = this.carForm.value;
         }
         alert('Car updated successfully!');
         this.closeForm();
@@ -156,13 +131,6 @@ export class CarsComponent implements OnInit {
         alert('Failed to update car.');
       }
     );
-  }
-
-  /**
-   * Cancel the current form action.
-   */
-  cancelEdit(): void {
-    this.closeForm();
   }
 
   /**
@@ -184,10 +152,63 @@ export class CarsComponent implements OnInit {
   }
 
   /**
-   * Hide the form and display the table.
+   * Navigate to the car details page.
+   * @param id The ID of the car to view details.
+   */
+  seeDetails(id: number): void {
+    this.router.navigate(['/extra/CarDetaills', id]);
+  }
+
+  /**
+   * Upload a document or photo for the car.
+   * This method creates a hidden file input, lets the user choose a file,
+   * and then uploads it using the DocumentService.
+   * @param carId The ID of the car.
+   */
+  uploadDocument(carId: number): void {
+    // Create a hidden file input element
+    const inputElement = document.createElement('input');
+    inputElement.type = 'file';
+    inputElement.accept = '.png,.jpg,.jpeg,.pdf'; // adjust as needed
+
+    // When a file is selected...
+    inputElement.onchange = (event: any) => {
+      const file: File = event.target.files[0];
+      if (file) {
+        // Ask for additional details (you could replace these with a proper form/dialog)
+        const documentName = prompt('Enter Document Name:', 'Document');
+        const documentType = prompt('Enter Document Type:', 'Photo'); // or "Document"
+
+        if (documentName && documentType) {
+          this.documentService.uploadDocument(carId, documentName, documentType, file).subscribe(
+            (response) => {
+              alert('Document uploaded successfully!');
+            },
+            (error) => {
+              console.error('Error uploading document:', error);
+              alert('Failed to upload document.');
+            }
+          );
+        }
+      }
+    };
+
+    // Trigger the file dialog
+    inputElement.click();
+  }
+
+  /**
+   * Hide the form and display the list view.
    */
   closeForm(): void {
     this.showForm = false;
     this.isEditing = false;
+  }
+
+  /**
+   * TrackBy function for the table or card rows.
+   */
+  trackByCarId(index: number, car: ICars): number | undefined {
+    return car.id;
   }
 }

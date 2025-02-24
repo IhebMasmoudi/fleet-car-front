@@ -3,7 +3,7 @@ import { AuthGuard } from 'src/app/services/AuthGuard.service'; // Import the gu
 import { ProfileUserComponent } from './profile-user/profile-user.component';
 import { AppIconsComponent } from './icons/icons.component';
 import { AppSamplePageComponent } from './sample-page/sample-page.component';
-
+import { CarDetailsComponent } from './car-detaills/car-detaills.component';
 export const ExtraRoutes: Routes = [
   {
     path: '',
@@ -24,6 +24,11 @@ export const ExtraRoutes: Routes = [
           urls: [{ title: 'Profile', url: '/Profile' }, { title: 'Profile' }],
         },
       },
+      {
+        path: 'CarDetaills/:id', // Note the spelling: "CarDetaills"
+        component: CarDetailsComponent,
+        data: { title: 'CarDetaills', urls: [{ title: 'CarDetaills', url: '/CarDetaills' }, { title: 'CarDetaills' }] },
+      }      
     ],
 
   },

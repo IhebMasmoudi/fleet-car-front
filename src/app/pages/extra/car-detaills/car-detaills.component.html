@@ -1,0 +1,159 @@
+<mat-card class="example-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Car Details</mat-card-title>
+    </mat-card-header>
+  
+    <!-- Loading Indicator -->
+    <mat-card-content *ngIf="!carDetails && !errorMessage; else content">
+      <p><mat-spinner diameter="20"></mat-spinner> Loading car details...</p>
+    </mat-card-content>
+  
+    <!-- Error Message -->
+    <ng-template #content>
+      <mat-card-content *ngIf="errorMessage; else carDetailsContent">
+        <p class="error" style="color: red;">{{ errorMessage }}</p>
+      </mat-card-content>
+  
+      <!-- Car Details Content -->
+      <ng-template #carDetailsContent>
+        <mat-card-content *ngIf="carDetails">
+          <mat-tab-group>
+            <!-- General Info Tab -->
+            <mat-tab label="General Info">
+              <mat-list>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>ID:</b> {{ carDetails.id }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Model:</b> {{ carDetails.model }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Brand:</b> {{ carDetails.brand }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>License Plate:</b> {{ carDetails.licensePlate }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Year:</b> {{ carDetails.year }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Fuel Type:</b> {{ carDetails.fuelType }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Mileage:</b> {{ carDetails.mileage }} km</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Status:</b> {{ carDetails.status }}</span>
+                </mat-list-item>
+                <mat-list-item>
+                  <span class="mat-list-text"><b>Type:</b> {{ carDetails.type }}</span>
+                </mat-list-item>
+              </mat-list>
+            </mat-tab>
+  
+            <!-- Tires Tab -->
+            <mat-tab label="Tires">
+              <mat-list *ngIf="carDetails.tires.length > 0; else noTires">
+                <mat-list-item *ngFor="let tire of carDetails.tires">
+                  <span class="mat-list-text"><b>Brand:</b> {{ tire.brand }}</span> |
+                  <span class="mat-list-text"><b>Model:</b> {{ tire.model }}</span> |
+                  <span class="mat-list-text"><b>Installation Date:</b> {{ tire.installationDate | date }}</span> |
+                  <span class="mat-list-text"><b>Mileage at Installation:</b> {{ tire.mileageAtInstallation }} km</span> |
+                  <span class="mat-list-text"><b>Replacement Reason:</b> {{ tire.replacementReason }}</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noTires>
+                <p>No tires available.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Maintenance Tab -->
+            <mat-tab label="Maintenance">
+              <mat-list *ngIf="carDetails.maintenance.length > 0; else noMaintenance">
+                <mat-list-item *ngFor="let maintenance of carDetails.maintenance">
+                  <span class="mat-list-text"><b>Type:</b> {{ maintenance.type }}</span> |
+                  <span class="mat-list-text"><b>Date:</b> {{ maintenance.maintenanceDate | date }}</span> |
+                  <span class="mat-list-text"><b>Cost:</b> ${{ maintenance.cost }}</span> |
+                  <span class="mat-list-text"><b>Notes:</b> {{ maintenance.notes }}</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noMaintenance>
+                <p>No maintenance records available.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Fuel Consumption Tab -->
+            <mat-tab label="Fuel Consumption">
+              <mat-list *ngIf="carDetails.fuelConsumption.length > 0; else noFuelConsumption">
+                <mat-list-item *ngFor="let fuel of carDetails.fuelConsumption">
+                  <span class="mat-list-text"><b>Date:</b> {{ fuel.date | date }}</span> |
+                  <span class="mat-list-text"><b>Amount:</b> {{ fuel.amount }} liters</span> |
+                  <span class="mat-list-text"><b>Cost:</b> ${{ fuel.cost }}</span> |
+                  <span class="mat-list-text"><b>Mileage:</b> {{ fuel.mileage }} km</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noFuelConsumption>
+                <p>No fuel consumption records available.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Invoices Tab -->
+            <mat-tab label="Invoices">
+              <mat-list *ngIf="carDetails.invoices.length > 0; else noInvoices">
+                <mat-list-item *ngFor="let invoice of carDetails.invoices">
+                  <span class="mat-list-text"><b>Issue Date:</b> {{ invoice.issueDate | date }}</span> |
+                  <span class="mat-list-text"><b>Due Date:</b> {{ invoice.dueDate | date }}</span> |
+                  <span class="mat-list-text"><b>Amount:</b> ${{ invoice.amount }}</span> |
+                  <span class="mat-list-text"><b>Status:</b> {{ invoice.status }}</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noInvoices>
+                <p>No invoices available.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Parking Slot Tab -->
+            <mat-tab label="Parking Slot">
+              <div *ngIf="carDetails.parkingSlot; else noParkingSlot">
+                <p><span class="mat-list-text"><b>Location:</b> {{ carDetails.parkingSlot.location }}</span></p>
+                <p><span class="mat-list-text"><b>Status:</b> {{ carDetails.parkingSlot.status }}</span></p>
+              </div>
+              <ng-template #noParkingSlot>
+                <p>No parking slot assigned.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Missions Tab -->
+            <mat-tab label="Missions">
+              <mat-list *ngIf="carDetails.missions.length > 0; else noMissions">
+                <mat-list-item *ngFor="let mission of carDetails.missions">
+                  <span class="mat-list-text"><b>Description:</b> {{ mission.destination }}</span> |
+                  <span class="mat-list-text"><b>Start Date:</b> {{ mission.startDate | date }}</span> |
+                  <span class="mat-list-text"><b>End Date:</b> {{ mission.endDate | date }}</span> |
+                  <span class="mat-list-text"><b>Status:</b> {{ mission.status }}</span> |
+                  <span class="mat-list-text"><b>Distance:</b> {{ mission.distance }} km</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noMissions>
+                <p>No missions available.</p>
+              </ng-template>
+            </mat-tab>
+  
+            <!-- Documents Tab -->
+            <mat-tab label="Documents">
+              <h3>Documents</h3>
+              <mat-list *ngIf="carDetails.documents.length > 0; else noDocuments">
+                <mat-list-item *ngFor="let document of carDetails.documents">
+                  <span class="mat-list-text"><b>Name:</b> {{ document.name || 'N/A' }}</span> |
+                  <span class="mat-list-text"><b>Type:</b> {{ document.type || 'N/A' }}</span>
+                </mat-list-item>
+              </mat-list>
+              <ng-template #noDocuments>
+                <p>No documents available.</p>
+              </ng-template>
+            </mat-tab>
+          </mat-tab-group>
+        </mat-card-content>
+      </ng-template>
+    </ng-template>
+  </mat-card>
