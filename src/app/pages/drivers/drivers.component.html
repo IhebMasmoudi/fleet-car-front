@@ -32,6 +32,15 @@
             </mat-select>
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Vehicle</mat-label>
+            <mat-select [(ngModel)]="affectedVehicleID" required>
+              <mat-option *ngFor="let car of cars" [value]="car.id">
+                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
           <div class="form-actions">
             <button mat-raised-button color="primary" 
               (click)="isEditing ? updateDriver() : addDriver()">
@@ -79,6 +88,14 @@
         <ng-container matColumnDef="user">
           <th mat-header-cell *matHeaderCellDef> User </th>
           <td mat-cell *matCellDef="let driver"> {{ getUserName(driver.userId) }} </td>
+        </ng-container>
+
+        <!-- Vehicle Column -->
+        <ng-container matColumnDef="vehicle">
+          <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+          <td mat-cell *matCellDef="let driver">
+            {{ getVehicleDetails(driver.affectedVehicleID) }}
+          </td>
         </ng-container>
 
         <!-- Actions Column -->

@@ -50,6 +50,19 @@
                 </mat-list-item>
               </mat-list>
             </mat-tab>
+
+            
+            <!-- DRIVER Tab -->
+            <mat-tab label="Driver">
+              <div *ngIf="carDetails.driver; else noDriver">
+                <p><span class="mat-list-text"><b>licenseNumber:</b> {{ carDetails.driver.licenseNumber }}</span></p>
+                <p><span class="mat-list-text"><b>phoneNumber:</b> {{ carDetails.driver.phoneNumber }}</span></p>
+                <p><span class="mat-list-text"><b>Phone:</b> {{ carDetails.driver.userId }}</span></p>
+              </div>
+              <ng-template #noDriver>
+                <p>No Driver.</p>
+              </ng-template>
+            </mat-tab>
   
             <!-- Tires Tab -->
             <mat-tab label="Tires">
@@ -144,8 +157,17 @@
               <h3>Documents</h3>
               <mat-list *ngIf="carDetails.documents.length > 0; else noDocuments">
                 <mat-list-item *ngFor="let document of carDetails.documents">
-                  <span class="mat-list-text"><b>Name:</b> {{ document.name || 'N/A' }}</span> |
-                  <span class="mat-list-text"><b>Type:</b> {{ document.type || 'N/A' }}</span>
+                  <span class="mat-list-text"><b>Name:</b> {{ document.documentName || 'N/A' }}</span> |
+                  <span class="mat-list-text"><b>Type:</b> {{ document.documentType || 'N/A' }}</span>
+                   <!-- New View Button -->
+                   <button
+                   mat-icon-button
+                   color="accent"
+                   matTooltip="View"
+                   (click)="viewDocument(document.vehicleID, document.documentName!)"
+                 >
+                   <mat-icon>visibility</mat-icon>
+                 </button>
                 </mat-list-item>
               </mat-list>
               <ng-template #noDocuments>

@@ -1,29 +1,115 @@
-.cards-container {
+@use 'sass:color';
+
+$c-primary: #2196F3;
+$c-secondary: #FF5722;
+$c-card-bg: #FAFAFA;
+$c-shadow: rgba(0, 0, 0, 0.15);
+
+.cars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.car-tile {
+  border-radius: 8px;
+  background: $c-card-bg;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px $c-shadow;
+  }
+}
+
+.car-header {
+  padding: 1rem;
+  border-bottom: 1px solid color.adjust($c-shadow, $lightness: 30%);
+}
+
+.photo-wrapper {
+  height: 150px;
+  position: relative;
+  border-radius: 0 0 8px 8px;
+  
+  .car-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .no-photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-style: italic;
+    font-size: 1rem;
+  }
+}
+
+.details-section {
+  padding: 1rem;
+  
+  .detail-item {
+    margin: 0.3rem 0;
+    line-height: 1.3;
+  }
+}
+
+.action-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+  justify-content: flex-end;
+  padding: 0.8rem;
+  border-top: 1px solid color.adjust($c-shadow, $lightness: 30%);
+  
+  mat-icon-button {
+    margin-left: 0.3rem;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 }
 
-.car-card {
-  width: 300px;
-}
-
-.car-image-placeholder {
-  width: 40px;
-  height: 40px;
+.add-car-fab {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  background: $c-primary;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px $c-shadow;
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  &:hover {
+    background: color.adjust($c-primary, $lightness: -10%);
+  }
 }
 
-.car-image-placeholder img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.form-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  z-index: 1000;
 }
 
-.add-car-button {
-  margin-top: 20px;
-  text-align: right;
+.documents-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  z-index: 1000;
 }

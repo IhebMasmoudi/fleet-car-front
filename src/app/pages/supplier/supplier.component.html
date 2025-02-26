@@ -1,6 +1,9 @@
 <mat-card class="card-container">
-    <mat-card-title>Suppliers Management</mat-card-title>
-  
+    <mat-card-title>   Suppliers Management</mat-card-title>
+     <!-- Button to toggle Add Supplier Form -->
+     <div *ngIf="!showAddForm && !isEditing" class="add-supplier-button">
+      <button mat-raised-button color="primary" (click)="toggleAddForm()">Add Supplier</button>
+    </div>
     <!-- Add Supplier Form -->
     <div *ngIf="showAddForm; else showTable">
       <mat-card>
@@ -134,8 +137,5 @@
       </table>
     </ng-template>
   
-    <!-- Button to toggle Add Supplier Form -->
-    <div *ngIf="!showAddForm && !isEditing" class="add-supplier-button">
-      <button mat-raised-button color="primary" (click)="toggleAddForm()">Add Supplier</button>
-    </div>
+ 
   </mat-card>

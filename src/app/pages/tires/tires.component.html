@@ -2,6 +2,11 @@
   <mat-card-content>
     <mat-card-title>Tires</mat-card-title>
 
+    <!-- Button to open the Add Tire Form -->
+    <div class="d-flex justify-content-end mt-3">
+      <button mat-raised-button color="primary" (click)="openAddForm()">Add Tire</button>
+    </div>
+
     <!-- Table View: Shown only when the form is hidden -->
     <ng-container *ngIf="!showForm">
       <div class="table-responsive">
@@ -13,65 +18,46 @@
           </ng-container>
           <!-- Tire Brand Column -->
           <ng-container matColumnDef="brand">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-              Brand
-            </th>
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Brand</th>
             <td mat-cell *matCellDef="let tire">{{ tire.brand }}</td>
           </ng-container>
           <!-- Tire Model Column -->
           <ng-container matColumnDef="model">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-              Model
-            </th>
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Model</th>
             <td mat-cell *matCellDef="let tire">{{ tire.model }}</td>
           </ng-container>
           <!-- Installation Date Column -->
           <ng-container matColumnDef="installationDate">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-              Installation Date
-            </th>
-            <td mat-cell *matCellDef="let tire">
-              {{ tire.installationDate | date }}
-            </td>
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Installation Date</th>
+            <td mat-cell *matCellDef="let tire">{{ tire.installationDate | date }}</td>
           </ng-container>
           <!-- Mileage at Installation Column -->
           <ng-container matColumnDef="mileageAtInstallation">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-              Mileage at Installation
-            </th>
-            <td mat-cell *matCellDef="let tire">
-              {{ tire.mileageAtInstallation }}
-            </td>
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Mileage at Installation</th>
+            <td mat-cell *matCellDef="let tire">{{ tire.mileageAtInstallation }}</td>
           </ng-container>
           <!-- Actions Column -->
-          <!-- Actions Column -->
-<ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Actions</th>
-  <td mat-cell *matCellDef="let tire">
-    <!-- Dropdown Menu Trigger -->
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <!-- Dropdown Menu -->
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="startEdit(tire)">
-        <mat-icon>edit</mat-icon> Edit
-      </button>
-      <button mat-menu-item (click)="deleteTire(tire.id)">
-        <mat-icon>delete</mat-icon> Delete
-      </button>
-    </mat-menu>
-  </td>
-</ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">Actions</th>
+            <td mat-cell *matCellDef="let tire">
+              <!-- Dropdown Menu Trigger -->
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <!-- Dropdown Menu -->
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="startEdit(tire)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item (click)="deleteTire(tire.id)">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
-      </div>
-      <!-- Button to open the Add Tire Form -->
-      <div class="d-flex justify-content-end mt-3">
-        <button mat-raised-button color="primary" (click)="openAddForm()">
-          Add Tire
-        </button>
       </div>
     </ng-container>
 
@@ -88,122 +74,47 @@
               <!-- Brand and Model -->
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Brand</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter tire brand"
-                    [(ngModel)]="newTire.brand"
-                    name="brand"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Enter tire brand" [(ngModel)]="newTire.brand" name="brand" required />
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Model</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter tire model"
-                    [(ngModel)]="newTire.model"
-                    name="model"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Enter tire model" [(ngModel)]="newTire.model" name="model" required />
                 </mat-form-field>
               </div>
 
               <!-- Installation Date and Mileage at Installation -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Installation Date</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    [matDatepicker]="picker"
-                    placeholder="Choose a date"
-                    [(ngModel)]="newTire.installationDate"
-                    name="installationDate"
-                    required
-                  />
-                  <mat-datepicker-toggle
-                    matSuffix
-                    [for]="picker"
-                  ></mat-datepicker-toggle>
+                <mat-label class="f-w-600 m-b-8 d-block">Installation Date</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput [matDatepicker]="picker" placeholder="Choose a date" [(ngModel)]="newTire.installationDate" name="installationDate" required />
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Mileage at Installation</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Enter mileage at installation"
-                    [(ngModel)]="newTire.mileageAtInstallation"
-                    name="mileageAtInstallation"
-                    required
-                  />
+                <mat-label class="f-w-600 m-b-8 d-block">Mileage at Installation</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="number" placeholder="Enter mileage at installation" [(ngModel)]="newTire.mileageAtInstallation" name="mileageAtInstallation" required />
                 </mat-form-field>
               </div>
 
               <!-- Replacement Reason and Car ID -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Replacement Reason</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter replacement reason"
-                    [(ngModel)]="newTire.replacementReason"
-                    name="replacementReason"
-                    required
-                  />
+                <mat-label class="f-w-600 m-b-8 d-block">Replacement Reason</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Enter replacement reason" [(ngModel)]="newTire.replacementReason" name="replacementReason" required />
                 </mat-form-field>
               </div>
               <!-- Car Selection -->
-
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Car</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <mat-select
-                    placeholder="Select a car"
-                    [(ngModel)]="newTire.vehicleId"
-                    name="carId"
-                    required
-                  >
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <mat-select placeholder="Select a car" [(ngModel)]="newTire.vehicleId" name="carId" required>
                     <mat-option *ngFor="let car of cars" [value]="car.id">
-                      {{ car.model }} {{ car.licensePlate }}
-                      {{ car.brand }} (ID: {{ car.id }})
+                      {{ car.model }} {{ car.licensePlate }} {{ car.brand }} (ID: {{ car.id }})
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -212,17 +123,8 @@
 
             <!-- Submit and Cancel Buttons -->
             <div class="m-t-12 d-flex justify-content-between">
-              <button
-                mat-flat-button
-                color="primary"
-                class="m-r-8"
-                [disabled]="tireForm.invalid"
-              >
-                Add Tire
-              </button>
-              <button mat-stroked-button color="warn" (click)="closeForm()">
-                Cancel
-              </button>
+              <button mat-flat-button color="primary" class="m-r-8" [disabled]="tireForm.invalid">Add Tire</button>
+              <button mat-stroked-button color="warn" (click)="closeForm()">Cancel</button>
             </div>
           </mat-card-content>
         </mat-card>
@@ -239,123 +141,47 @@
               <!-- Brand and Model -->
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Brand</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit tire brand"
-                    [(ngModel)]="editedTire.brand"
-                    name="brand"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Edit tire brand" [(ngModel)]="editedTire.brand" name="brand" required />
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Model</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit tire model"
-                    [(ngModel)]="editedTire.model"
-                    name="model"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Edit tire model" [(ngModel)]="editedTire.model" name="model" required />
                 </mat-form-field>
               </div>
 
               <!-- Installation Date and Mileage at Installation -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Installation Date</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    [matDatepicker]="pickerEdit"
-                    placeholder="Choose a date"
-                    [(ngModel)]="editedTire.installationDate"
-                    name="installationDate"
-                    required
-                  />
-                  <mat-datepicker-toggle
-                    matSuffix
-                    [for]="pickerEdit"
-                  ></mat-datepicker-toggle>
+                <mat-label class="f-w-600 m-b-8 d-block">Installation Date</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput [matDatepicker]="pickerEdit" placeholder="Choose a date" [(ngModel)]="editedTire.installationDate" name="installationDate" required />
+                  <mat-datepicker-toggle matSuffix [for]="pickerEdit"></mat-datepicker-toggle>
                   <mat-datepicker #pickerEdit></mat-datepicker>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Mileage at Installation</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Edit mileage at installation"
-                    [(ngModel)]="editedTire.mileageAtInstallation"
-                    name="mileageAtInstallation"
-                    required
-                  />
+                <mat-label class="f-w-600 m-b-8 d-block">Mileage at Installation</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="number" placeholder="Edit mileage at installation" [(ngModel)]="editedTire.mileageAtInstallation" name="mileageAtInstallation" required />
                 </mat-form-field>
               </div>
 
               <!-- Replacement Reason and Car ID -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >Replacement Reason</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Edit replacement reason"
-                    [(ngModel)]="editedTire.replacementReason"
-                    name="replacementReason"
-                    required
-                  />
+                <mat-label class="f-w-600 m-b-8 d-block">Replacement Reason</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <input matInput type="text" placeholder="Edit replacement reason" [(ngModel)]="editedTire.replacementReason" name="replacementReason" required />
                 </mat-form-field>
               </div>
-              <!-- Car Selection -->
-
               <!-- Car Selection in Edit Form -->
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Car</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <mat-select
-                    placeholder="Select a car"
-                    [(ngModel)]="editedTire.vehicleId"
-                    name="carId"
-                    required
-                  >
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <mat-select placeholder="Select a car" [(ngModel)]="editedTire.vehicleId" name="carId" required>
                     <mat-option *ngFor="let car of cars" [value]="car.id">
-                      {{ car.model }} {{ car.licensePlate }}
-                      {{ car.brand }} (ID: {{ car.id }})
+                      {{ car.model }} {{ car.licensePlate }} {{ car.brand }} (ID: {{ car.id }})
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -364,17 +190,8 @@
 
             <!-- Submit and Cancel Buttons -->
             <div class="m-t-12 d-flex justify-content-between">
-              <button
-                mat-flat-button
-                color="accent"
-                class="m-r-8"
-                [disabled]="editForm.invalid"
-              >
-                Save Changes
-              </button>
-              <button mat-stroked-button color="warn" (click)="cancelEdit()">
-                Cancel
-              </button>
+              <button mat-flat-button color="accent" class="m-r-8" [disabled]="editForm.invalid">Save Changes</button>
+              <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
             </div>
           </mat-card-content>
         </mat-card>

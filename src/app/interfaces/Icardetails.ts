@@ -18,6 +18,7 @@ export interface ICarDetails {
   documents: Document[]; // Array of documents
   invoices: Invoice[]; // Array of invoices
   parkingSlot: ParkingSlot | null; // Parking slot details (nullable)
+  driver: Driver | null; // Driver details (nullable)
 }
 
 // Nested Interfaces
@@ -63,9 +64,10 @@ export interface FuelConsumption {
 
 export interface Document {
   id: number; // Document ID
-  name?: string; // Optional document name
-  type?: string; // Optional document type
-  vehicleId: number; // Vehicle ID
+  documentName?: string; // Optional document name
+  documentType?: string; // Optional document type
+  vehicleID: number; // Vehicle ID
+  data?: Blob;  // Base64 or binary data for downloads
 }
 
 export interface Invoice {
@@ -83,4 +85,13 @@ export interface ParkingSlot {
   location: string; // Parking slot location
   status: string; // Parking slot status (e.g., "Available", "Reserved")
   assignedVehicleID: number; // Assigned vehicle ID
+}
+
+export interface Driver {
+  id?: number;
+  licenseNumber: string;
+  phoneNumber: string;
+  status: string;
+  userId: number;
+  affectedVehicleID: number;
 }

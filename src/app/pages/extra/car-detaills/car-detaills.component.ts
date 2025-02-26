@@ -18,6 +18,9 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DocumentService } from 'src/app/services/document.service';
+import { UserService } from 'src/app/services/UserService.service';
+import { IUser } from 'src/app/interfaces/IUser';
 @Component({
   selector: 'app-car-details',
   templateUrl: './car-detaills.component.html',
@@ -45,8 +48,8 @@ export class CarDetailsComponent implements OnInit {
   carId: number | null = null;
   carDetails: ICarDetails | null = null;
   errorMessage: string | null = null;
-
-  constructor(private route: ActivatedRoute, private carsService: CarsService) {}
+  loading = false;
+  constructor(private route: ActivatedRoute, private carsService: CarsService,private documentService:DocumentService,private userService:UserService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -69,4 +72,22 @@ export class CarDetailsComponent implements OnInit {
       }
     );
   }
+
+  // View Document: Open the file in a new tab/window
+viewDocument(vehicleID: number, documentName: string): void {
+  this.loading = true;
+  this.documentService.downloadDocument(vehicleID, documentName).subscribe(
+    (blob) => {
+      console.log(vehicleID, documentName);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      this.loading = false;
+    },
+    (error) => {
+      console.error('Error viewing document:', error);
+      alert('Failed to view document.');
+      this.loading = false;
+    }
+  );
+}
 }

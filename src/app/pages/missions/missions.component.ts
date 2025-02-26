@@ -63,8 +63,7 @@ export class MissionsComponent implements OnInit {
   vehicleID: number | null = null;
   driverID: number | null = null;
 
-  displayedColumns: string[] = [
-    'id', 'destination', 'startDate', 'endDate', 'distance',
+  displayedColumns: string[] = [ 'destination', 'startDate', 'endDate', 'distance',
     'status', 'vehicle', 'driver', 'actions'
   ];
   dataSource = new MatTableDataSource<IMission>(this.missions);

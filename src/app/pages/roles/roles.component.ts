@@ -31,7 +31,7 @@ import { MatMenuModule } from '@angular/material/menu';
 })
 export class RolesComponent implements OnInit {
   roles: IRole[] = [];
-  displayedColumns: string[] = ['id', 'name', 'actions'];
+  displayedColumns: string[] = ['name', 'actions'];
   newRole: IRole = { id: undefined, name: '' }; // For adding a new role
   editedRole: IRole = { id: undefined, name: '' }; // For editing an existing role
   isEditing = false; // Flag for edit mode

@@ -16,6 +16,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatNativeDateModule } from '@angular/material/core';
+import { CarsService } from 'src/app/services/Cars.service';
+import { ICars } from 'src/app/interfaces/ICars';
 
 @Component({
   selector: 'app-driver',
@@ -40,8 +42,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 export class DriversComponent implements OnInit {
   drivers: IDriver[] = [];
   users: any[] = [];
+  cars: ICars[] = [];
   errorMessage: string = '';
-
   showAddForm: boolean = false;
   isEditing: boolean = false;
   selectedDriver: IDriver | null = null;
@@ -51,21 +53,24 @@ export class DriversComponent implements OnInit {
   phoneNumber: string = '';
   status: string = '';
   userId: number | null = null;
+  affectedVehicleID: number | null = null;
 
-  displayedColumns: string[] = ['id', 'licenseNumber', 'phoneNumber', 'status', 'user', 'actions'];
+  displayedColumns: string[] = ['id', 'licenseNumber', 'phoneNumber', 'status', 'user', 'vehicle', 'actions'];
   dataSource = new MatTableDataSource<IDriver>(this.drivers);
 
-  // Cache for storing usernames by userId
   userNames: { [key: number]: string } = {};
+  vehicleDetails: { [key: number]: { licensePlate: string, brand: string, model: string } } = {}; // Enhanced vehicle details
 
   constructor(
     private driverService: DriverService,
-    private userService: UserService
+    private userService: UserService,
+    private carsService: CarsService
   ) {}
 
   ngOnInit(): void {
     this.fetchDrivers();
     this.fetchDriverUsers();
+    this.fetchCars();
   }
 
   fetchDrivers(): void {
@@ -86,7 +91,9 @@ export class DriversComponent implements OnInit {
     this.userService.getUsersByRoleDriver().subscribe(
       (users) => {
         this.users = users;
-        console.log('Fetched driver users:', users);
+        this.users.forEach(user => {
+          this.userNames[user.id] = user.username; // Cache usernames
+        });
       },
       (error) => {
         console.error('Error fetching driver users:', error);
@@ -94,33 +101,44 @@ export class DriversComponent implements OnInit {
     );
   }
 
-  // Using the correct property "userId"
+  fetchCars(): void {
+    this.carsService.getAllVehicles().subscribe(
+      (cars) => { 
+        this.cars = cars;
+        this.cars.forEach(car => {
+          // Store complete vehicle details
+          this.vehicleDetails[car.id!] = {
+            licensePlate: car.licensePlate,
+            brand: car.brand || 'Unknown',
+            model: car.model || 'Unknown'
+          };
+        });
+      },
+      (error) => { console.error('Error fetching cars:', error); }
+    );
+  }
+
   getUserName(userId: number): string {
-    if (this.userNames[userId]) {
-      return this.userNames[userId];
+    return this.userNames[userId] || 'Loading...';
+  }
+
+  getVehicleDetails(vehicleId?: number): string {
+    if (!vehicleId || !this.vehicleDetails[vehicleId]) {
+      return 'Not Assigned';
     }
     
-    this.userService.getUserById(userId).subscribe(
-      (user) => {
-        console.log('Fetched user:', user);
-        this.userNames[userId] = user.username;
-      },
-      error => {
-        console.error('Error fetching user:', error);
-        this.userNames[userId] = 'Error';
-      }
-    );
-    
-    return 'Loading...';
+    const vehicle = this.vehicleDetails[vehicleId];
+    return `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
   }
 
   addDriver(): void {
-    if (this.licenseNumber && this.phoneNumber && this.status && this.userId !== null) {
+    if (this.licenseNumber && this.phoneNumber && this.status && this.userId !== null && this.affectedVehicleID !== null) {
       const newDriver: IDriver = {
         licenseNumber: this.licenseNumber,
         phoneNumber: this.phoneNumber,
         status: this.status,
-        userId: this.userId
+        userId: this.userId,
+        affectedVehicleID: this.affectedVehicleID
       };
 
       this.driverService.createDriver(newDriver).subscribe(
@@ -142,6 +160,7 @@ export class DriversComponent implements OnInit {
     this.phoneNumber = driver.phoneNumber;
     this.status = driver.status;
     this.userId = driver.userId;
+    this.affectedVehicleID = driver.affectedVehicleID;
     this.isEditing = true;
     this.showAddForm = true;
   }
@@ -153,9 +172,10 @@ export class DriversComponent implements OnInit {
         licenseNumber: this.licenseNumber,
         phoneNumber: this.phoneNumber,
         status: this.status,
-        userId: this.userId!
+        userId: this.userId!,
+        affectedVehicleID: this.affectedVehicleID!
       };
-
+  
       this.driverService.updateDriver(updatedDriver.id!, updatedDriver).subscribe(
         () => {
           const index = this.drivers.findIndex(d => d.id === updatedDriver.id);
@@ -192,5 +212,6 @@ export class DriversComponent implements OnInit {
     this.phoneNumber = '';
     this.status = '';
     this.userId = null;
+    this.affectedVehicleID = null;
   }
 }

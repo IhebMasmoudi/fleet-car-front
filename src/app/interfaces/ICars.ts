@@ -8,5 +8,6 @@ export interface ICars {
     mileage: number;
     status: string; // Available, In Maintenance, Assigned
     type: string; // Car, Truck, Van
+    photoUrl?: string; // URL to the car's photo
    
   }

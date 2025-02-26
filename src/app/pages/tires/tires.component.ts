@@ -40,7 +40,7 @@ import { MatMenuModule } from '@angular/material/menu';
 export class TiresComponent implements OnInit {
   cars: ICars[] = [];
   tires: ITire[] = [];
-  displayedColumns: string[] = ['id', 'brand', 'model', 'installationDate', 'mileageAtInstallation', 'actions'];
+  displayedColumns: string[] = ['brand', 'model', 'installationDate', 'mileageAtInstallation', 'actions'];
   newTire: ITire = {
     brand: '',
     model: '',
