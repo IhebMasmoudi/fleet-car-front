@@ -20,7 +20,10 @@
 
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Status</mat-label>
-            <input matInput type="text" [(ngModel)]="status" required />
+            <mat-select [(value)]="status" required>
+              <mat-option value="Active">Active</mat-option>
+              <mat-option value="Suspended">Suspended</mat-option>
+            </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-100">

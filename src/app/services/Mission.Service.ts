@@ -70,6 +70,18 @@ export class MissionsService {
     );
   }
 
+   /**
+   * Get missions by driver ID from the server.
+   * @param userId The ID of the driver to retrieve missions for.
+   * @returns An observable of an array of Mission objects.
+   */
+   getMissionsByDriver(userId: number): Observable<IMission[]> {
+    const url = `${this.apiUrl}/driver/${userId}`;
+    return this.http.get<IMission[]>(url).pipe(
+      this.handleResponse()
+    );
+  }
+
   /**
    * Handle HTTP response and only throw errors for non-200 statuses.
    */

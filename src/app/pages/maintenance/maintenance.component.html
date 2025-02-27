@@ -8,7 +8,7 @@
           <mat-card-title>{{ isEditing ? 'Edit Maintenance Record' : 'Add Maintenance Record' }}</mat-card-title>
           <mat-card-content>
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Type</mat-label>
+              <mat-label>Type of maintenance</mat-label>
               <input matInput [(ngModel)]="maintenanceType" required />
             </mat-form-field>
   
@@ -55,7 +55,7 @@
   
           <!-- Type Column -->
           <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <th mat-header-cell *matHeaderCellDef> Type  of maintenance</th>
             <td mat-cell *matCellDef="let record"> {{ record.type }} </td>
           </ng-container>
   

@@ -33,7 +33,12 @@
             
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Status</mat-label>
-              <input matInput type="text" [(ngModel)]="status" required />
+              <mat-select [(value)]="status" required>
+                <mat-option value="Planned">Planned</mat-option>
+                <mat-option value="Ongoing">Ongoing</mat-option>
+                <mat-option value="Completed">Completed</mat-option>
+                <mat-option value="Cancelled">Cancelled</mat-option>
+              </mat-select>
             </mat-form-field>
             
             <mat-form-field appearance="outline" class="w-100">

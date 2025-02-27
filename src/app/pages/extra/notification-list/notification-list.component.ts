@@ -1,0 +1,124 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Notification } from 'src/app/interfaces/Notification';
+import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/AuthService.Service';
+import { NotificationService } from 'src/app/services/Notification.Service';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Subscription } from 'rxjs';
+import { MatInputModule } from '@angular/material/input';
+@Component({
+  selector: 'app-notification-list',
+  templateUrl: './notification-list.component.html',
+  styleUrls: ['./notification-list.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    MatSnackBarModule,
+    MatInputModule
+  ],
+})
+export class NotificationListComponent implements OnInit, OnDestroy {
+  notifications: Notification[] = [];
+  isAdmin = false;
+  private subscriptions: Subscription = new Subscription();
+
+  constructor(
+    private notificationService: NotificationService,
+    private authService: AuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) { }
+
+  ngOnInit(): void {
+    this.subscriptions.add(
+      this.authService.isAdmin().subscribe(isAdmin => {
+        this.isAdmin = isAdmin;
+      })
+    );
+    
+    this.subscriptions.add(
+      this.notificationService.notifications$.subscribe(notifications => {
+        this.notifications = notifications;
+      })
+    );
+
+    this.subscriptions.add(
+      this.notificationService.getNotifications().subscribe({
+        error: (err) => {
+          console.error('Error fetching notifications:', err);
+          this.snackBar.open('Failed to load notifications', 'Close', { duration: 3000 });
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  markAsRead(notification: Notification): void {
+    if (!notification.isRead) {
+      this.subscriptions.add(
+        this.notificationService.markAsRead(notification.id).subscribe({
+          error: (err) => {
+            console.error('Error marking as read:', err);
+            this.snackBar.open('Failed to mark as read', 'Close', { duration: 3000 });
+          }
+        })
+      );
+    }
+    
+    if (notification.actionLink) {
+      this.router.navigateByUrl(notification.actionLink);
+    }
+  }
+
+  markAllAsRead(): void {
+    this.subscriptions.add(
+      this.notificationService.markAllAsRead().subscribe({
+        error: (err) => {
+          console.error('Error marking all as read:', err);
+          this.snackBar.open('Failed to mark all as read', 'Close', { duration: 3000 });
+        }
+      })
+    );
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleString();
+  }
+
+  createNotification(data: { title: string; message: string; targetRole: string }): void {
+    if (this.isAdmin) {
+      this.subscriptions.add(
+        this.notificationService.createNotification(data.title, data.message, data.targetRole).subscribe({
+          next: () => {
+            this.snackBar.open('Notification sent successfully', 'Close', { duration: 3000 });
+          },
+          error: (err) => {
+            console.error('Error creating notification:', err);
+            this.snackBar.open('Failed to create notification', 'Close', { duration: 3000 });
+          }
+        })
+      );
+    }
+  }
+}

@@ -47,5 +47,8 @@ export class HeaderComponent {
     
   }
 
+  navigateToTasks(): void {
+    this.router.navigate(['/extra/DriverTasks']);
+  }
 
   }

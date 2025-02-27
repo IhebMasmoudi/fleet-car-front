@@ -175,34 +175,24 @@
               <!-- Status and Type Fields -->
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Status</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter status"
-                    formControlName="status"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <mat-select placeholder="Select status" formControlName="status" required>
+                    <mat-option value="Available">Available</mat-option>
+                    <mat-option value="In Use">In Use</mat-option>
+                    <mat-option value="Under Maintenance">Under Maintenance</mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
                 <mat-label class="f-w-600 m-b-8 d-block">Type</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter type"
-                    formControlName="type"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                  <mat-select placeholder="Select type" formControlName="type" required>
+                    <mat-option value="Sedan">Sedan</mat-option>
+                    <mat-option value="SUV">SUV</mat-option>
+                    <mat-option value="Hatchback">Hatchback</mat-option>
+                    <mat-option value="Truck">Truck</mat-option>
+                    <mat-option value="Van">Van</mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
             </div>

@@ -10,12 +10,12 @@
           </div>
           <form [formGroup]="loginForm" class="m-t-30" (ngSubmit)="submit()">
             <!-- Username -->
-            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Username</mat-label>
+            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Email</mat-label>
             <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput formControlName="uname" placeholder="Enter your username" />
+              <input matInput formControlName="uname" placeholder="Enter your Email" />
               <mat-error *ngIf="uname?.invalid && (uname?.touched || uname?.dirty)">
-                <span *ngIf="uname?.errors?.['required']">Username is required!</span>
-                <span *ngIf="uname?.errors?.['minlength']">Username must be at least 6 characters long!</span>
+                <span *ngIf="uname?.errors?.['required']">Email is required!</span>
+                <span *ngIf="uname?.errors?.['minlength']">Email must be at least 6 characters long!</span>
               </mat-error>
             </mat-form-field>
 

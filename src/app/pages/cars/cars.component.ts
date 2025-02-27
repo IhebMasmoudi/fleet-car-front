@@ -21,6 +21,7 @@ import { forkJoin, finalize } from 'rxjs';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 @Component({
   selector: 'app-cars',
   templateUrl: './cars.component.html',
@@ -40,7 +41,8 @@ import { MatOptionModule } from '@angular/material/core';
     MatTooltipModule,
     MatDialogModule,
     MatStepperModule,
-    MatOptionModule
+    MatOptionModule,
+    MatSelectModule
   ],
 })
 export class CarsComponent implements OnInit {
