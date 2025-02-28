@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { UserService } from 'src/app/services/UserService.service';
 import { IUser } from 'src/app/interfaces/IUser';
 
@@ -17,13 +17,21 @@ export class AuthService {
 
   /**
    * Login user.
-   */
-  /**
-   * Login user.
+   * Assumes the backend returns an object with a "token" property.
    */
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password }).pipe(
-      this.handleResponse()
+    return this.http.post<{ token: string }>(`${this.apiUrl}/login`, { email, password }).pipe(
+      tap(response => {
+        if (response && response.token) {
+          this.setToken(response.token);
+          this.decodeAndSetRole(response.token);
+          // Optionally, load the user profile here if not done automatically
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Login error:', error);
+        return throwError(() => error);
+      })
     );
   }
 
@@ -36,12 +44,14 @@ export class AuthService {
     params.set('password', password);
     params.set('email', email);
     params.set('roleId', roleId.toString());
-
-    // Append query parameters to the URL
     const url = `${this.apiUrl}/register?${params.toString()}`;
 
     return this.http.post(url, null).pipe(
-      this.handleResponse()
+      tap(response => console.log('Register response:', response)),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Registration error:', error);
+        return throwError(() => error);
+      })
     );
   }
 
@@ -63,40 +73,6 @@ export class AuthService {
   }
 
   /**
-   * Handle HTTP response and only throw errors for non-200 statuses.
-   */
-  private handleResponse<T>() {
-    return (source: Observable<T>) => source.pipe(
-      catchError((error: HttpErrorResponse) => {
-        // Only throw errors for non-200 statuses
-        if (error.status !== 200) {
-          console.error('Error:', error);
-          return throwError(() => new Error(error.message || 'An unknown error occurred'));
-        }
-        // For 200 OK, return the response without throwing an error
-        return [error];
-      }),
-      map((response: any) => {
-        // Optionally log the response for debugging
-        console.log('Response:', response);
-        return response;
-      })
-    );
-  }
-
-  /**
-   * Check if the user is an admin.
-   */
-  isAdmin(): Observable<boolean> {
-    return this.loadUserProfile().pipe(
-      map(role => {
-        console.log('User role:', role);
-        return role === 'ADMIN';
-      })
-    );
-  }
-
-  /**
    * Get the JWT token from local storage.
    */
   getToken(): string | null {
@@ -108,6 +84,7 @@ export class AuthService {
    */
   setToken(token: string): void {
     localStorage.setItem('token', token);
+    this.token = token;
   }
 
   /**
@@ -159,10 +136,10 @@ export class AuthService {
    * Load the logged-in user's profile and return the role.
    * If the user ID is missing, decode the token and look up the user by email.
    */
-  private loadUserProfile(): Observable<string | null> {
+  loadUserProfile(): Observable<string | null> {
     let userId = this.getUserId();
     if (!userId && this.token) {
-      // Decode the token to get the email (assuming the token payload contains the email in "sub")
+      // Decode the token to get the email (assuming token payload contains "sub")
       const decoded = this.decodeToken(this.token);
       const email = decoded?.sub;
       if (email) {
@@ -172,10 +149,9 @@ export class AuthService {
           map((users: IUser[]) => {
             const foundUser = users.find(u => u.email === email);
             if (foundUser) {
-              // Store user details for later use
               this.setUserId(foundUser.id?.toString() || '');
               this.setUserName(foundUser.username);
-              this.setRole(foundUser.role); // Set role
+              this.setRole(foundUser.role);
               this.user = foundUser;
               console.log('User profile loaded by email:', foundUser);
               return foundUser.role;
@@ -184,7 +160,7 @@ export class AuthService {
               return null;
             }
           }),
-          catchError((err) => {
+          catchError(err => {
             console.error('Error fetching users:', err);
             return of(null);
           })
@@ -197,11 +173,11 @@ export class AuthService {
       return this.userService.getUserById(Number(userId)).pipe(
         map((user: IUser) => {
           this.user = user;
-          this.setRole(user.role); // Set role
+          this.setRole(user.role);
           console.log('User profile loaded:', user);
           return user.role;
         }),
-        catchError((err) => {
+        catchError(err => {
           console.error('Error fetching user profile:', err);
           return of(null);
         })
@@ -226,21 +202,41 @@ export class AuthService {
   }
 
   /**
-   * Decode JWT token and set the role in local storage.
+   * Decode JWT token and set the role and user details in local storage.
    */
   private decodeAndSetRole(token: string): void {
     try {
-      const base64Payload = token.split('.')[1];
-      const payload = atob(base64Payload);
-      const decoded = JSON.parse(payload);
-      const role = decoded.role; // Assuming the role is stored in the token payload
-      if (role) {
-        this.setRole(role);
-      } else {
-        console.error('Role not found in token payload:', decoded);
+      const decoded = this.decodeToken(token);
+      if (decoded) {
+        const role = decoded.role; // assuming token payload contains "role"
+        const userId = decoded.userId; // assuming token payload contains "userId"
+        const userName = decoded.username; // optionally, if available
+        if (role) {
+          this.setRole(role);
+        } else {
+          console.error('Role not found in token payload:', decoded);
+        }
+        if (userId) {
+          this.setUserId(userId.toString());
+        }
+        if (userName) {
+          this.setUserName(userName);
+        }
       }
     } catch (error) {
       console.error('Failed to decode token:', error);
     }
+  }
+
+  /**
+   * Check if the user is an admin.
+   */
+  isAdmin(): Observable<boolean> {
+    return this.loadUserProfile().pipe(
+      map(role => {
+        console.log('User role:', role);
+        return role === 'ADMIN';
+      })
+    );
   }
 }

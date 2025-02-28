@@ -1,6 +1,24 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
       <mat-card-title>Invoice Records</mat-card-title>
+      <a>&#8203;&#8203;&#8203;&#8203;&#8203;</a>
+      <!-- Filter Section -->
+      <div class="filter-container">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Filter by Status</mat-label>
+          <mat-select [(ngModel)]="filterStatus" (selectionChange)="applyFilters()">
+            <mat-option value="">All</mat-option>
+            <mat-option value="Paid">Paid</mat-option>
+            <mat-option value="Pending">Pending</mat-option>
+            <mat-option value="Unpaid">Unpaid</mat-option>
+          </mat-select>
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by Supplier or Vehicle">
+        </mat-form-field>
+      </div>
   
       <!-- Add/Edit Form -->
       <div *ngIf="showAddForm" class="form-container">
@@ -70,7 +88,7 @@
         <div class="action-buttons">
           <button mat-raised-button color="primary" class="add-btn" (click)="toggleAddForm()">Add Invoice</button>
         </div>
-        <table mat-table [dataSource]="dataSource" class="w-100">
+        <table mat-table [dataSource]="filteredDataSource" class="w-100">
   
           <!-- Issue Date Column -->
           <ng-container matColumnDef="issueDate">

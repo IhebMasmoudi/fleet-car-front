@@ -1,21 +1,26 @@
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Notification } from 'src/app/interfaces/Notification';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatBadge } from '@angular/material/badge';
 import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatOptionModule} from '@angular/material/core';
+import {MatBadgeModule} from '@angular/material/badge';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {FormsModule} from '@angular/forms';
+
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.component.html',
-  styleUrls: ['./notification.component.scss'],
   imports: [
     CommonModule,
     MatCardModule,
@@ -23,7 +28,14 @@ import { Subscription } from 'rxjs';
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    MatBadge
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatBadgeModule,
+    MatSnackBarModule,
+    FormsModule
+  
   ],
 })
 export class NotificationComponent implements OnInit, OnDestroy {
@@ -34,47 +46,47 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
+    private authService: AuthService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    // Check if user is admin
-    const userStr = localStorage.getItem('currentUser');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      this.isAdmin = user.role === 'ADMIN';
-    }
-    
-    // Subscribe to notifications
+    // Use the authService to get role instead of localStorage directly.
+    this.isAdmin = this.authService.getRole() === 'ADMIN';
+
+    // Subscribe to notifications and unread count observables.
     this.subscriptions.push(
       this.notificationService.notifications$.subscribe(notifications => {
         this.notifications = notifications;
       })
     );
-    
-    // Subscribe to unread count
+
     this.subscriptions.push(
       this.notificationService.unreadCount$.subscribe(count => {
         this.unreadCount = count;
       })
     );
-    
-    // Load notifications
+
+    // Load initial notifications
     this.notificationService.getNotifications().subscribe();
     this.notificationService.getUnreadCount().subscribe();
   }
 
   ngOnDestroy(): void {
-    // Clean up subscriptions
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   markAsRead(notification: Notification): void {
     if (!notification.isRead) {
-      this.notificationService.markAsRead(notification.id).subscribe();
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: () => {
+          notification.isRead = true;
+        },
+        error: err => {
+          console.error('Error marking as read:', err);
+        }
+      });
     }
-    
-    // Handle notification action if there's an action link
     if (notification.actionLink) {
       this.router.navigateByUrl(notification.actionLink);
     }
@@ -89,7 +101,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
     if (diffMins < 1) {
       return 'just now';
     } else if (diffMins < 60) {
@@ -101,5 +112,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
       const days = Math.floor(diffMins / 1440);
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
+  }
+
+
+  navigateToNotificationList(): void {
+    this.router.navigate(['/extra/notification-list']);
   }
 }

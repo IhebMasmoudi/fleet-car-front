@@ -62,5 +62,16 @@ export class AppBlogCardsComponent {
       comments: 12,
       date: 'Sat, Dec 2025',
     },
+    {
+      id: 4,
+      time: '3 mins Read',
+      imgSrc: '/assets/images/blog/blog-img4.jpg',
+      user: '/assets/images/profile/user-4.jpg',
+      title: 'New trends in technology for 2026',
+      views: '1,234',
+      category: 'Tech',
+      comments: 5,
+      date: 'Tue, Jan 2026',
+    },
   ];
 }

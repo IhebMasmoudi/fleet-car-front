@@ -1,182 +1,168 @@
+<!-- cars.component.html -->
 <mat-card class="cardWithShadow">
   <mat-card-content>
-    <mat-card-title>Cars</mat-card-title>
- <!-- Button to open the Add Car Form -->
- <div class="d-flex justify-content-end mt-3">
-  <button mat-raised-button color="primary" (click)="openAddForm()">
-    <mat-icon>add</mat-icon> Add Car
-  </button>
-</div>
+    <mat-card-title>Cars Management</mat-card-title>
 
-    <!-- Cars Grid View: Shown when neither form nor documents view is active -->
-   <!-- Cars List -->
-<div class="cars-grid">
-  <mat-card *ngFor="let car of cars" class="car-tile">
-    <!-- Card Header -->
-    <mat-card-header class="car-header">
-    </mat-card-header>
-
-    <!-- Photo Section -->
-    <div class="photo-wrapper">
-      <img 
-      *ngIf="car.photoUrl" 
-        [src]="car.photoUrl"
-        alt="Car Photo"
-        class="car-image"
-      />
-      <div *ngIf="!car.photoUrl" class="no-photo">
-        <mat-icon>photo</mat-icon> No photo available
+    <!-- Filter Dropdown Section -->
+    <div class="filter-container" *ngIf="!showForm && !showDocuments">
+      <div class="table-header">
+        <button mat-raised-button color="primary" class="add-btn" (click)="openAddForm()">
+          <mat-icon>add</mat-icon> Add Car
+        </button>
+        <button mat-stroked-button [matMenuTriggerFor]="filterMenu" class="filter-btn">
+          <mat-icon>filter_list</mat-icon> Filters
+        </button>
       </div>
+
+      <mat-menu #filterMenu="matMenu" class="filter-menu">
+        <div class="filter-content" (click)="$event.stopPropagation()">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Brand</mat-label>
+            <input matInput [(ngModel)]="filterBrand" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>directions_car</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Model</mat-label>
+            <input matInput [(ngModel)]="filterModel" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>category</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>License Plate</mat-label>
+            <input matInput [(ngModel)]="filterLicensePlate" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>confirmation_number</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Min Year</mat-label>
+            <input matInput type="number" [(ngModel)]="filterMinYear" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Max Year</mat-label>
+            <input matInput type="number" [(ngModel)]="filterMaxYear" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>calendar_today</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(value)]="filterStatus" (selectionChange)="applyFilters()">
+              <mat-option *ngFor="let status of availableStatuses" [value]="status">{{status}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Type</mat-label>
+            <mat-select [(value)]="filterType" (selectionChange)="applyFilters()">
+              <mat-option *ngFor="let type of availableTypes" [value]="type">{{type}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-icon-button class="sort-btn" (click)="toggleBrandSort()" 
+                  [matTooltip]="sortBrandAsc ? 'Sort Brand Descending' : 'Sort Brand Ascending'">
+            <mat-icon>{{sortBrandAsc ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+          </button>
+
+          <button mat-stroked-button color="warn" (click)="resetFilters()" class="reset-btn">
+            <mat-icon>clear</mat-icon> Reset Filters
+          </button>
+        </div>
+      </mat-menu>
     </div>
 
-    <!-- Car Details -->
-    <mat-card-content class="details-section">
-      <mat-card-title>{{ car.brand }} {{ car.model }}</mat-card-title>
-      <mat-card-subtitle>{{ car.licensePlate }}</mat-card-subtitle>
-    </mat-card-content>
+    <!-- Cars Grid -->
+    <div *ngIf="!showForm && !showDocuments" class="cars-container">
+      <div class="cars-grid" *ngIf="!loading; else loadingSpinner">
+        <mat-card *ngFor="let car of cars" class="car-tile">
+          <div class="photo-wrapper">
+            <img *ngIf="car.photoUrl" [src]="car.photoUrl" alt="Car Photo" class="car-image"/>
+            <div *ngIf="!car.photoUrl" class="no-photo">
+              <mat-icon>photo</mat-icon> No photo
+            </div>
+          </div>
+          <mat-card-content class="details-section">
+            <mat-card-title>{{ car.brand }} {{ car.model }}</mat-card-title>
+            <mat-card-subtitle>{{ car.licensePlate }}</mat-card-subtitle>
+            <p>Year: {{ car.year }}</p>
+            <p>Status: {{ car.status }}</p>
+          </mat-card-content>
+          <mat-card-actions class="action-row">
+            <button mat-icon-button color="primary" (click)="startEdit(car)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteCar(car.id!)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="seeDetails(car.id!)" matTooltip="Details">
+              <mat-icon>info</mat-icon>
+            </button>
+            <button mat-icon-button (click)="uploadDocument(car.id!)" matTooltip="Upload Document">
+              <mat-icon>upload</mat-icon>
+            </button>
+            <button mat-icon-button (click)="viewDocuments(car.id!)" matTooltip="View Documents">
+              <mat-icon>folder</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+      <ng-template #loadingSpinner>
+        <div class="text-center p-4">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Loading cars...</p>
+        </div>
+      </ng-template>
+    </div>
 
-    <!-- Action Buttons -->
-    <mat-card-actions class="action-row">
-      <button mat-icon-button color="primary" (click)="startEdit(car)">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="deleteCar(car.id!)">
-        <mat-icon>delete</mat-icon>
-      </button>
-      <button mat-icon-button color="accent" (click)="seeDetails(car.id!)">
-        <mat-icon>info</mat-icon>
-      </button>
-      <button mat-icon-button (click)="uploadDocument(car.id!)">
-        <mat-icon>upload</mat-icon>
-      </button>
-      <button mat-icon-button (click)="viewDocuments(car.id!)">
-        <mat-icon>folder</mat-icon>
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
-
-    <!-- Form View (Add/Edit Car) - Kept exactly as in the original -->
-    <ng-container *ngIf="showForm">
-      <!-- Original form code - unchanged -->
-      <form
-        [formGroup]="carForm"
-        (ngSubmit)="isEditing ? saveEditedCar() : addCar()"
-      >
-        <mat-card class="cardWithShadow theme-card">
-          <mat-card-header>
-            <mat-card-title class="m-b-0">{{
-              isEditing ? "Edit Car" : "Add Car"
-            }}</mat-card-title>
-          </mat-card-header>
-          <mat-card-content class="b-t-1">
+    <!-- Add/Edit Form -->
+    <div *ngIf="showForm" class="form-container">
+      <form [formGroup]="carForm" (ngSubmit)="isEditing ? saveEditedCar() : addCar()">
+        <mat-card class="form-card">
+          <mat-card-title>{{ isEditing ? "Edit Car" : "Add Car" }}</mat-card-title>
+          <mat-card-content>
             <div class="row">
-              <!-- Brand and Model Fields -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Brand</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter car brand"
-                    formControlName="brand"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Brand</mat-label>
+                  <input matInput formControlName="brand" required placeholder="Enter car brand"/>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Model</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter car model"
-                    formControlName="model"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <!-- License Plate and Year Fields -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block"
-                  >License Plate</mat-label
-                >
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter license plate"
-                    formControlName="licensePlate"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Model</mat-label>
+                  <input matInput formControlName="model" required placeholder="Enter car model"/>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Year</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Enter car year"
-                    formControlName="year"
-                    required
-                  />
-                </mat-form-field>
-              </div>
-              <!-- Fuel Type and Mileage Fields -->
-              <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Fuel Type</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="text"
-                    placeholder="Enter fuel type"
-                    formControlName="fuelType"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>License Plate</mat-label>
+                  <input matInput formControlName="licensePlate" required placeholder="Enter license plate"/>
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Mileage</mat-label>
-                <mat-form-field
-                  appearance="outline"
-                  class="w-100"
-                  color="primary"
-                >
-                  <input
-                    matInput
-                    type="number"
-                    placeholder="Enter mileage"
-                    formControlName="mileage"
-                    required
-                  />
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Year</mat-label>
+                  <input matInput type="number" formControlName="year" required placeholder="Enter year"/>
                 </mat-form-field>
               </div>
-              <!-- Status and Type Fields -->
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Status</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <mat-select placeholder="Select status" formControlName="status" required>
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Fuel Type</mat-label>
+                  <input matInput formControlName="fuelType" required placeholder="Enter fuel type"/>
+                </mat-form-field>
+              </div>
+              <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Mileage (km)</mat-label>
+                  <input matInput type="number" formControlName="mileage" required placeholder="Enter mileage"/>
+                  <span matSuffix>km</span>
+                </mat-form-field>
+              </div>
+              <div class="col-lg-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Status</mat-label>
+                  <mat-select formControlName="status" required>
                     <mat-option value="Available">Available</mat-option>
                     <mat-option value="In Use">In Use</mat-option>
                     <mat-option value="Under Maintenance">Under Maintenance</mat-option>
@@ -184,9 +170,9 @@
                 </mat-form-field>
               </div>
               <div class="col-lg-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Type</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <mat-select placeholder="Select type" formControlName="type" required>
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Type</mat-label>
+                  <mat-select formControlName="type" required>
                     <mat-option value="Sedan">Sedan</mat-option>
                     <mat-option value="SUV">SUV</mat-option>
                     <mat-option value="Hatchback">Hatchback</mat-option>
@@ -196,130 +182,72 @@
                 </mat-form-field>
               </div>
             </div>
-            <!-- Submit and Cancel Buttons -->
-            <div class="m-t-12 d-flex justify-content-between">
-              <button
-                mat-flat-button
-                color="primary"
-                class="m-r-8"
-                [disabled]="carForm.invalid"
-              >
+            <div class="form-actions">
+              <button mat-raised-button color="primary" [disabled]="carForm.invalid || loading">
                 {{ isEditing ? "Save Changes" : "Add Car" }}
               </button>
-              <button mat-stroked-button color="warn" (click)="closeForm()">
-                Cancel
-              </button>
+              <button mat-stroked-button color="warn" (click)="closeForm()" [disabled]="loading">Cancel</button>
             </div>
           </mat-card-content>
         </mat-card>
       </form>
-    </ng-container>
+    </div>
 
-    <!-- Documents View - Kept exactly as in the original -->
-    <ng-container *ngIf="showDocuments">
-      <!-- Original document view code - unchanged -->
-      <mat-card class="cardWithShadow theme-card">
-        <mat-card-header>
-          <mat-card-title class="m-b-0"
-            >Documents for Car #{{ selectedCarId }}</mat-card-title
-          >
-        </mat-card-header>
-        <mat-card-content class="b-t-1">
-          <!-- Loading Spinner -->
+    <!-- Documents View -->
+    <div *ngIf="showDocuments" class="form-container">
+      <mat-card class="form-card">
+        <mat-card-title>Documents for Car #{{ selectedCarId }}</mat-card-title>
+        <mat-card-content>
           <div *ngIf="loading" class="text-center p-4">
             <mat-spinner diameter="40"></mat-spinner>
-            <p class="m-t-8">Loading documents...</p>
+            <p>Loading documents...</p>
           </div>
-          <!-- No Documents Found -->
-          <div
-            *ngIf="!loading && (!documents || documents.length === 0)"
-            class="text-center p-4"
-          >
-            <mat-icon style="font-size: 48px" color="primary"
-              >folder_open</mat-icon
-            >
-            <p class="m-t-8">No documents found for this car.</p>
+          <div *ngIf="!loading && (!documents || documents.length === 0)" class="text-center p-4">
+            <mat-icon style="font-size: 48px" color="primary">folder_open</mat-icon>
+            <p>No documents found for this car.</p>
           </div>
-          <!-- Documents Table -->
-          <div
-            *ngIf="!loading && documents && documents.length > 0"
-            class="m-t-16 table-responsive"
-          >
+          <div *ngIf="!loading && documents && documents.length > 0" class="table-responsive">
             <table mat-table [dataSource]="documents" class="w-100">
-              <!-- ID Column -->
               <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-                  ID
-                </th>
-                <td mat-cell *matCellDef="let doc">{{ doc.id }}</td>
+                <th mat-header-cell *matHeaderCellDef> ID </th>
+                <td mat-cell *matCellDef="let doc"> {{ doc.id }} </td>
               </ng-container>
-              <!-- Document Name Column -->
               <ng-container matColumnDef="documentName">
-                <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-                  Name
-                </th>
-                <td mat-cell *matCellDef="let doc">{{ doc.documentName }}</td>
+                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <td mat-cell *matCellDef="let doc"> {{ doc.documentName }} </td>
               </ng-container>
-              <!-- Document Type Column -->
               <ng-container matColumnDef="documentType">
-                <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-                  Type
-                </th>
-                <td mat-cell *matCellDef="let doc">{{ doc.documentType }}</td>
+                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <td mat-cell *matCellDef="let doc"> {{ doc.documentType }} </td>
               </ng-container>
-              <!-- Actions Column for Documents -->
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
-                  Actions
-                </th>
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
                 <td mat-cell *matCellDef="let doc">
-                  <!-- New View Button -->
-                  <button
-                    mat-icon-button
-                    color="accent"
-                    matTooltip="View"
-                    (click)="viewDocument(doc.vehicleID, doc.documentName)"
-                  >
+                  <button mat-icon-button color="accent" (click)="viewDocument(doc.vehicleID, doc.documentName)" matTooltip="View">
                     <mat-icon>visibility</mat-icon>
                   </button>
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    matTooltip="Download"
-                    (click)="downloadDocument(doc.vehicleID, doc.documentName)"
-                  >
+                  <button mat-icon-button color="primary" (click)="downloadDocument(doc.vehicleID, doc.documentName)" matTooltip="Download">
                     <mat-icon>download</mat-icon>
                   </button>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    matTooltip="Delete"
-                    (click)="deleteDocument(doc.id)"
-                  >
+                  <button mat-icon-button color="warn" (click)="deleteDocument(doc.id)" matTooltip="Delete">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
               </ng-container>
-
               <tr mat-header-row *matHeaderRowDef="documentColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: documentColumns"></tr>
             </table>
           </div>
-          <!-- Buttons for Documents View -->
-          <div class="d-flex justify-content-between m-t-16">
-            <button
-              mat-raised-button
-              color="primary"
-              (click)="uploadDocument(selectedCarId!)"
-            >
+          <div class="form-actions">
+            <button mat-raised-button color="primary" (click)="uploadDocument(selectedCarId!)" [disabled]="loading">
               <mat-icon>upload</mat-icon> Upload New Document
             </button>
-            <button mat-stroked-button color="warn" (click)="closeDocuments()">
+            <button mat-stroked-button color="warn" (click)="closeDocuments()" [disabled]="loading">
               <mat-icon>arrow_back</mat-icon> Back to Cars
             </button>
           </div>
         </mat-card-content>
       </mat-card>
-    </ng-container>
+    </div>
   </mat-card-content>
 </mat-card>

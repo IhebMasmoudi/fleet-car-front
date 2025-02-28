@@ -58,5 +58,13 @@ export class AppEarningReportsComponent {
             icon: 'solar:waterdrops-line-duotone',
             badge: '9.25%',
         },
+        {
+            id: 6,
+            color: 'success',
+            title: 'New Subscribers',
+            subtitle: 'and +2 more',
+            icon: 'solar:users-group-rounded-bold-duotone',
+            badge: '150%',
+        },
     ];
 }

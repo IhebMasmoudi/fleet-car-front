@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DocumentService } from 'src/app/services/document.service';
 import { UserService } from 'src/app/services/UserService.service';
 import { IUser } from 'src/app/interfaces/IUser';
+import { MatTooltip } from '@angular/material/tooltip';
 @Component({
   selector: 'app-car-details',
   templateUrl: './car-detaills.component.html',
@@ -41,7 +42,8 @@ import { IUser } from 'src/app/interfaces/IUser';
     MatNativeDateModule,
     MatTabsModule,
     MatListModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltip
   ],
 })
 export class CarDetailsComponent implements OnInit {

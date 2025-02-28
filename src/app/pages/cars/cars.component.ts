@@ -1,3 +1,4 @@
+// cars.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,16 +17,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { forkJoin, finalize } from 'rxjs';
-import { MatStepperModule } from '@angular/material/stepper';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatOptionModule } from '@angular/material/core';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { forkJoin, finalize } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-cars',
-  templateUrl: './cars.component.html',
-  styleUrls: ['./cars.component.scss'],
   standalone: true,
   imports: [
     MatTableModule,
@@ -40,40 +40,43 @@ import { MatSelectModule } from '@angular/material/select';
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatDialogModule,
-    MatStepperModule,
-    MatOptionModule,
-    MatSelectModule
+    MatSnackBarModule,
+    MatSelectModule,
+    FormsModule
   ],
+  templateUrl: './cars.component.html',
+  styleUrls: ['./cars.component.scss']
 })
 export class CarsComponent implements OnInit {
-  // Cars data
   cars: ICars[] = [];
-  displayedColumns: string[] = ['id', 'model', 'brand', 'licensePlate', 'year', 'fuelType', 'mileage', 'status', 'type', 'actions'];
   carForm: FormGroup;
   isEditing = false;
   showForm = false;
-  
-  // Documents data
-  documents: Document[] = [];
-  documentColumns: string[] = ['id', 'documentName', 'documentType', 'actions'];
   showDocuments = false;
   selectedCarId: number | null = null;
-  
-  // Loading states
+  documents: Document[] = [];
+  documentColumns: string[] = ['id', 'documentName', 'documentType', 'actions'];
+
+  // Filter properties
+  filterBrand: string = '';
+  filterModel: string = '';
+  filterLicensePlate: string = '';
+  filterMinYear: number | null = null;
+  filterMaxYear: number | null = null;
+  filterStatus: string = '';
+  filterType: string = '';
+  sortBrandAsc: boolean = true;
+  availableStatuses: string[] = ['All', 'Available', 'In Use', 'Under Maintenance'];
+  availableTypes: string[] = ['All', 'Sedan', 'SUV', 'Hatchback', 'Truck', 'Van'];
+
   loading = false;
-  addingCar = false;
-  editingCar = false;
-  deletingCar = false;
-  uploadingDocument = false;
-  viewCarId: number | null = null;
 
   constructor(
-    private carsService: CarsService, 
-    private fb: FormBuilder, 
+    private carsService: CarsService,
+    private fb: FormBuilder,
     private router: Router,
     private documentService: DocumentService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private snackBar: MatSnackBar
   ) {
     this.initializeForm();
   }
@@ -93,20 +96,19 @@ export class CarsComponent implements OnInit {
       mileage: [0, [Validators.required, Validators.min(0)]],
       status: ['', Validators.required],
       type: ['', Validators.required],
+      photoUrl: [null] // Optional field for photo URL
     });
   }
 
-  // ------------------------------------------------------------------------------------
-  // Cars Methods
-  // ------------------------------------------------------------------------------------
   fetchCars(): void {
     this.loading = true;
     this.carsService.getAllVehicles()
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (cars) => { 
-          this.cars = cars;
+        next: (cars) => {
+          this.cars = cars.map(car => ({ ...car, loadingPhoto: false }));
           this.loadCarPhotos();
+          this.applyFilters();
         },
         error: (error) => {
           console.error('Error fetching cars:', error);
@@ -114,35 +116,31 @@ export class CarsComponent implements OnInit {
         }
       });
   }
-  
+
   private loadCarPhotos(): void {
-    if (!this.cars || this.cars.length === 0) return;
-    
-    const documentRequests = this.cars.map(car => 
+    const photoRequests = this.cars.map(car =>
       this.documentService.getDocumentsByVehicleId(car.id!)
+        .pipe(
+          switchMap(documents => {
+            const photoDoc = documents.find(doc => doc.documentName.toLowerCase() === 'photo');
+            if (!photoDoc) return of(null);
+            return this.documentService.downloadDocument(car.id!, photoDoc.documentName)
+              .pipe(map((blob: Blob) => ({ carId: car.id!, blob })));
+          }),
+          finalize(() => car.loadingPhoto = false)
+        )
     );
-    
-    forkJoin(documentRequests).subscribe({
-      next: (documentsArray) => {
-        this.cars.forEach((car, index) => {
-          const documents = documentsArray[index];
-          if (!documents || documents.length === 0) return;
-          
-          const photoDoc = documents.find(doc => 
-            doc.documentName.toLowerCase() === 'photo'
-          );
-          
-          if (photoDoc) {
-            this.documentService.downloadDocument(car.id!, photoDoc.documentName)
-              .subscribe(blob => {
-                car.photoUrl = URL.createObjectURL(blob);
-              });
+
+    forkJoin(photoRequests).subscribe({
+      next: (results) => {
+        results.forEach(result => {
+          if (result) {
+            const car = this.cars.find(c => c.id === result.carId);
+            if (car) car.photoUrl = URL.createObjectURL(result.blob);
           }
         });
       },
-      error: (error) => {
-        console.error('Error loading car photos:', error);
-      }
+      error: (error) => console.error('Error loading car photos:', error)
     });
   }
 
@@ -150,10 +148,7 @@ export class CarsComponent implements OnInit {
     this.showForm = true;
     this.showDocuments = false;
     this.isEditing = false;
-    this.carForm.reset({
-      year: new Date().getFullYear(),
-      mileage: 0
-    });
+    this.carForm.reset({ year: new Date().getFullYear(), mileage: 0 });
   }
 
   startEdit(car: ICars): void {
@@ -165,16 +160,15 @@ export class CarsComponent implements OnInit {
 
   addCar(): void {
     if (this.carForm.invalid) return;
-    
-    this.addingCar = true;
+    this.loading = true;
     this.carsService.createVehicle(this.carForm.value)
-      .pipe(finalize(() => this.addingCar = false))
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (car) => {
           this.cars.push(car);
-          this.showNotification('Car added successfully!', 'success');
           this.closeForm();
-          this.fetchCars(); // Refresh to ensure consistency
+          this.applyFilters();
+          this.showNotification('Car added successfully!', 'success');
         },
         error: (error) => {
           console.error('Error adding car:', error);
@@ -185,21 +179,17 @@ export class CarsComponent implements OnInit {
 
   saveEditedCar(): void {
     if (this.carForm.invalid) return;
-    
-    this.editingCar = true;
+    this.loading = true;
     const carId = this.carForm.value.id;
-    
     this.carsService.updateVehicle(carId, this.carForm.value)
-      .pipe(finalize(() => this.editingCar = false))
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: () => {
           const index = this.cars.findIndex(car => car.id === carId);
-          if (index !== -1) { 
-            this.cars[index] = this.carForm.value; 
-          }
-          this.showNotification('Car updated successfully!', 'success');
+          if (index !== -1) this.cars[index] = { ...this.carForm.value };
           this.closeForm();
-          this.fetchCars(); // Refresh to ensure consistency
+          this.applyFilters();
+          this.showNotification('Car updated successfully!', 'success');
         },
         error: (error) => {
           console.error('Error updating car:', error);
@@ -210,18 +200,13 @@ export class CarsComponent implements OnInit {
 
   deleteCar(id: number): void {
     if (!confirm('Are you sure you want to delete this car?')) return;
-    
-    this.deletingCar = true;
-    this.viewCarId = id;
-    
+    this.loading = true;
     this.carsService.deleteVehicle(id)
-      .pipe(finalize(() => {
-        this.deletingCar = false;
-        this.viewCarId = null;
-      }))
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: () => {
           this.cars = this.cars.filter(car => car.id !== id);
+          this.applyFilters();
           this.showNotification('Car deleted successfully!', 'success');
         },
         error: (error) => {
@@ -240,13 +225,69 @@ export class CarsComponent implements OnInit {
     this.isEditing = false;
   }
 
-  trackByCarId(index: number, car: ICars): number | undefined {
-    return car.id;
+  applyFilters(): void {
+    let filteredData = [...this.cars];
+
+    if (this.filterBrand) {
+      filteredData = filteredData.filter(car => 
+        car.brand.toLowerCase().includes(this.filterBrand.toLowerCase())
+      );
+    }
+
+    if (this.filterModel) {
+      filteredData = filteredData.filter(car => 
+        car.model.toLowerCase().includes(this.filterModel.toLowerCase())
+      );
+    }
+
+    if (this.filterLicensePlate) {
+      filteredData = filteredData.filter(car => 
+        car.licensePlate.toLowerCase().includes(this.filterLicensePlate.toLowerCase())
+      );
+    }
+
+    if (this.filterMinYear !== null) {
+      filteredData = filteredData.filter(car => car.year >= this.filterMinYear!);
+    }
+    if (this.filterMaxYear !== null) {
+      filteredData = filteredData.filter(car => car.year <= this.filterMaxYear!);
+    }
+
+    if (this.filterStatus && this.filterStatus !== 'All') {
+      filteredData = filteredData.filter(car => 
+        car.status.toLowerCase() === this.filterStatus.toLowerCase()
+      );
+    }
+
+    if (this.filterType && this.filterType !== 'All') {
+      filteredData = filteredData.filter(car => 
+        car.type.toLowerCase() === this.filterType.toLowerCase()
+      );
+    }
+
+    filteredData.sort((a, b) => 
+      this.sortBrandAsc ? a.brand.localeCompare(b.brand) : b.brand.localeCompare(a.brand)
+    );
+
+    this.cars = filteredData;
   }
 
-  // -------------------------
-  // Documents Methods
-  // -------------------------
+  resetFilters(): void {
+    this.filterBrand = '';
+    this.filterModel = '';
+    this.filterLicensePlate = '';
+    this.filterMinYear = null;
+    this.filterMaxYear = null;
+    this.filterStatus = '';
+    this.filterType = '';
+    this.fetchCars();
+  }
+
+  toggleBrandSort(): void {
+    this.sortBrandAsc = !this.sortBrandAsc;
+    this.applyFilters();
+  }
+
   uploadDocument(carId: number): void {
     const inputElement = document.createElement('input');
     inputElement.type = 'file';
@@ -255,25 +296,19 @@ export class CarsComponent implements OnInit {
     inputElement.onchange = (event: any) => {
       const file: File = event.target.files[0];
       if (file) {
-        const documentName = prompt('Enter Document Name:', file.name.split('.')[0] || 'Document');
+        const documentName = prompt('Enter Document Name:', file.name.split('.')[0] || 'Document') || '';
         const documentType = file.name.split('.').pop()?.toLowerCase() || 'pdf';
         
         if (documentName) {
-          this.uploadingDocument = true;
-          this.viewCarId = carId;
-          
+          this.loading = true;
           this.documentService.uploadDocument(carId, documentName, documentType, file)
-            .pipe(finalize(() => {
-              this.uploadingDocument = false;
-              this.viewCarId = null;
-            }))
+            .pipe(finalize(() => this.loading = false))
             .subscribe({
               next: () => {
                 this.showNotification('Document uploaded successfully!', 'success');
                 if (this.showDocuments && this.selectedCarId === carId) {
                   this.fetchDocumentsForCar(carId);
                 }
-                // If this is a photo document, refresh car list to show it
                 if (documentName.toLowerCase() === 'photo') {
                   this.fetchCars();
                 }
@@ -301,17 +336,11 @@ export class CarsComponent implements OnInit {
     this.documentService.getDocumentsByVehicleId(carId)
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (documents) => {
-          this.documents = documents;
-        },
-        error: (error) => {
-          console.error('Error fetching documents:', error);
-          this.showNotification('Failed to load documents', 'error');
-        }
+        next: (documents) => this.documents = documents,
+        error: (error) => this.showNotification('Failed to load documents', 'error')
       });
   }
 
-  // Download Document
   downloadDocument(vehicleID: number, documentName: string): void {
     this.loading = true;
     this.documentService.downloadDocument(vehicleID, documentName)
@@ -327,14 +356,10 @@ export class CarsComponent implements OnInit {
           document.body.removeChild(a);
           window.URL.revokeObjectURL(url);
         },
-        error: (error) => {
-          console.error('Error downloading document:', error);
-          this.showNotification('Failed to download document', 'error');
-        }
+        error: (error) => this.showNotification('Failed to download document', 'error')
       });
   }
 
-  // View Document: Open the file in a new tab/window
   viewDocument(vehicleID: number, documentName: string): void {
     this.loading = true;
     this.documentService.downloadDocument(vehicleID, documentName)
@@ -344,16 +369,12 @@ export class CarsComponent implements OnInit {
           const url = window.URL.createObjectURL(blob);
           window.open(url, '_blank');
         },
-        error: (error) => {
-          console.error('Error viewing document:', error);
-          this.showNotification('Failed to view document', 'error');
-        }
+        error: (error) => this.showNotification('Failed to view document', 'error')
       });
   }
 
   deleteDocument(documentId: number): void {
     if (!confirm('Are you sure you want to delete this document?')) return;
-    
     this.loading = true;
     this.documentService.deleteDocument(documentId)
       .pipe(finalize(() => this.loading = false))
@@ -361,11 +382,9 @@ export class CarsComponent implements OnInit {
         next: () => {
           this.documents = this.documents.filter(doc => doc.id !== documentId);
           this.showNotification('Document deleted successfully!', 'success');
+          this.fetchCars(); // Refresh in case a photo was deleted
         },
-        error: (error) => {
-          console.error('Error deleting document:', error);
-          this.showNotification('Failed to delete document', 'error');
-        }
+        error: (error) => this.showNotification('Failed to delete document', 'error')
       });
   }
 
@@ -373,8 +392,7 @@ export class CarsComponent implements OnInit {
     this.showDocuments = false;
     this.selectedCarId = null;
   }
-  
-  // Helper method for notifications
+
   private showNotification(message: string, type: 'success' | 'error'): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,

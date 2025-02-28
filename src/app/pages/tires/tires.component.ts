@@ -1,6 +1,9 @@
+// tires.component.ts
 import { Component, OnInit } from '@angular/core';
 import { TiresService } from '../../services/Tires.Service';
 import { ITire } from '../../interfaces/ITire';
+import { CarsService } from '../../services/Cars.service';
+import { ICars } from '../../interfaces/ICars';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,11 +14,9 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { CarsService } from '../../services/Cars.service';
-import { ICars } from '../../interfaces/ICars';
-import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-tires',
   templateUrl: './tires.component.html',
@@ -32,181 +33,231 @@ import { MatMenuModule } from '@angular/material/menu';
     MatIconModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatOptionModule,
     MatSelectModule,
-    MatMenuModule
+    MatMenuModule,
+    MatTooltipModule
   ],
 })
 export class TiresComponent implements OnInit {
   cars: ICars[] = [];
   tires: ITire[] = [];
-  displayedColumns: string[] = ['brand', 'model', 'installationDate', 'mileageAtInstallation', 'actions'];
-  newTire: ITire = {
-    brand: '',
-    model: '',
-    installationDate: '',
-    mileageAtInstallation: 0,
-    replacementReason: '',
-    vehicleId: 0,
-  };
-  editedTire: ITire = {
-    id: 0,
-    brand: '',
-    model: '',
-    installationDate: '',
-    mileageAtInstallation: 0,
-    replacementReason: '',
-   vehicleId: 0,
-  };
+  displayedColumns: string[] = ['brand', 'model', 'installationDate', 'mileageAtInstallation', 'vehicle', 'actions'];
+
+  // Form data
+  tireForm: ITire = this.initTireForm();
   isEditing = false;
   showForm = false;
 
-  constructor(private tiresService: TiresService, private carsService: CarsService) {}
+  // Filter properties
+  filterBrand = '';
+  filterModel = '';
+  filterStartDate: Date | null = null;
+  filterEndDate: Date | null = null;
+  filterMinMileage: number | null = null;
+  filterMaxMileage: number | null = null;
+  filterVehicle = '';
+  sortMileageAsc = true;
+
+  constructor(
+    private tiresService: TiresService,
+    private carsService: CarsService
+  ) {}
 
   ngOnInit(): void {
     this.fetchTires();
     this.fetchCars();
   }
 
-  /**
-   * Fetch all cars from the server.
-   */
-  fetchCars(): void {
-    this.carsService.getAllVehicles().subscribe(
-      (cars) => {
-        this.cars = cars;
-      },
-      (error) => {
-        console.error('Error fetching cars:', error);
-      }
-    );
-  }
-
-  /**
-   * Fetch all tires from the server.
-   */
-  fetchTires(): void {
-    this.tiresService.getAllTires().subscribe(
-      (tires) => {
-        this.tires = tires;
-      },
-      (error) => {
-        console.error('Error fetching tires:', error);
-      }
-    );
-  }
-
-  /**
-   * Open the form in "add" mode.
-   */
-  openAddForm(): void {
-    this.showForm = true;
-    this.isEditing = false;
-    this.newTire = {
+  private initTireForm(): ITire {
+    return {
       brand: '',
       model: '',
       installationDate: '',
       mileageAtInstallation: 0,
       replacementReason: '',
-      vehicleId: 0,
+      vehicleId: 0
     };
   }
 
-  /**
-   * Open the form in "edit" mode for the selected tire.
-   * @param tire The tire to edit.
-   */
+  private fetchCars(): void {
+    this.carsService.getAllVehicles().subscribe({
+      next: (cars) => this.cars = cars,
+      error: (error) => console.error('Error fetching cars:', error)
+    });
+  }
+
+  private fetchTires(): void {
+    this.tiresService.getAllTires().subscribe({
+      next: (tires) => {
+        this.tires = tires;
+        this.applyFilters();
+      },
+      error: (error) => console.error('Error fetching tires:', error)
+    });
+  }
+
+  openAddForm(): void {
+    this.tireForm = this.initTireForm();
+    this.isEditing = false;
+    this.showForm = true;
+  }
+
   startEdit(tire: ITire): void {
-    this.editedTire = { ...tire };
+    this.tireForm = { ...tire, installationDate: tire.installationDate.toString() };
     this.isEditing = true;
     this.showForm = true;
   }
 
-  /**
-   * Add a new tire.
-   */
   addTire(): void {
-    if (!this.newTire.brand.trim() || !this.newTire.model.trim() || !this.newTire.
-    vehicleId) return;
-  
-    const formattedTire = { ...this.newTire, installationDate: this.formatDate(this.newTire.installationDate) };
-    console.log('Tire added:', formattedTire);
-    this.tiresService.createTire(formattedTire).subscribe(
-      (tire) => {
+    if (!this.isValidForm()) return;
+
+    const formattedTire = this.formatTire(this.tireForm);
+    this.tiresService.createTire(formattedTire).subscribe({
+      next: (tire) => {
         this.tires.push(tire);
         this.closeForm();
-        console.log('Tire added:', tire);
+        this.applyFilters();
         alert('Tire added successfully!');
       },
-      (error) => {
+      error: (error) => {
         console.error('Error adding tire:', error);
         alert('Failed to add tire.');
       }
-    );
+    });
   }
-  
+
   saveEditedTire(): void {
-    if (!this.editedTire.brand.trim() || !this.editedTire.model.trim() || !this.editedTire.
-    vehicleId) return;
-  
-    const formattedTire = { ...this.editedTire, installationDate: this.formatDate(this.editedTire.installationDate) };
-  
-    this.tiresService.updateTire(this.editedTire.id!, formattedTire).subscribe(
-      () => {
-        const index = this.tires.findIndex((tire) => tire.id === this.editedTire.id);
+    if (!this.isValidForm() || !this.tireForm.id) return;
+
+    const formattedTire = this.formatTire(this.tireForm);
+    this.tiresService.updateTire(this.tireForm.id, formattedTire).subscribe({
+      next: () => {
+        const index = this.tires.findIndex(t => t.id === this.tireForm.id);
         if (index !== -1) {
-          this.tires[index] = this.editedTire;
+          this.tires[index] = formattedTire;
+          this.applyFilters();
         }
         this.closeForm();
         alert('Tire updated successfully!');
       },
-      (error) => {
+      error: (error) => {
         console.error('Error updating tire:', error);
         alert('Failed to update tire.');
       }
-    );
-  }
-  
-  /**
-   * Cancel the current form action.
-   */
-  cancelEdit(): void {
-    this.closeForm();
+    });
   }
 
-  /**
-   * Delete a tire by ID.
-   * @param id The ID of the tire to delete.
-   */
   deleteTire(id: number): void {
     if (!confirm('Are you sure you want to delete this tire?')) return;
-    this.tiresService.deleteTire(id).subscribe(
-      () => {
-        this.tires = this.tires.filter((tire) => tire.id !== id);
+
+    this.tiresService.deleteTire(id).subscribe({
+      next: () => {
+        this.tires = this.tires.filter(tire => tire.id !== id);
+        this.applyFilters();
         alert('Tire deleted successfully!');
       },
-      (error) => {
+      error: (error) => {
         console.error('Error deleting tire:', error);
         alert('Failed to delete tire.');
       }
-    );
+    });
   }
 
-  /**
-   * Hide the form and display the table.
-   */
   closeForm(): void {
     this.showForm = false;
     this.isEditing = false;
+    this.tireForm = this.initTireForm();
   }
 
-  /**
-   * Format a date to 'YYYY-MM-DD' string.
-   * @param date The date to format.
-   * @returns Formatted date string.
-   */
-  formatDate(date: string | Date): string {
+  private isValidForm(): boolean {
+    return !!(this.tireForm.brand.trim() && this.tireForm.model.trim() && this.tireForm.vehicleId);
+  }
+
+  private formatTire(tire: ITire): ITire {
+    return { ...tire, installationDate: this.formatDate(tire.installationDate) };
+  }
+
+  private formatDate(date: string | Date): string {
     const d = new Date(date);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  getVehicleModel(vehicleId: number): string {
+    const car = this.cars.find(c => c.id === vehicleId);
+    return car ? `${car.brand} ${car.model} (${car.licensePlate})` : 'N/A';
+  }
+
+  applyFilters(): void {
+    let filteredData = [...this.tires];
+
+    // Filter by brand
+    if (this.filterBrand) {
+      filteredData = filteredData.filter(tire => 
+        tire.brand.toLowerCase().includes(this.filterBrand.toLowerCase())
+      );
+    }
+
+    // Filter by model
+    if (this.filterModel) {
+      filteredData = filteredData.filter(tire => 
+        tire.model.toLowerCase().includes(this.filterModel.toLowerCase())
+      );
+    }
+
+    // Filter by date range
+    if (this.filterStartDate) {
+      filteredData = filteredData.filter(tire => 
+        new Date(tire.installationDate) >= this.filterStartDate!
+      );
+    }
+    if (this.filterEndDate) {
+      filteredData = filteredData.filter(tire => 
+        new Date(tire.installationDate) <= this.filterEndDate!
+      );
+    }
+
+    // Filter by mileage range
+    if (this.filterMinMileage !== null) {
+      filteredData = filteredData.filter(tire => 
+        tire.mileageAtInstallation >= this.filterMinMileage!
+      );
+    }
+    if (this.filterMaxMileage !== null) {
+      filteredData = filteredData.filter(tire => 
+        tire.mileageAtInstallation <= this.filterMaxMileage!
+      );
+    }
+
+    // Filter by vehicle
+    if (this.filterVehicle) {
+      filteredData = filteredData.filter(tire => 
+        this.getVehicleModel(tire.vehicleId).toLowerCase()
+          .includes(this.filterVehicle.toLowerCase())
+      );
+    }
+
+    // Sort by mileage
+    filteredData.sort((a, b) => 
+      this.sortMileageAsc ? a.mileageAtInstallation - b.mileageAtInstallation : 
+                            b.mileageAtInstallation - a.mileageAtInstallation
+    );
+
+    this.tires = filteredData;
+  }
+
+  resetFilters(): void {
+    this.filterBrand = '';
+    this.filterModel = '';
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterMinMileage = null;
+    this.filterMaxMileage = null;
+    this.filterVehicle = '';
+    this.fetchTires();
+  }
+
+  toggleMileageSort(): void {
+    this.sortMileageAsc = !this.sortMileageAsc;
+    this.applyFilters();
   }
 }

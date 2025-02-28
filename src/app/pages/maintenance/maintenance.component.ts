@@ -1,3 +1,4 @@
+// maintenance.component.ts
 import { Component, OnInit } from '@angular/core';
 import { IMaintenance } from '../../interfaces/IMaintenance';
 import { MaintenancesService } from '../../services/Maintenance.Service';
@@ -8,7 +9,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,25 +17,26 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
-
+import { MatTooltip } from '@angular/material/tooltip';
 @Component({
   selector: 'app-maintenance',
   templateUrl: './maintenance.component.html',
   styleUrls: ['./maintenance.component.scss'],
+  standalone: true,
   imports: [
     MatTableModule,
     MatCardModule,
     MatButtonModule,
     CommonModule,
     MatIconModule,
-    MatOptionModule,
     MatSelectModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,
     MatMenuModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltip
   ]
 })
 export class MaintenanceComponent implements OnInit {
@@ -46,6 +47,7 @@ export class MaintenanceComponent implements OnInit {
   showAddForm: boolean = false;
   isEditing: boolean = false;
 
+  // Form fields
   maintenanceType: string = '';
   maintenanceCost: number = 0;
   maintenanceDate: Date | null = null;
@@ -53,6 +55,16 @@ export class MaintenanceComponent implements OnInit {
   maintenanceVehicleID: number | null = null;
 
   selectedMaintenance: IMaintenance | null = null;
+
+  // Filter properties
+  filterType: string = '';
+  filterMinCost: number | null = null;
+  filterMaxCost: number | null = null;
+  filterStartDate: Date | null = null;
+  filterEndDate: Date | null = null;
+  filterVehicle: string = '';
+  filterNotes: string = '';
+  sortCostAsc: boolean = true;
 
   displayedColumns: string[] = ['type', 'cost', 'maintenanceDate', 'notes', 'vehicle', 'actions'];
   dataSource = new MatTableDataSource<IMaintenance>(this.maintenances);
@@ -72,7 +84,7 @@ export class MaintenanceComponent implements OnInit {
       (records) => {
         this.maintenances = records;
         this.dataSource.data = this.maintenances;
-        console.log('Fetched maintenances:', records);
+        this.applyFilters();
       },
       (error) => {
         console.error('Error fetching maintenances:', error);
@@ -85,19 +97,11 @@ export class MaintenanceComponent implements OnInit {
     this.carsService.getAllVehicles().subscribe(
       (cars) => {
         this.cars = cars;
-        console.log('Fetched cars:', cars);
       },
       (error) => {
         console.error('Error fetching cars:', error);
       }
     );
-  }
-
-  toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) {
-      this.resetForm();
-    }
   }
 
   resetForm(): void {
@@ -108,6 +112,7 @@ export class MaintenanceComponent implements OnInit {
     this.maintenanceDate = null;
     this.maintenanceNotes = '';
     this.maintenanceVehicleID = null;
+    this.showAddForm = false;
   }
 
   addMaintenance(): void {
@@ -123,13 +128,13 @@ export class MaintenanceComponent implements OnInit {
       notes: this.maintenanceNotes,
       vehicleID: this.maintenanceVehicleID
     };
-    console.log('Maintenance added:', newRecord);
+
     this.maintenancesService.createMaintenance(newRecord).subscribe(
       (record) => {
         this.maintenances.push(record);
         this.dataSource.data = this.maintenances;
         this.resetForm();
-        this.showAddForm = false;
+        this.applyFilters();
         alert('Maintenance record added successfully!');
       },
       (error) => {
@@ -152,12 +157,10 @@ export class MaintenanceComponent implements OnInit {
   }
 
   saveEditedMaintenance(): void {
-    if (!this.maintenanceType.trim() || !this.maintenanceDate || !this.maintenanceVehicleID) {
+    if (!this.maintenanceType.trim() || !this.maintenanceDate || !this.maintenanceVehicleID || !this.selectedMaintenance) {
       alert('Please fill in the required fields.');
       return;
     }
-
-    if (!this.selectedMaintenance) return;
 
     const updatedRecord: IMaintenance = {
       ...this.selectedMaintenance,
@@ -167,15 +170,16 @@ export class MaintenanceComponent implements OnInit {
       notes: this.maintenanceNotes,
       vehicleID: this.maintenanceVehicleID
     };
-    console.log('Maintenance updated:', updatedRecord);
+
     this.maintenancesService.updateMaintenance(this.selectedMaintenance.id!, updatedRecord).subscribe(
       () => {
         const index = this.maintenances.findIndex(m => m.id === this.selectedMaintenance?.id);
         if (index !== -1) {
           this.maintenances[index] = updatedRecord;
           this.dataSource.data = this.maintenances;
+          this.applyFilters();
         }
-        this.cancelEdit();
+        this.resetForm();
         alert('Maintenance record updated successfully!');
       },
       (error) => {
@@ -185,17 +189,13 @@ export class MaintenanceComponent implements OnInit {
     );
   }
 
-  cancelEdit(): void {
-    this.resetForm();
-    this.showAddForm = false;
-  }
-
   deleteMaintenance(id: number): void {
     if (!confirm('Are you sure you want to delete this maintenance record?')) return;
     this.maintenancesService.deleteMaintenance(id).subscribe(
       () => {
         this.maintenances = this.maintenances.filter(m => m.id !== id);
         this.dataSource.data = this.maintenances;
+        this.applyFilters();
         alert('Maintenance record deleted successfully!');
       },
       (error) => {
@@ -213,6 +213,75 @@ export class MaintenanceComponent implements OnInit {
 
   getVehicleModel(vehicleID: number): string {
     const car = this.cars.find(c => c.id === vehicleID);
-    return car ? car.model : 'N/A';
+    return car ? `${car.brand} ${car.model} (${car.licensePlate})` : 'N/A';
+  }
+
+  applyFilters(): void {
+    let filteredData = [...this.maintenances];
+
+    // Filter by type
+    if (this.filterType) {
+      filteredData = filteredData.filter(record => 
+        record.type.toLowerCase().includes(this.filterType.toLowerCase())
+      );
+    }
+
+    // Filter by cost range
+    if (this.filterMinCost !== null) {
+      filteredData = filteredData.filter(record => record.cost >= this.filterMinCost!);
+    }
+    if (this.filterMaxCost !== null) {
+      filteredData = filteredData.filter(record => record.cost <= this.filterMaxCost!);
+    }
+
+    // Filter by date range
+    if (this.filterStartDate) {
+      filteredData = filteredData.filter(record => 
+        new Date(record.maintenanceDate) >= this.filterStartDate!
+      );
+    }
+    if (this.filterEndDate) {
+      filteredData = filteredData.filter(record => 
+        new Date(record.maintenanceDate) <= this.filterEndDate!
+      );
+    }
+
+    // Filter by vehicle
+    if (this.filterVehicle) {
+      filteredData = filteredData.filter(record => 
+        this.getVehicleModel(record.vehicleID).toLowerCase()
+          .includes(this.filterVehicle.toLowerCase())
+      );
+    }
+
+    // Filter by notes
+    if (this.filterNotes) {
+      filteredData = filteredData.filter(record => 
+        record.notes?.toLowerCase().includes(this.filterNotes.toLowerCase())
+      );
+    }
+
+    // Sort by cost
+    filteredData.sort((a, b) => 
+      this.sortCostAsc ? a.cost - b.cost : b.cost - a.cost
+    );
+
+    this.dataSource.data = filteredData;
+  }
+
+  resetFilters(): void {
+    this.filterType = '';
+    this.filterMinCost = null;
+    this.filterMaxCost = null;
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterVehicle = '';
+    this.filterNotes = '';
+    this.dataSource.data = this.maintenances;
+  }
+
+  toggleCostSort(): void {
+    this.sortCostAsc = !this.sortCostAsc;
+    this.applyFilters();
   }
 }

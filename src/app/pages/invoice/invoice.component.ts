@@ -62,8 +62,12 @@ export class InvoiceComponent implements OnInit {
   invoiceSupplierID: number | null = null;
   invoiceVehicleID: number | null = null;
 
+  filterStatus: string = '';
+  searchTerm: string = '';
+
   displayedColumns: string[] = ['issueDate', 'dueDate', 'amount', 'status', 'supplier', 'vehicle', 'actions'];
   dataSource = new MatTableDataSource<IInvoice>(this.invoices);
+  filteredDataSource = new MatTableDataSource<IInvoice>(this.invoices);
 
   constructor(
     private invoiceService: InvoiceService,
@@ -83,6 +87,7 @@ export class InvoiceComponent implements OnInit {
       (records) => {
         this.invoices = records;
         this.dataSource.data = this.invoices;
+        this.filteredDataSource.data = this.invoices;
         console.log('Fetched invoices:', records);
       },
       (error) => {
@@ -114,6 +119,16 @@ export class InvoiceComponent implements OnInit {
         console.error('Error fetching vehicles:', error);
       }
     );
+  }
+
+  applyFilters(): void {
+    const filteredInvoices = this.invoices.filter(invoice => {
+      const matchesStatus = this.filterStatus ? invoice.status === this.filterStatus : true;
+      const matchesSearch = invoice.supplierID.toString().includes(this.searchTerm) || 
+                            invoice.vehicleID.toString().includes(this.searchTerm);
+      return matchesStatus && matchesSearch;
+    });
+    this.filteredDataSource.data = filteredInvoices;
   }
 
   toggleAddForm(): void {
@@ -154,6 +169,7 @@ export class InvoiceComponent implements OnInit {
       (record) => {
         this.invoices.push(record);
         this.dataSource.data = this.invoices;
+        this.filteredDataSource.data = this.invoices;
         this.resetForm();
         this.showAddForm = false;
         alert('Invoice added successfully!');
@@ -202,6 +218,7 @@ export class InvoiceComponent implements OnInit {
         if (index !== -1) {
           this.invoices[index] = updatedInvoice;
           this.dataSource.data = this.invoices;
+          this.filteredDataSource.data = this.invoices;
         }
         this.cancelEdit();
         alert('Invoice updated successfully!');
@@ -224,6 +241,7 @@ export class InvoiceComponent implements OnInit {
       () => {
         this.invoices = this.invoices.filter(inv => inv.id !== id);
         this.dataSource.data = this.invoices;
+        this.filteredDataSource.data = this.invoices;
         alert('Invoice deleted successfully!');
       },
       (error) => {

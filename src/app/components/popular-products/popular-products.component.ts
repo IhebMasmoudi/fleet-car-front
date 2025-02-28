@@ -55,6 +55,15 @@ const ELEMENT_DATA: productsData[] = [
         status: 'Confirmed',
         progress: 'primary',
     },
+    {
+        id: 5,
+        imagePath: 'assets/images/products/s5.jpg',
+        uname: 'Samsung Galaxy S21 Ultra-256GB storage',
+        price: '$999',
+        paid: 'Full paid',
+        status: 'Confirmed',
+        progress: 'success',
+    },
 ];
 @Component({
     selector: 'app-popular-products',

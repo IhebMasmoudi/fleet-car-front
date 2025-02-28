@@ -9,5 +9,6 @@ export interface ICars {
     status: string; // Available, In Maintenance, Assigned
     type: string; // Car, Truck, Van
     photoUrl?: string; // URL to the car's photo
+    loadingPhoto?: boolean; // Flag to indicate if the photo is being loaded
    
   }

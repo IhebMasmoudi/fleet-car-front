@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable} from 'rxjs';
 import { Notification } from '../interfaces/Notification';
 import { map, tap } from 'rxjs/operators';
 import * as SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { AuthService } from './AuthService.Service';
-import { IUser } from '../interfaces/IUser';
 import { UserService } from './UserService.service';
 
 @Injectable({
@@ -34,76 +33,33 @@ export class NotificationService {
   private initializeService(): void {
     this.loadToken();
     if (this.token) {
-      this.loadUserProfile();
+      this.authService.loadUserProfile().subscribe(role => {
+        // After the profile is loaded, fetch notifications and initialize WebSocket
+        this.loadNotifications();
+        const userId = this.authService.getUserId();
+        if (userId) {
+          this.initializeWebSocketConnection(userId);
+        } else {
+          console.error('User ID not available after profile load.');
+        }
+      });
     } else {
       console.error('No token available, cannot initialize notification service.');
       this.disconnectWebSocket();
     }
   }
 
-  /** Load the JWT token from local storage. */
   private loadToken(): void {
     this.token = this.authService.getToken();
     console.log('JWT Token:', this.token || 'No token found');
   }
 
-  /**
-   * Load the logged-in user's profile and initialize WebSocket/notifications.
-   * Always decode the token and set userId from the user's numeric ID.
-   */
-  private loadUserProfile(): void {
-    if (this.token) {
-      const decoded = this.decodeToken(this.token);
-      const email = decoded?.sub; // Assuming 'sub' contains the email
-      if (email) {
-        this.userService.getAllUsers().subscribe({
-          next: (users: IUser[]) => {
-            const foundUser = users.find(u => u.email === email);
-            if (foundUser && foundUser.id) {
-              const userId = foundUser.id.toString(); // Convert numeric ID to string
-              this.authService.setUserId(userId); // Set numeric userId
-              console.log('Set userId to:', userId);
-              console.log('User loaded:', foundUser);
-              // Initialize WebSocket and fetch notifications after userId is set
-              this.initializeWebSocketConnection(userId);
-              this.getNotifications().subscribe(notifications => {
-                this.notificationsSubject.next(notifications);
-              });
-              this.getUnreadCount().subscribe(count => {
-                this.unreadCountSubject.next(count);
-              });
-            } else {
-              console.error('No user found for email:', email);
-            }
-          },
-          error: (err) => console.error('Error fetching users:', err)
-        });
-      } else {
-        console.error('No email found in token');
-      }
-    } else {
-      console.error('No token available');
-    }
-  }
-
-  /** Decode JWT token and return the payload. */
-  private decodeToken(token: string): any {
-    try {
-      const base64Payload = token.split('.')[1];
-      const payload = atob(base64Payload);
-      return JSON.parse(payload);
-    } catch (error) {
-      console.error('Failed to decode token:', error);
-      return null;
-    }
+  private loadNotifications(): void {
+    this.getNotifications().subscribe();
   }
 
   private initializeWebSocketConnection(userId: string): void {
-    if (!userId || isNaN(Number(userId))) {
-      console.error('Invalid userId for WebSocket connection:', userId);
-      return;
-    }
-    this.disconnectWebSocket(); // Ensure no duplicate connections
+    this.disconnectWebSocket(); // Prevent duplicate connections
 
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS.default('http://localhost:8080/ws'),
@@ -114,7 +70,7 @@ export class NotificationService {
 
     this.stompClient.onConnect = () => {
       console.log('WebSocket connected for userId:', userId);
-      this.stompClient?.subscribe(`/user/${userId}/queue/notifications`, (message) => {
+      this.stompClient?.subscribe(`/user/${userId}/queue/notifications`, message => {
         if (message.body) {
           const notification: Notification = JSON.parse(message.body);
           this.addNewNotification(notification);
@@ -122,7 +78,7 @@ export class NotificationService {
       });
     };
 
-    this.stompClient.onStompError = (frame) => {
+    this.stompClient.onStompError = frame => {
       console.error('WebSocket error:', frame);
     };
 
@@ -148,16 +104,27 @@ export class NotificationService {
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for notifications:', userId);
-      return new Observable(observer => observer.next([]));
+      return new Observable(observer => {
+        observer.next([]);
+        observer.complete();
+      });
     }
-    return this.http.get<Notification[]>(`${this.apiUrl}/user/${userId}`);
+    return this.http.get<Notification[]>(`${this.apiUrl}/user/${userId}`).pipe(
+      tap(notifications => {
+        this.notificationsSubject.next(notifications);
+        this.unreadCountSubject.next(notifications.filter(n => !n.isRead).length);
+      })
+    );
   }
 
   getUnreadCount(): Observable<number> {
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for unread count:', userId);
-      return new Observable(observer => observer.next(0));
+      return new Observable(observer => {
+        observer.next(0);
+        observer.complete();
+      });
     }
     return this.http.get<{ count: number }>(`${this.apiUrl}/user/${userId}/unread/count`).pipe(
       map(response => response.count),
@@ -169,7 +136,9 @@ export class NotificationService {
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for marking notification as read:', userId);
-      return new Observable(observer => observer.complete());
+      return new Observable(observer => {
+        observer.complete();
+      });
     }
     return this.http.put<void>(`${this.apiUrl}/${id}/read?userId=${userId}`, {}).pipe(
       tap(() => {
@@ -186,7 +155,9 @@ export class NotificationService {
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for marking all notifications as read:', userId);
-      return new Observable(observer => observer.complete());
+      return new Observable(observer => {
+        observer.complete();
+      });
     }
     return this.http.put<void>(`${this.apiUrl}/user/${userId}/read-all`, {}).pipe(
       tap(() => {

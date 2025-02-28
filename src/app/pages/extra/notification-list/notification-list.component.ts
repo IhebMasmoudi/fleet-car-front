@@ -3,23 +3,26 @@ import { Notification } from 'src/app/interfaces/Notification';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
-import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { FormsModule } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
-import { MatInputModule } from '@angular/material/input';
+import { CommonModule } from '@angular/common';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatOptionModule} from '@angular/material/core';
+import {MatBadgeModule} from '@angular/material/badge';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {FormsModule} from '@angular/forms';
 @Component({
   selector: 'app-notification-list',
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.scss'],
-  standalone: true,
+  providers: [NotificationService],
   imports: [
     CommonModule,
     MatCardModule,
@@ -28,10 +31,13 @@ import { MatInputModule } from '@angular/material/input';
     MatMenuModule,
     MatDividerModule,
     MatFormFieldModule,
+    MatInputModule,
     MatSelectModule,
-    FormsModule,
+    MatOptionModule,
+    MatBadgeModule,
     MatSnackBarModule,
-    MatInputModule
+    FormsModule
+  
   ],
 })
 export class NotificationListComponent implements OnInit, OnDestroy {
@@ -52,7 +58,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         this.isAdmin = isAdmin;
       })
     );
-    
+
     this.subscriptions.add(
       this.notificationService.notifications$.subscribe(notifications => {
         this.notifications = notifications;
@@ -61,7 +67,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.notificationService.getNotifications().subscribe({
-        error: (err) => {
+        error: err => {
           console.error('Error fetching notifications:', err);
           this.snackBar.open('Failed to load notifications', 'Close', { duration: 3000 });
         }
@@ -77,14 +83,17 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     if (!notification.isRead) {
       this.subscriptions.add(
         this.notificationService.markAsRead(notification.id).subscribe({
-          error: (err) => {
+          next: () => {
+            notification.isRead = true;
+            this.snackBar.open('Notification marked as read', 'Close', { duration: 3000 });
+          },
+          error: err => {
             console.error('Error marking as read:', err);
             this.snackBar.open('Failed to mark as read', 'Close', { duration: 3000 });
           }
         })
       );
     }
-    
     if (notification.actionLink) {
       this.router.navigateByUrl(notification.actionLink);
     }
@@ -93,7 +102,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   markAllAsRead(): void {
     this.subscriptions.add(
       this.notificationService.markAllAsRead().subscribe({
-        error: (err) => {
+        next: () => {
+          this.snackBar.open('All notifications marked as read', 'Close', { duration: 3000 });
+        },
+        error: err => {
           console.error('Error marking all as read:', err);
           this.snackBar.open('Failed to mark all as read', 'Close', { duration: 3000 });
         }
@@ -113,7 +125,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           next: () => {
             this.snackBar.open('Notification sent successfully', 'Close', { duration: 3000 });
           },
-          error: (err) => {
+          error: err => {
             console.error('Error creating notification:', err);
             this.snackBar.open('Failed to create notification', 'Close', { duration: 3000 });
           }

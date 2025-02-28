@@ -1,161 +1,215 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content>
-      <mat-card-title>Missions Management</mat-card-title>
-  
-      <!-- Add/Edit Form -->
-      <div *ngIf="showAddForm" class="form-container">
-        <mat-card class="form-card">
-          <mat-card-title>{{ isEditing ? 'Edit Mission' : 'Add Mission' }}</mat-card-title>
-          <mat-card-content>
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Destination</mat-label>
-              <input matInput type="text" [(ngModel)]="destination" required />
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Start Date</mat-label>
-              <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" required />
-              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-              <mat-datepicker #startPicker></mat-datepicker>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>End Date</mat-label>
-              <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" required />
-              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-              <mat-datepicker #endPicker></mat-datepicker>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Distance</mat-label>
-              <input matInput type="number" [(ngModel)]="distance" required />
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Status</mat-label>
-              <mat-select [(value)]="status" required>
-                <mat-option value="Planned">Planned</mat-option>
-                <mat-option value="Ongoing">Ongoing</mat-option>
-                <mat-option value="Completed">Completed</mat-option>
-                <mat-option value="Cancelled">Cancelled</mat-option>
-              </mat-select>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Vehicle</mat-label>
-              <mat-select [(ngModel)]="vehicleID" required>
-                <mat-option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
-                  {{ vehicle.model }} ({{ vehicle.licensePlate }})
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Driver</mat-label>
-              <mat-select [(ngModel)]="driverID" required>
-                <mat-option *ngFor="let driver of drivers" [value]="driver.id">
-                  {{ getDriverName(driver.id!, driver.userId) }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            
-            <div class="form-actions">
-              <button mat-raised-button color="primary" (click)="isEditing ? updateMission() : addMission()">
-                {{ isEditing ? 'Save Changes' : 'Add Mission' }}
-              </button>
-              <button mat-stroked-button color="warn" (click)="resetForm()">Cancel</button>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-  
-      <!-- Missions Table -->
-      <div *ngIf="!showAddForm" class="table-responsive">
-        <button mat-raised-button color="primary" class="add-btn" (click)="toggleAddForm()">
-          Add Mission
+  <mat-card-content>
+    <mat-card-title>Missions Management</mat-card-title>
+
+    <!-- Filter Dropdown Section -->
+    <div class="filter-container" *ngIf="!showAddForm">
+      <div class="table-header">
+        <button mat-raised-button color="primary" class="add-btn" (click)="showAddForm = true">
+          <mat-icon>add</mat-icon> Add Mission
         </button>
-        <table mat-table [dataSource]="dataSource" class="w-100">
-          <!-- ID Column -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> ID </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.id }} </td>
-          </ng-container>
-          
-          <!-- Destination Column -->
-          <ng-container matColumnDef="destination">
-            <th mat-header-cell *matHeaderCellDef> Destination </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.destination }} </td>
-          </ng-container>
-          
-          <!-- Start Date Column -->
-          <ng-container matColumnDef="startDate">
-            <th mat-header-cell *matHeaderCellDef> Start Date </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.startDate | date:'yyyy-MM-dd HH:mm' }} </td>
-          </ng-container>
-          
-          <!-- End Date Column -->
-          <ng-container matColumnDef="endDate">
-            <th mat-header-cell *matHeaderCellDef> End Date </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.endDate | date:'yyyy-MM-dd HH:mm' }} </td>
-          </ng-container>
-          
-          <!-- Distance Column -->
-          <ng-container matColumnDef="distance">
-            <th mat-header-cell *matHeaderCellDef> Distance </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.distance }} </td>
-          </ng-container>
-          
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Status </th>
-            <td mat-cell *matCellDef="let mission"> {{ mission.status }} </td>
-          </ng-container>
-          
-          <!-- Vehicle Column (clickable) -->
-          <ng-container matColumnDef="vehicle">
-            <th mat-header-cell *matHeaderCellDef> Vehicle </th>
-            <td mat-cell *matCellDef="let mission">
-              <span class="clickable" (click)="openCarDetails(mission)">
-                {{ getVehicleModel(mission.vehicleID) }}
-              </span>
-            </td>
-          </ng-container>
-          
-          <!-- Driver Column (clickable) -->
-          <ng-container matColumnDef="driver">
-            <th mat-header-cell *matHeaderCellDef> Driver </th>
-            <td mat-cell *matCellDef="let mission">
-              <span class="clickable" (click)="openDriverDetails(mission)">
-                {{ getDriverNameFromMission(mission.driverID) }}
-              </span>
-            </td>
-          </ng-container>
-          
-       
-          <!-- Actions Column -->
-<ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef></th>
-  <td mat-cell *matCellDef="let mission">
-    <!-- Dropdown Menu Trigger -->
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <!-- Dropdown Menu -->
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="editMission(mission)">
-        <mat-icon>edit</mat-icon> Edit
-      </button>
-      <button mat-menu-item (click)="deleteMission(mission.id)">
-        <mat-icon>delete</mat-icon> Delete
-      </button>
-    </mat-menu>
-  </td>
-</ng-container>
-          
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+        <button mat-stroked-button [matMenuTriggerFor]="filterMenu" class="filter-btn">
+          <mat-icon>filter_list</mat-icon> Filters
+        </button>
       </div>
-    </mat-card-content>
-  </mat-card>
-  
+
+      <mat-menu #filterMenu="matMenu" class="filter-menu">
+        <div class="filter-content" (click)="$event.stopPropagation()">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Destination</mat-label>
+            <input matInput [(ngModel)]="filterDestination" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>place</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Start Date From</mat-label>
+            <input matInput [matDatepicker]="startFilter" [(ngModel)]="filterStartDate" 
+                   (ngModelChange)="applyFilters()">
+            <mat-datepicker-toggle matSuffix [for]="startFilter"></mat-datepicker-toggle>
+            <mat-datepicker #startFilter></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>End Date To</mat-label>
+            <input matInput [matDatepicker]="endFilter" [(ngModel)]="filterEndDate" 
+                   (ngModelChange)="applyFilters()">
+            <mat-datepicker-toggle matSuffix [for]="endFilter"></mat-datepicker-toggle>
+            <mat-datepicker #endFilter></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(value)]="filterStatus" (selectionChange)="applyFilters()">
+              <mat-option *ngFor="let status of availableStatuses" [value]="status">
+                {{status}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Vehicle</mat-label>
+            <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>directions_car</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Username</mat-label>
+            <input matInput [(ngModel)]="filterUsername" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>person</mat-icon>
+          </mat-form-field>
+
+          <button mat-icon-button class="sort-btn" (click)="toggleDistanceSort()" 
+                  [matTooltip]="sortDistanceAsc ? 'Sort Distance Descending' : 'Sort Distance Ascending'">
+            <mat-icon>{{sortDistanceAsc ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+          </button>
+
+          <button mat-stroked-button color="warn" (click)="resetFilters()" class="reset-btn">
+            <mat-icon>clear</mat-icon> Reset Filters
+          </button>
+        </div>
+      </mat-menu>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div *ngIf="showAddForm" class="form-container">
+      <mat-card class="form-card">
+        <mat-card-title>{{ isEditing ? 'Edit Mission' : 'Add Mission' }}</mat-card-title>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Destination</mat-label>
+            <input matInput type="text" [(ngModel)]="destination" required />
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" required />
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" required />
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Distance (km)</mat-label>
+            <input matInput type="number" [(ngModel)]="distance" required />
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Status</mat-label>
+            <mat-select [(value)]="status" required>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="in-progress">In-Progress</mat-option>
+              <mat-option value="Completed">Completed</mat-option>
+              <mat-option value="Cancelled">Cancelled</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Vehicle</mat-label>
+            <mat-select [(ngModel)]="vehicleID" required>
+              <mat-option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
+                {{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.licensePlate }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Driver</mat-label>
+            <mat-select [(ngModel)]="driverID" required>
+              <mat-option *ngFor="let driver of drivers" [value]="driver.id">
+                {{ getDriverName(driver.id!, driver.userId) }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <div class="form-actions">
+            <button mat-raised-button color="primary" (click)="isEditing ? updateMission() : addMission()">
+              {{ isEditing ? 'Save Changes' : 'Add Mission' }}
+            </button>
+            <button mat-stroked-button color="warn" (click)="resetForm()">Cancel</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Missions Table -->
+    <div *ngIf="!showAddForm" class="table-responsive">
+      <table mat-table [dataSource]="dataSource" class="w-100">
+        <ng-container matColumnDef="destination">
+          <th mat-header-cell *matHeaderCellDef> Destination </th>
+          <td mat-cell *matCellDef="let mission"> {{ mission.destination }} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef> Start Date </th>
+          <td mat-cell *matCellDef="let mission"> {{ mission.startDate | date:'yyyy-MM-dd HH:mm' }} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="endDate">
+          <th mat-header-cell *matHeaderCellDef> End Date </th>
+          <td mat-cell *matCellDef="let mission"> {{ mission.endDate | date:'yyyy-MM-dd HH:mm' }} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="distance">
+          <th mat-header-cell *matHeaderCellDef> Distance (km) </th>
+          <td mat-cell *matCellDef="let mission"> {{ mission.distance }} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let mission">
+            <mat-select [(value)]="mission.status" (selectionChange)="updateStatus(mission, $event.value)">
+              <mat-option value="pending">pending</mat-option>
+              <mat-option value="in-progress">in-progress</mat-option>
+              <mat-option value="Completed">Completed</mat-option>
+              <mat-option value="Cancelled">Cancelled</mat-option>
+            </mat-select>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="vehicle">
+          <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+          <td mat-cell *matCellDef="let mission">
+            <span class="clickable" (click)="openCarDetails(mission)">
+              {{ getVehicleModel(mission.vehicleID) }}
+            </span>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="driver">
+          <th mat-header-cell *matHeaderCellDef> Driver </th>
+          <td mat-cell *matCellDef="let mission">
+            <span class="clickable" (click)="openDriverDetails(mission)">
+              {{ getDriverNameFromMission(mission.driverID) }}
+            </span>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let mission">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="editMission(mission)">
+                <mat-icon>edit</mat-icon> Edit
+              </button>
+              <button mat-menu-item (click)="deleteMission(mission.id)">
+                <mat-icon>delete</mat-icon> Delete
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+        
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>

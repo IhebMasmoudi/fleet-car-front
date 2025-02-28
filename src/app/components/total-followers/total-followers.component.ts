@@ -48,7 +48,7 @@ export class AppTotalFollowersComponent {
             series: [
                 {
                     name: "Total",
-                    data: [29, 52, 38, 47, 56],
+                    data: [29, 52, 38, 47, 56, 60],
                 },
                 {
                     name: "Followers",

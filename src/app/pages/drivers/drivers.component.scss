@@ -1,65 +1,97 @@
+// drivers.component.scss
 .cardWithShadow {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: 16px;
+}
+
+.filter-container {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .filter-field {
+    min-width: 200px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
   }
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: white;
+  padding: 16px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.add-btn {
+  transition: all 0.3s ease;
   
-  .form-container {
-    margin-bottom: 20px;
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
-  
-  .form-card {
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
+  padding: 16px;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  
-  .w-100 {
-    width: 100%;
-    margin-bottom: 15px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .form-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
+}
+
+.mat-table {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+
+  .mat-row {
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
   }
-  
-  .table-responsive {
-    overflow-x: auto;
+
+  .mat-header-cell {
+    font-weight: 600;
+    color: #333;
   }
-  
-  .add-btn {
-    display: block;
-    margin: 10px 0;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th, td {
-    padding: 12px;
-    text-align: left;
-  }
-  
-  th {
-    background: #f5f5f5;
-    font-weight: bold;
-  }
-  
-  tr:nth-child(even) {
-    background: #fafafa;
-  }
-  
-  .clickable {
-    color: #1976d2;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-  
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.form-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}

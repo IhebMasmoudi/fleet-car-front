@@ -1,3 +1,4 @@
+// missions.component.ts
 import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +14,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,25 +23,27 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { DriverDetailsDialogComponent } from '../missions/driver-details-dialog.component';
 import { CarDetailsDialogComponent } from '../missions/car-details-dialog.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-missions',
   templateUrl: './missions.component.html',
   styleUrls: ['./missions.component.scss'],
+  standalone: true,
   imports: [
     MatTableModule,
     MatCardModule,
     MatButtonModule,
     CommonModule,
     MatIconModule,
-    MatOptionModule,
     MatSelectModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,
     MatMenuModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltipModule
   ]
 })
 export class MissionsComponent implements OnInit {
@@ -49,12 +51,11 @@ export class MissionsComponent implements OnInit {
   vehicles: ICars[] = [];
   drivers: IDriver[] = [];
   errorMessage: string = '';
-
   showAddForm: boolean = false;
   isEditing: boolean = false;
   selectedMission: IMission | null = null;
 
-  // Form fields for mission CRUD
+  // Form fields
   destination: string = '';
   startDate: Date | null = null;
   endDate: Date | null = null;
@@ -63,12 +64,19 @@ export class MissionsComponent implements OnInit {
   vehicleID: number | null = null;
   driverID: number | null = null;
 
-  displayedColumns: string[] = [ 'destination', 'startDate', 'endDate', 'distance',
-    'status', 'vehicle', 'driver', 'actions'
-  ];
+  // Filter properties
+  filterDestination: string = '';
+  filterStartDate: Date | null = null;
+  filterEndDate: Date | null = null;
+  filterStatus: string = '';
+  filterVehicle: string = '';
+  filterUsername: string = '';
+  sortDistanceAsc: boolean = true;
+  availableStatuses: string[] = ['All', 'Planned', 'Ongoing', 'Completed', 'Cancelled'];
+
+  displayedColumns: string[] = ['destination', 'startDate', 'endDate', 'distance', 'status', 'vehicle', 'driver', 'actions'];
   dataSource = new MatTableDataSource<IMission>(this.missions);
 
-  // Caches for quick lookup of extra details
   vehicleModels: { [key: number]: string } = {};
   driverNames: { [key: number]: string } = {};
 
@@ -91,6 +99,7 @@ export class MissionsComponent implements OnInit {
       missions => {
         this.missions = missions;
         this.dataSource.data = this.missions;
+        this.applyFilters();
       },
       error => {
         console.error('Error fetching missions:', error);
@@ -105,13 +114,11 @@ export class MissionsComponent implements OnInit {
         this.vehicles = vehicles;
         vehicles.forEach(vehicle => {
           if (vehicle.id) {
-            this.vehicleModels[vehicle.id] = vehicle.model;
+            this.vehicleModels[vehicle.id] = `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})`;
           }
         });
       },
-      error => {
-        console.error('Error fetching vehicles:', error);
-      }
+      error => console.error('Error fetching vehicles:', error)
     );
   }
 
@@ -125,44 +132,28 @@ export class MissionsComponent implements OnInit {
           }
         });
       },
-      error => {
-        console.error('Error fetching drivers:', error);
-      }
+      error => console.error('Error fetching drivers:', error)
     );
   }
 
-  // Fetch and cache the driver's username based on driver.userId.
   getDriverName(driverId: number, userId: number): string {
-    if (this.driverNames[driverId]) {
-      return this.driverNames[driverId];
-    }
+    if (this.driverNames[driverId]) return this.driverNames[driverId];
     this.userService.getUserById(userId).subscribe(
-      user => {
-        this.driverNames[driverId] = user.username;
-      },
-      error => {
-        console.error('Error fetching driver user:', error);
-        this.driverNames[driverId] = 'Unknown';
-      }
+      user => this.driverNames[driverId] = user.username,
+      error => this.driverNames[driverId] = 'Unknown'
     );
     return 'Loading...';
   }
 
-  // Helper to get vehicle model from cache.
   getVehicleModel(vehicleID: number): string {
     return this.vehicleModels[vehicleID] || 'Unknown';
   }
 
-  // Helper for table: given a mission's driverID, look up the driver's name.
   getDriverNameFromMission(driverID: number): string {
     const driver = this.drivers.find(d => d.id === driverID);
-    if (driver && driver.userId) {
-      return this.getDriverName(driver.id!, driver.userId);
-    }
-    return 'Unknown';
+    return driver && driver.userId ? this.getDriverName(driver.id!, driver.userId) : 'Unknown';
   }
 
-  // CRUD Operations for Missions
   addMission(): void {
     if (this.destination && this.startDate && this.endDate && this.distance !== null &&
         this.status && this.vehicleID && this.driverID) {
@@ -180,10 +171,9 @@ export class MissionsComponent implements OnInit {
           this.missions.push(mission);
           this.dataSource.data = this.missions;
           this.resetForm();
+          this.applyFilters();
         },
-        error => {
-          console.error('Error adding mission:', error);
-        }
+        error => console.error('Error adding mission:', error)
       );
     }
   }
@@ -220,14 +210,28 @@ export class MissionsComponent implements OnInit {
           if (index !== -1) {
             this.missions[index] = updatedMission;
             this.dataSource.data = this.missions;
+            this.applyFilters();
           }
           this.resetForm();
         },
-        error => {
-          console.error('Error updating mission:', error);
-        }
+        error => console.error('Error updating mission:', error)
       );
     }
+  }
+
+  updateStatus(mission: IMission, newStatus: string): void {
+    const updatedMission: IMission = { ...mission, status: newStatus };
+    this.missionsService.updateMission(mission.id!, updatedMission).subscribe(
+      () => {
+        const index = this.missions.findIndex(m => m.id === mission.id);
+        if (index !== -1) {
+          this.missions[index].status = newStatus;
+          this.dataSource.data = this.missions;
+          this.applyFilters();
+        }
+      },
+      error => console.error('Error updating mission status:', error)
+    );
   }
 
   deleteMission(id: number): void {
@@ -235,10 +239,9 @@ export class MissionsComponent implements OnInit {
       () => {
         this.missions = this.missions.filter(m => m.id !== id);
         this.dataSource.data = this.missions;
+        this.applyFilters();
       },
-      error => {
-        console.error('Error deleting mission:', error);
-      }
+      error => console.error('Error deleting mission:', error)
     );
   }
 
@@ -255,14 +258,67 @@ export class MissionsComponent implements OnInit {
     this.selectedMission = null;
   }
 
-  toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) {
-      this.resetForm();
+  applyFilters(): void {
+    let filteredData = [...this.missions];
+
+    if (this.filterDestination) {
+      filteredData = filteredData.filter(mission => 
+        mission.destination.toLowerCase().includes(this.filterDestination.toLowerCase())
+      );
     }
+
+    if (this.filterStartDate) {
+      filteredData = filteredData.filter(mission => 
+        new Date(mission.startDate) >= this.filterStartDate!
+      );
+    }
+    if (this.filterEndDate) {
+      filteredData = filteredData.filter(mission => 
+        new Date(mission.endDate) <= this.filterEndDate!
+      );
+    }
+
+    if (this.filterStatus && this.filterStatus !== 'All') {
+      filteredData = filteredData.filter(mission => 
+        mission.status.toLowerCase() === this.filterStatus.toLowerCase()
+      );
+    }
+
+    if (this.filterVehicle) {
+      filteredData = filteredData.filter(mission => 
+        this.getVehicleModel(mission.vehicleID).toLowerCase()
+          .includes(this.filterVehicle.toLowerCase())
+      );
+    }
+
+    if (this.filterUsername) {
+      filteredData = filteredData.filter(mission => 
+        this.getDriverNameFromMission(mission.driverID).toLowerCase()
+          .includes(this.filterUsername.toLowerCase())
+      );
+    }
+
+    filteredData.sort((a, b) => 
+      this.sortDistanceAsc ? a.distance! - b.distance! : b.distance! - a.distance!
+    );
+
+    this.dataSource.data = filteredData;
   }
 
-  // Open dialogs for additional details
+  resetFilters(): void {
+    this.filterDestination = '';
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterStatus = '';
+    this.filterVehicle = '';
+    this.filterUsername = '';
+    this.dataSource.data = this.missions;
+  }
+
+  toggleDistanceSort(): void {
+    this.sortDistanceAsc = !this.sortDistanceAsc;
+    this.applyFilters();
+  }
 
   openDriverDetails(mission: IMission): void {
     const driver = this.drivers.find(d => d.id === mission.driverID);

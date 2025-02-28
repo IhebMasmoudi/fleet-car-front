@@ -114,6 +114,10 @@ export class AppSalesProfitComponent {
                             x: "Apr",
                             y: 35,
                         },
+                        {
+                            x: "May",
+                            y: 60,
+                        },
                     ],
                 },
                 {

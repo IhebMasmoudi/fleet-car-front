@@ -6,7 +6,7 @@
   </button>
   }
   <!-- --------------------------------------------------------------- -->
-  <!-- Notification Dropdown -->
+  <!-- Notification  -->
   <!-- --------------------------------------------------------------- -->
   <button mat-icon-button aria-label="Notifications" [matMenuTriggerFor]="menu" class="d-flex align-items-center justify-content-center">
     <div matBadge="2" matBadgeSize="small" matBadgeOverlap="false" class="demo-section">
@@ -29,10 +29,6 @@
   <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
     <button mat-menu-item (click)="navigateToProfile()">
       <mat-icon class="d-flex align-items-center"><i data-icon="solar:shield-user-line-duotone" class="iconify icon-22"></i></mat-icon>My Profile
-    </button>
-    <button mat-menu-item>
-      <mat-icon class="d-flex align-items-center"><i data-icon="solar:user-id-line-duotone"
-          class="iconify icon-22"></i></mat-icon>My Account
     </button>
     <button mat-menu-item (click)="navigateToTasks()">
       <mat-icon class="d-flex align-items-center"><i data-icon="solar:checklist-minimalistic-line-duotone"
