@@ -1,140 +1,148 @@
-<!-- drivertasks.component.html -->
 <div class="missions-container">
-    <mat-card class="header-card">
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h1>My Missions Dashboard</h1>
+      </mat-card-title>
+      <mat-card-subtitle *ngIf="user">
+        Welcome back, {{user.username}}!
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="filter-controls">
+        <mat-form-field appearance="outline">
+          <mat-label>Filter by Status</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
+            <mat-option value="all">All Statuses</mat-option>
+            <mat-option value="pending">Pending</mat-option>
+            <mat-option value="in-progress">In Progress</mat-option>
+            <mat-option value="completed">Completed</mat-option>
+            <mat-option value="cancelled">Cancelled</mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Date Range</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate placeholder="Start date" [(ngModel)]="dateRange.start" (dateChange)="applyFilters()">
+            <input matEndDate placeholder="End date" [(ngModel)]="dateRange.end" (dateChange)="applyFilters()">
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" (click)="resetFilters()">
+          <mat-icon>refresh</mat-icon> Reset Filters
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="missions-summary">
+    <mat-card class="summary-card">
+      <mat-icon class="summary-icon total">route</mat-icon>
+      <div class="summary-content">
+        <div class="summary-label">Total Missions</div>
+        <div class="summary-value">{{filteredMissions.length}}</div>
+      </div>
+    </mat-card>
+    
+    <mat-card class="summary-card">
+      <mat-icon class="summary-icon active">local_shipping</mat-icon>
+      <div class="summary-content">
+        <div class="summary-label">Active Missions</div>
+        <div class="summary-value">{{getActiveMissionsCount()}}</div>
+      </div>
+    </mat-card>
+    
+    <mat-card class="summary-card">
+      <mat-icon class="summary-icon completed">check_circle</mat-icon>
+      <div class="summary-content">
+        <div class="summary-label">Completed</div>
+        <div class="summary-value">{{getCompletedMissionsCount()}}</div>
+      </div>
+    </mat-card>
+    
+    <mat-card class="summary-card">
+      <mat-icon class="summary-icon distance">straighten</mat-icon>
+      <div class="summary-content">
+        <div class="summary-label">Total Distance</div>
+        <div class="summary-value">{{getTotalDistance()}} km</div>
+      </div>
+    </mat-card>
+  </div>
+
+  <div *ngIf="filteredMissions.length === 0" class="no-missions">
+    <mat-icon>search_off</mat-icon>
+    <p>No missions found with the current filters.</p>
+  </div>
+
+  <div class="missions-list">
+    <mat-card *ngFor="let mission of filteredMissions" 
+              class="mission-card" 
+              [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
       <mat-card-header>
-        <mat-card-title>
-          <h1>My Missions Dashboard</h1>
-          <a>&#8203;&#8203;&#8203;&#8203;&#8203;</a>
-        </mat-card-title>
-        <mat-card-subtitle *ngIf="user">
-          
-          Welcome back, {{user.username}}!
-        </mat-card-subtitle>
+        <div mat-card-avatar>
+          <mat-icon [ngClass]="getStatusIconClass(mission)">{{getStatusIcon(mission)}}</mat-icon>
+        </div>
+        <mat-card-title>Mission to {{mission.destination}}</mat-card-title>
+        <mat-card-subtitle>{{mission.distance}} km • ID: {{mission.id}}</mat-card-subtitle>
+        
+        <div class="status-badge" 
+             [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
+          {{mission.status}}
+        </div>
       </mat-card-header>
+      
       <mat-card-content>
-        <div class="filter-controls">
-          <mat-form-field appearance="outline">
-            <mat-label>Filter by Status</mat-label>
-            <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
-              <mat-option value="all">All Statuses</mat-option>
-              <mat-option value="pending">Pending</mat-option>
-              <mat-option value="in-progress">In Progress</mat-option>
-              <mat-option value="completed">Completed</mat-option>
-              <mat-option value="cancelled">Cancelled</mat-option>
-            </mat-select>
-          </mat-form-field>
+        <div class="mission-details">
+          <div class="detail-item">
+            <mat-icon>event</mat-icon>
+            <div class="detail-content">
+              <div class="detail-label">Start Date</div>
+              <div class="detail-value">{{mission.startDate | date:'MMM dd, yyyy'}}</div>
+            </div>
+          </div>
           
-          <mat-form-field appearance="outline">
-            <mat-label>Date Range</mat-label>
-            <mat-date-range-input [rangePicker]="picker">
-              <input matStartDate placeholder="Start date" [(ngModel)]="dateRange.start" (dateChange)="applyFilters()">
-              <input matEndDate placeholder="End date" [(ngModel)]="dateRange.end" (dateChange)="applyFilters()">
-            </mat-date-range-input>
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-date-range-picker #picker></mat-date-range-picker>
-          </mat-form-field>
-  
-          <button mat-stroked-button color="primary" (click)="resetFilters()">
-            <mat-icon>refresh</mat-icon> Reset Filters
-          </button>
+          <div class="detail-item">
+            <mat-icon>event_busy</mat-icon>
+            <div class="detail-content">
+              <div class="detail-label">End Date</div>
+              <div class="detail-value">{{mission.endDate | date:'MMM dd, yyyy'}}</div>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <mat-icon>directions_car</mat-icon>
+            <div class="detail-content">
+              <div class="detail-label">Vehicle ID</div>
+              <div class="detail-value">{{mission.vehicleID}}</div>
+            </div>
+          </div>
         </div>
       </mat-card-content>
-    </mat-card>
-  
-    <div class="missions-summary">
-      <mat-card class="summary-card">
-        <mat-icon class="summary-icon total">route</mat-icon>
-        <div class="summary-content">
-          <div class="summary-label">Total Missions</div>
-          <div class="summary-value">{{filteredMissions.length}}</div>
-        </div>
-      </mat-card>
       
-      <mat-card class="summary-card">
-        <mat-icon class="summary-icon active">local_shipping</mat-icon>
-        <div class="summary-content">
-          <div class="summary-label">Active Missions</div>
-          <div class="summary-value">{{getActiveMissionsCount()}}</div>
-        </div>
-      </mat-card>
-      
-      <mat-card class="summary-card">
-        <mat-icon class="summary-icon completed">check_circle</mat-icon>
-        <div class="summary-content">
-          <div class="summary-label">Completed</div>
-          <div class="summary-value">{{getCompletedMissionsCount()}}</div>
-        </div>
-      </mat-card>
-      
-      <mat-card class="summary-card">
-        <mat-icon class="summary-icon distance">straighten</mat-icon>
-        <div class="summary-content">
-          <div class="summary-label">Total Distance</div>
-          <div class="summary-value">{{getTotalDistance()}} km</div>
-        </div>
-      </mat-card>
-    </div>
-  
-    <div *ngIf="filteredMissions.length === 0" class="no-missions">
-      <mat-icon>search_off</mat-icon>
-      <p>No missions found with the current filters.</p>
-    </div>
-  
-    <div class="missions-list">
-      <mat-card *ngFor="let mission of filteredMissions" class="mission-card" [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
-        <mat-card-header>
-          <div mat-card-avatar>
-            <mat-icon [ngClass]="getStatusIconClass(mission)">{{getStatusIcon(mission)}}</mat-icon>
-          </div>
-          <mat-card-title>Mission to {{mission.destination}}</mat-card-title>
-          <mat-card-subtitle>{{mission.distance}} km • ID: {{mission.id}}</mat-card-subtitle>
-          
-          <div class="status-badge" [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
-            {{mission.status}}
-          </div>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <div class="mission-details">
-            <div class="detail-item">
-              <mat-icon>event</mat-icon>
-              <div class="detail-content">
-                <div class="detail-label">Start Date</div>
-                <div class="detail-value">{{mission.startDate | date:'MMM dd, yyyy'}}</div>
-              </div>
-            </div>
-            
-            <div class="detail-item">
-              <mat-icon>event_busy</mat-icon>
-              <div class="detail-content">
-                <div class="detail-label">End Date</div>
-                <div class="detail-value">{{mission.endDate | date:'MMM dd, yyyy'}}</div>
-              </div>
-            </div>
-            
-            <div class="detail-item">
-              <mat-icon>directions_car</mat-icon>
-              <div class="detail-content">
-                <div class="detail-label">Vehicle ID</div>
-                <div class="detail-value">{{mission.vehicleID}}</div>
-              </div>
-            </div>
-          </div>
-        </mat-card-content>
-        
-        <mat-card-actions>
-          <button mat-button color="primary" [matMenuTriggerFor]="missionMenu">
-            <mat-icon>more_vert</mat-icon> ACTIONS
+      <mat-card-actions>
+        <button mat-button color="primary" [matMenuTriggerFor]="missionMenu">
+          <mat-icon>more_vert</mat-icon> ACTIONS
+        </button>
+        <mat-menu #missionMenu="matMenu">
+          <button mat-menu-item 
+                  (click)="updateMissionStatus(mission, 'in-progress')" 
+                  *ngIf="mission.status === 'pending'"
+                  [disabled]="!mission.id || isUpdating.has(mission.id)">
+            <mat-icon>play_arrow</mat-icon>
+            {{isUpdating.has(mission.id!) ? 'Starting...' : 'Start Mission'}}
           </button>
-          <mat-menu #missionMenu="matMenu">
-            <button mat-menu-item (click)="updateMissionStatus(mission, 'in-progress')" *ngIf="mission.status === 'pending'">
-              <mat-icon>play_arrow</mat-icon> Start Mission
-            </button>
-            <button mat-menu-item (click)="updateMissionStatus(mission, 'completed')" *ngIf="mission.status === 'in-progress'">
-              <mat-icon>check</mat-icon> Complete Mission
-            </button>
-          </mat-menu>
-        </mat-card-actions>
-      </mat-card>
-    </div>
+          <button mat-menu-item 
+                  (click)="updateMissionStatus(mission, 'Completed')" 
+                  *ngIf="mission.status === 'in-progress'"
+                  [disabled]="!mission.id || isUpdating.has(mission.id)">
+            <mat-icon>check</mat-icon>
+            {{isUpdating.has(mission.id!) ? 'Completing...' : 'Complete Mission'}}
+          </button>
+        </mat-menu>
+      </mat-card-actions>
+    </mat-card>
   </div>
+</div>

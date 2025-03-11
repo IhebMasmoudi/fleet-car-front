@@ -1,0 +1,184 @@
+<div class="assignment-admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+      <div class="title-section">
+        <h1>Vehicle Assignment Logs</h1>
+        <p class="subtitle">Monitor driver-vehicle assignment history</p>
+      </div>
+      <div class="action-buttons">
+        <button mat-button color="accent" (click)="toggleFilter()">
+          <mat-icon>filter_list</mat-icon> {{ filterActive ? 'Show All' : 'Show Active Only' }}
+        </button>
+      </div>
+    </div>
+  
+    <!-- Error messages -->
+    <div class="error-container" *ngIf="ObjectRef.keys(errorMessages).length > 0">
+      <mat-card class="error-card">
+        <mat-card-content>
+          <div *ngFor="let error of errorMessages | keyvalue" class="error-message">
+            <mat-icon color="warn">error</mat-icon> {{ error.value }}
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button color="warn" (click)="errorMessages = {}">Dismiss</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  
+    <!-- Filters section -->
+    <div class="filters-container">
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <div class="filter-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by Driver</mat-label>
+              <mat-select [(value)]="selectedDriverId" (selectionChange)="loadAssignmentsForDriver($event.value)">
+                <mat-option [value]="null">All Drivers</mat-option>
+                <mat-option *ngFor="let driver of drivers" [value]="driver.id">
+                  {{ driver.licenseNumber }} {{ driver.phoneNumber }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+  
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by Vehicle</mat-label>
+              <mat-select [(value)]="selectedVehicleId" (selectionChange)="loadAssignmentsForVehicle($event.value)">
+                <mat-option [value]="null">All Vehicles</mat-option>
+                <mat-option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
+                  {{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.licensePlate }})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+  
+            <button mat-button color="primary" (click)="clearFilter()" [disabled]="!selectedDriverId && !selectedVehicleId">
+              <mat-icon>clear</mat-icon> Clear Filters
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  
+    <!-- Assignment logs table -->
+    <div class="table-container">
+      <mat-card class="table-card">
+        <mat-card-content>
+          <div class="loading-overlay" *ngIf="loading.assignments">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+  
+          <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z1 assignment-table">
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+              <td mat-cell *matCellDef="let log"> {{ log.id }} </td>
+            </ng-container>
+  
+            <ng-container matColumnDef="driverName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Driver </th>
+              <td mat-cell *matCellDef="let log">
+                <div class="driver-info">
+                  <mat-icon>person</mat-icon>
+                  <span>{{ log.driverName }}</span>
+                </div>
+              </td>
+            </ng-container>
+  
+            <ng-container matColumnDef="vehicleName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Vehicle </th>
+              <td mat-cell *matCellDef="let log">
+                <div class="vehicle-info">
+                  <mat-icon>directions_car</mat-icon>
+                  <span>{{ log.vehicleName }}</span>
+                </div>
+              </td>
+            </ng-container>
+  
+            <ng-container matColumnDef="assignedDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Assigned </th>
+              <td mat-cell *matCellDef="let log">
+                <div class="date-info">
+                  <mat-icon>event</mat-icon>
+                  <span>{{ formatDate(log.assignedDate) }}</span>
+                </div>
+              </td>
+            </ng-container>
+  
+            <ng-container matColumnDef="unassignedDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Unassigned </th>
+              <td mat-cell *matCellDef="let log">
+                <div class="date-info" *ngIf="log.unassignedDate">
+                  <mat-icon>event_busy</mat-icon>
+                  <span>{{ formatDate(log.unassignedDate) }}</span>
+                </div>
+                <span *ngIf="!log.unassignedDate" class="ongoing-label">Still Assigned</span>
+              </td>
+            </ng-container>
+  
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+              <td mat-cell *matCellDef="let log">
+                <span class="status-badge" [ngClass]="{'active': log.status === 'Active', 'completed': log.status === 'Completed'}">
+                  {{ log.status }}
+                </span>
+              </td>
+            </ng-container>
+  
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'active-row': !row.unassignedDate}"></tr>
+  
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-table" [attr.colspan]="displayedColumns.length">
+                <div class="empty-state">
+                  <mat-icon>assignment_late</mat-icon>
+                  <p>No assignment records found</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+  
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  
+    <!-- Summary cards -->
+    <div class="summary-container">
+      <div class="summary-cards">
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="summary-text">
+              <span class="summary-value">{{ drivers.length }}</span>
+              <span class="summary-label">Total Drivers</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+  
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>directions_car</mat-icon>
+            </div>
+            <div class="summary-text">
+              <span class="summary-value">{{ vehicles.length }}</span>
+              <span class="summary-label">Total Vehicles</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+  
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>link</mat-icon>
+            </div>
+            <div class="summary-text">
+              <span class="summary-value">{{ activeAssignmentsCount }}</span>
+              <span class="summary-label">Active Assignments</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>

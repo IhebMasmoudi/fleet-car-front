@@ -90,7 +90,7 @@ export class CarsComponent implements OnInit {
       id: [null],
       model: ['', Validators.required],
       brand: ['', Validators.required],
-      licensePlate: ['', [Validators.required, Validators.pattern('[A-Z0-9-]+')]],
+      licensePlate: ['', [Validators.required]],
       year: [new Date().getFullYear(), [Validators.required, Validators.min(1950), Validators.max(new Date().getFullYear() + 1)]],
       fuelType: ['', Validators.required],
       mileage: [0, [Validators.required, Validators.min(0)]],

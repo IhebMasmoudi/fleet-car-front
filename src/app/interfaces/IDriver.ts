@@ -4,7 +4,7 @@ export interface IDriver  {
     phoneNumber: string;
     status: string;
     userId: number;
-    affectedVehicleID: number;
+    affectedVehicleID: number| null;
 
 
 }

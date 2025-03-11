@@ -5,22 +5,24 @@ import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import {MatCardModule} from '@angular/material/card';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import {MatSelectModule} from '@angular/material/select';
-import {MatOptionModule} from '@angular/material/core';
-import {MatBadgeModule} from '@angular/material/badge';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {FormsModule} from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.component.html',
+  styleUrls: ['./notification.component.scss'],
+  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,
@@ -35,8 +37,7 @@ import {FormsModule} from '@angular/forms';
     MatBadgeModule,
     MatSnackBarModule,
     FormsModule
-  
-  ],
+  ]
 })
 export class NotificationComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
@@ -51,23 +52,18 @@ export class NotificationComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Use the authService to get role instead of localStorage directly.
+    // Determine if user is admin
     this.isAdmin = this.authService.getRole() === 'ADMIN';
 
-    // Subscribe to notifications and unread count observables.
+    // Subscribe to notifications and unread count streams
     this.subscriptions.push(
-      this.notificationService.notifications$.subscribe(notifications => {
-        this.notifications = notifications;
-      })
+      this.notificationService.notifications$.subscribe(notifs => this.notifications = notifs)
+    );
+    this.subscriptions.push(
+      this.notificationService.unreadCount$.subscribe(count => this.unreadCount = count)
     );
 
-    this.subscriptions.push(
-      this.notificationService.unreadCount$.subscribe(count => {
-        this.unreadCount = count;
-      })
-    );
-
-    // Load initial notifications
+    // Load initial notifications from REST endpoints
     this.notificationService.getNotifications().subscribe();
     this.notificationService.getUnreadCount().subscribe();
   }
@@ -113,7 +109,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
   }
-
 
   navigateToNotificationList(): void {
     this.router.navigate(['/extra/notification-list']);

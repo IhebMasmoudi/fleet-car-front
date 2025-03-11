@@ -9,9 +9,9 @@
   <!-- Notification  -->
   <!-- --------------------------------------------------------------- -->
   <button mat-icon-button aria-label="Notifications" [matMenuTriggerFor]="menu" class="d-flex align-items-center justify-content-center">
-    <div matBadge="2" matBadgeSize="small" matBadgeOverlap="false" class="demo-section">
+  <!--  <div matBadge="2" matBadgeSize="small" matBadgeOverlap="false" class="demo-section">
       <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
-    </div>
+    </div>-->
   </button>
   <mat-menu #menu="matMenu">
     <button mat-menu-item>Item 1</button>
@@ -33,6 +33,10 @@
     <button mat-menu-item (click)="navigateToTasks()">
       <mat-icon class="d-flex align-items-center"><i data-icon="solar:checklist-minimalistic-line-duotone"
          class="iconify icon-22"></i> </mat-icon>My Task
+    </button>
+    <button mat-menu-item (click)="navigateToassignmentlog()">
+      <mat-icon class="d-flex align-items-center"><i data-icon="solar:checklist-minimalistic-line-duotone"
+         class="iconify icon-22"></i> </mat-icon>assignment log
     </button>
 
     <div class="p-x-12 m-t-12">

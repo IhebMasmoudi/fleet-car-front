@@ -46,6 +46,7 @@ export class DrivertasksComponent implements OnInit {
   token: string | null = null;
   missions: IMission[] = [];
   filteredMissions: IMission[] = [];
+  isUpdating: Set<number> = new Set(); // Track updating missions
   
   // Filter variables
   statusFilter: string = 'all';
@@ -67,38 +68,26 @@ export class DrivertasksComponent implements OnInit {
     this.loadUserProfile();
   }
 
-  /**
-   * Load the JWT token from local storage.
-   */
   private loadToken(): void {
     this.token = this.authService.getToken();
     console.log('JWT Token:', this.token || 'No token found');
   }
 
-  /**
-   * Load the logged-in user's profile.
-   * If the user ID is missing, decode the token and look up the user by email.
-   */
   private loadUserProfile(): void {
     let userId = this.authService.getUserId();
     if (!userId && this.token) {
-      // Decode the token to get the email (assuming the token payload contains the email in "sub")
       const decoded = this.decodeToken(this.token);
       const email = decoded?.sub;
       if (email) {
         console.log('Email from token:', email);
-        // Fetch all users and find the one with the matching email
         this.userService.getAllUsers().subscribe({
           next: (users: IUser[]) => {
             const foundUser = users.find(u => u.email === email);
             if (foundUser) {
-              // Store user details for later use
               this.authService.setUserId(foundUser.id?.toString() || '');
               this.authService.setUserName(foundUser.username);
               this.user = foundUser;
               console.log('User profile loaded by email:', foundUser);
-              
-              // Load missions for the user
               if (foundUser.id) {
                 this.loadMissionsByDriver(foundUser.id);
               }
@@ -121,8 +110,6 @@ export class DrivertasksComponent implements OnInit {
         next: (user: IUser) => {
           this.user = user;
           console.log('User profile loaded:', user);
-          
-          // Load missions for the user
           if (user.id) {
             this.loadMissionsByDriver(user.id);
           }
@@ -135,9 +122,6 @@ export class DrivertasksComponent implements OnInit {
     }
   }
 
-  /**
-   * Decode JWT token.
-   */
   private decodeToken(token: string): any {
     try {
       const base64Payload = token.split('.')[1];
@@ -149,15 +133,11 @@ export class DrivertasksComponent implements OnInit {
     }
   }
 
-  /**
-   * Load missions by driver ID.
-   * @param userId The ID of the driver to retrieve missions for.
-   */
   private loadMissionsByDriver(userId: number): void {
     this.missionsService.getMissionsByDriver(userId).subscribe({
       next: (missions: IMission[]) => {
         this.missions = missions;
-        this.filteredMissions = [...missions]; // Initialize filtered missions
+        this.filteredMissions = [...missions];
         console.log('Missions loaded for driver:', missions);
       },
       error: (err) => {
@@ -167,38 +147,27 @@ export class DrivertasksComponent implements OnInit {
     });
   }
 
-  /**
-   * Apply filters to the missions list
-   */
   applyFilters(): void {
     this.filteredMissions = this.missions.filter(mission => {
-      // Status filter
       if (this.statusFilter !== 'all' && mission.status.toLowerCase() !== this.statusFilter) {
         return false;
       }
-      
-      // Date range filter
       if (this.dateRange.start) {
         const missionStart = new Date(mission.startDate);
         if (missionStart < this.dateRange.start) {
           return false;
         }
       }
-      
       if (this.dateRange.end) {
         const missionEnd = new Date(mission.endDate);
         if (missionEnd > this.dateRange.end) {
           return false;
         }
       }
-      
       return true;
     });
   }
 
-  /**
-   * Reset all filters
-   */
   resetFilters(): void {
     this.statusFilter = 'all';
     this.dateRange.start = null;
@@ -206,9 +175,6 @@ export class DrivertasksComponent implements OnInit {
     this.filteredMissions = [...this.missions];
   }
 
-  /**
-   * Get icon for mission status
-   */
   getStatusIcon(mission: IMission): string {
     switch (mission.status.toLowerCase()) {
       case 'pending': return 'schedule';
@@ -219,72 +185,57 @@ export class DrivertasksComponent implements OnInit {
     }
   }
 
-  /**
-   * Get class for status icon
-   */
   getStatusIconClass(mission: IMission): string {
     return `status-icon-${mission.status.toLowerCase().replace(' ', '-')}`;
   }
 
-  /**
-   * Get count of active missions
-   */
   getActiveMissionsCount(): number {
     return this.missions.filter(m => m.status.toLowerCase() === 'in-progress').length;
   }
 
-  /**
-   * Get count of completed missions
-   */
   getCompletedMissionsCount(): number {
     return this.missions.filter(m => m.status.toLowerCase() === 'completed').length;
   }
 
-  /**
-   * Get total distance of all missions
-   */
   getTotalDistance(): number {
     return this.missions.reduce((total, mission) => total + mission.distance, 0);
   }
 
-  /**
-   * View mission details
-   */
   viewMissionDetails(mission: IMission): void {
-    // Implementation for viewing mission details
     console.log('View details for mission:', mission);
-    // This would typically open a dialog or navigate to a details page
   }
 
-  /**
-   * Update mission status
-   */
   updateMissionStatus(mission: IMission, newStatus: string): void {
-    // Implementation for updating mission status
-    console.log(`Update mission ${mission.id} status to ${newStatus}`);
-    
-    // This would typically call a service method to update the status
-    // For demonstration, we're just updating the local copy
-    const index = this.missions.findIndex(m => m.id === mission.id);
-    if (index !== -1) {
-      this.missions[index].status = newStatus;
-      this.filteredMissions = [...this.filteredMissions]; // Refresh the view
-      this.showSuccess(`Mission status updated to ${newStatus}`);
+    if (!mission.id) {
+      this.showError('Cannot update mission: Mission ID is missing');
+      return;
     }
+
+    this.isUpdating.add(mission.id);
+    const updatedMission = { ...mission, status: newStatus };
+
+    this.missionsService.updateMission(mission.id, updatedMission).subscribe({
+      next: (updated: IMission) => {
+        const index = this.missions.findIndex(m => m.id === mission.id);
+        if (index !== -1) {
+          this.missions[index].status = newStatus;
+          this.filteredMissions = [...this.missions];
+          this.showSuccess(`Mission status updated to ${newStatus}`);
+        }
+        this.isUpdating.delete(mission.id!);
+      },
+      error: (err) => {
+        console.error('Error updating mission status:', err);
+        this.showError('Failed to update mission status');
+        this.isUpdating.delete(mission.id!);
+      }
+    });
   }
 
-  /**
-   * Report an issue with a mission
-   */
   reportIssue(mission: IMission): void {
-    // Implementation for reporting an issue
     console.log('Report issue for mission:', mission);
-    // This would typically open a dialog to capture issue details
   }
 
-  /**
-   * Show success message
-   */
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
@@ -292,9 +243,6 @@ export class DrivertasksComponent implements OnInit {
     });
   }
 
-  /**
-   * Show error message
-   */
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,

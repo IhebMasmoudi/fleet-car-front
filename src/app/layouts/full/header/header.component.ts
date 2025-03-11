@@ -51,4 +51,8 @@ export class HeaderComponent {
     this.router.navigate(['/extra/DriverTasks']);
   }
 
+  navigateToassignmentlog(): void {
+    this.router.navigate(['/extra/assignmentlog']);
+  }
+
   }

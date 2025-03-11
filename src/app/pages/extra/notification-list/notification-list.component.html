@@ -1,13 +1,24 @@
 <div class="notifications-container mat-elevation-z2">
   <div class="notifications-header p-3 d-flex justify-content-between align-items-center">
     <h2>Notifications</h2>
-    <button mat-raised-button color="primary" *ngIf="notifications.length > 0" (click)="markAllAsRead()">
-      Mark all as read
-    </button>
+    <div class="d-flex gap-2">
+      <!-- Button to mark all notifications as read -->
+      <button mat-raised-button color="primary" *ngIf="notifications.length > 0" (click)="markAllAsRead()">
+        Mark all as read
+      </button>
+
+      <!-- Button to toggle between showing all notifications or just the last 5 -->
+      <button mat-raised-button (click)="toggleNotifications()" *ngIf="notifications.length >= 3">
+        {{ showAllNotifications ? 'Collapse' : 'Show All' }}
+      </button>
+    </div>
   </div>
   <mat-divider></mat-divider>
+
+  <!-- Notifications List -->
   <ng-container *ngIf="notifications.length > 0; else noNotifications">
-    <div class="notification-item" *ngFor="let notification of notifications" 
+    <div class="notification-item" 
+         *ngFor="let notification of getVisibleNotifications()" 
          [ngClass]="{'unread': !notification.isRead}"
          (click)="markAsRead(notification)">
       <div class="d-flex justify-content-between">
@@ -20,6 +31,8 @@
       </div>
     </div>
   </ng-container>
+
+  <!-- Placeholder for when there are no notifications -->
   <ng-template #noNotifications>
     <div class="no-notifications p-5 text-center">
       <mat-icon class="icon-48">notifications_none</mat-icon>

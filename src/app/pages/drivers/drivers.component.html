@@ -1,10 +1,14 @@
-<!-- drivers.component.html -->
 <mat-card class="cardWithShadow">
   <mat-card-content>
     <mat-card-title>Drivers Management</mat-card-title>
 
-    <!-- Filter Section -->
-    <div class="filter-container" *ngIf="!showAddForm">
+    <!-- Collapsible Filter Section -->
+    <button mat-button (click)="filtersExpanded = !filtersExpanded">
+      <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      Filters
+    </button>
+
+    <div class="filter-container" *ngIf="filtersExpanded && !showAddForm">
       <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Filter by Username</mat-label>
         <input matInput [(ngModel)]="filterUsername" (ngModelChange)="applyFilters()">
@@ -15,7 +19,7 @@
         <mat-label>Filter by Status</mat-label>
         <mat-select [(value)]="filterStatus" (selectionChange)="applyFilters()">
           <mat-option *ngFor="let status of availableStatuses" [value]="status">
-            {{status}}
+            {{ status }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -36,6 +40,44 @@
       <mat-card class="form-card">
         <mat-card-title>{{ isEditing ? 'Edit Driver' : 'Add Driver' }}</mat-card-title>
         <mat-card-content>
+          <!-- Radio buttons to choose between existing user and new user (only when adding) -->
+          <div *ngIf="!isEditing">
+            <mat-radio-group [(ngModel)]="addNewUser">
+              <mat-radio-button [value]="false">Select Existing User</mat-radio-button>
+              <mat-radio-button [value]="true">Add New User</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Existing user selection (shown when editing or when addNewUser is false) -->
+          <div *ngIf="isEditing || (!isEditing && !addNewUser)">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>User</mat-label>
+              <mat-select [(ngModel)]="userId" required>
+                <mat-option *ngFor="let user of users" [value]="user.id">
+                  {{ user.username }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- New user fields (shown only when adding and addNewUser is true) -->
+          <div *ngIf="!isEditing && addNewUser">
+            <h3>Add New User</h3>
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Username</mat-label>
+              <input matInput type="text" [(ngModel)]="newUserUsername" required />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="newUserEmail" required />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" [(ngModel)]="newUserPassword" required />
+            </mat-form-field>
+          </div>
+
+          <!-- Driver fields -->
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>License Number</mat-label>
             <input matInput type="text" [(ngModel)]="licenseNumber" required />
@@ -55,29 +97,20 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>User</mat-label>
-            <mat-select [(ngModel)]="userId" required>
-              <mat-option *ngFor="let user of users" [value]="user.id">
-                {{ user.username }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
             <mat-label>Vehicle</mat-label>
-            <mat-select [(ngModel)]="affectedVehicleID" required>
-              <mat-option *ngFor="let car of cars" [value]="car.id">
+            <mat-select [(ngModel)]="affectedVehicleID" [disabled]="status === 'Suspended'">
+              <mat-option [value]="null">No Vehicle</mat-option>
+              <mat-option *ngFor="let car of cars" [value]="car.id" [disabled]="isVehicleAssigned(car.id!) && affectedVehicleID !== car.id">
                 {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
               </mat-option>
             </mat-select>
           </mat-form-field>
 
           <div class="form-actions">
-            <button mat-raised-button color="primary" 
-              (click)="isEditing ? updateDriver() : addDriver()">
+            <button mat-raised-button color="primary" (click)="isEditing ? updateDriver() : addDriver()" [disabled]="isProcessing">
               {{ isEditing ? 'Save Changes' : 'Add Driver' }}
             </button>
-            <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
+            <button mat-stroked-button color="warn" (click)="cancelEdit()" [disabled]="isProcessing">Cancel</button>
           </div>
         </mat-card-content>
       </mat-card>
@@ -91,42 +124,64 @@
         </button>
       </div>
       <table mat-table [dataSource]="dataSource" class="w-100">
+        <!-- ID Column -->
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef> ID </th>
           <td mat-cell *matCellDef="let driver"> {{ driver.id }} </td>
         </ng-container>
 
+        <!-- License Number Column -->
         <ng-container matColumnDef="licenseNumber">
           <th mat-header-cell *matHeaderCellDef> License Number </th>
           <td mat-cell *matCellDef="let driver"> {{ driver.licenseNumber }} </td>
         </ng-container>
 
+        <!-- Phone Number Column -->
         <ng-container matColumnDef="phoneNumber">
           <th mat-header-cell *matHeaderCellDef> Phone Number </th>
           <td mat-cell *matCellDef="let driver"> {{ driver.phoneNumber }} </td>
         </ng-container>
 
+        <!-- Status Column with Icons -->
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef> Status </th>
-          <td mat-cell *matCellDef="let driver"> {{ driver.status }} </td>
+          <td mat-cell *matCellDef="let driver">
+            <span>
+              {{ driver.status }}
+              <mat-icon *ngIf="driver.status === 'Active'" class="status-icon green">check_circle</mat-icon>
+              <mat-icon *ngIf="driver.status === 'Suspended'" class="status-icon red">error</mat-icon>
+            </span>
+          </td>
         </ng-container>
 
+        <!-- User Column -->
         <ng-container matColumnDef="user">
           <th mat-header-cell *matHeaderCellDef> User </th>
           <td mat-cell *matCellDef="let driver"> {{ getUserName(driver.userId) }} </td>
         </ng-container>
 
+        <!-- Vehicle Column -->
         <ng-container matColumnDef="vehicle">
           <th mat-header-cell *matHeaderCellDef> Vehicle </th>
           <td mat-cell *matCellDef="let driver">
-            {{ getVehicleDetails(driver.affectedVehicleID) }}
+            <div class="vehicle-assignment">
+              <mat-form-field appearance="outline">
+                <mat-select [value]="driver.affectedVehicleID" (selectionChange)="updateVehicleAssignment(driver, $event.value)" [disabled]="driver.status === 'Suspended'">
+                  <mat-option [value]="null">No Vehicle</mat-option>
+                  <mat-option *ngFor="let car of cars" [value]="car.id" [disabled]="isVehicleAssigned(car.id!) && driver.affectedVehicleID !== car.id">
+                    {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
           </td>
         </ng-container>
 
+        <!-- Actions Column -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let driver">
-            <button mat-icon-button [matMenuTriggerFor]="menu">
+            <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="isProcessing">
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu">

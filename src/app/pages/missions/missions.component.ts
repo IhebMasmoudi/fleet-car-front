@@ -72,8 +72,7 @@ export class MissionsComponent implements OnInit {
   filterVehicle: string = '';
   filterUsername: string = '';
   sortDistanceAsc: boolean = true;
-  availableStatuses: string[] = ['All', 'Planned', 'Ongoing', 'Completed', 'Cancelled'];
-
+  availableStatuses: string[] = ['All', 'pending', 'in-progress', 'Completed', 'Cancelled'];
   displayedColumns: string[] = ['destination', 'startDate', 'endDate', 'distance', 'status', 'vehicle', 'driver', 'actions'];
   dataSource = new MatTableDataSource<IMission>(this.missions);
 

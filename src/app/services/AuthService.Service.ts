@@ -35,25 +35,25 @@ export class AuthService {
     );
   }
 
-  /**
+/**
    * Register user.
+   * NOTE: We specify { responseType: 'text' } because the backend returns plain text.
    */
-  register(username: string, password: string, email: string, roleId: number): Observable<any> {
-    const params = new URLSearchParams();
-    params.set('username', username);
-    params.set('password', password);
-    params.set('email', email);
-    params.set('roleId', roleId.toString());
-    const url = `${this.apiUrl}/register?${params.toString()}`;
-
-    return this.http.post(url, null).pipe(
-      tap(response => console.log('Register response:', response)),
-      catchError((error: HttpErrorResponse) => {
-        console.error('Registration error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
+register(username: string, password: string, email: string, roleId: number): Observable<any> {
+  const params = new URLSearchParams();
+  params.set('username', username);
+  params.set('password', password);
+  params.set('email', email);
+  params.set('roleId', roleId.toString());
+  const url = `${this.apiUrl}/register?${params.toString()}`;
+  return this.http.post(url, null, { responseType: 'text' }).pipe(
+    tap(response => console.log('Register response:', response)),
+    catchError((error: HttpErrorResponse) => {
+      console.error('Registration error:', error);
+      return throwError(() => error);
+    })
+  );
+}
 
   /**
    * Logout user.

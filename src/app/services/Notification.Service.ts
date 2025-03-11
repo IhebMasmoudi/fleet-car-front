@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable} from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Notification } from '../interfaces/Notification';
 import { map, tap } from 'rxjs/operators';
 import * as SockJS from 'sockjs-client';
@@ -33,7 +33,7 @@ export class NotificationService {
   private initializeService(): void {
     this.loadToken();
     if (this.token) {
-      this.authService.loadUserProfile().subscribe(role => {
+      this.authService.loadUserProfile().subscribe(() => {
         // After the profile is loaded, fetch notifications and initialize WebSocket
         this.loadNotifications();
         const userId = this.authService.getUserId();

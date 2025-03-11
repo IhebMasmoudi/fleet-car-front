@@ -5,24 +5,25 @@ import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import { CommonModule } from '@angular/common';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import {MatSelectModule} from '@angular/material/select';
-import {MatOptionModule} from '@angular/material/core';
-import {MatBadgeModule} from '@angular/material/badge';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {FormsModule} from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-notification-list',
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.scss'],
-  providers: [NotificationService],
+  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,
@@ -37,13 +38,13 @@ import {FormsModule} from '@angular/forms';
     MatBadgeModule,
     MatSnackBarModule,
     FormsModule
-  
-  ],
+  ]
 })
 export class NotificationListComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
   isAdmin = false;
   private subscriptions: Subscription = new Subscription();
+  showAllNotifications = false; // Track whether to show all notifications or just the last 5
 
   constructor(
     private notificationService: NotificationService,
@@ -132,5 +133,18 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         })
       );
     }
+  }
+
+  // Toggle visibility of all notifications
+  toggleNotifications(): void {
+    this.showAllNotifications = !this.showAllNotifications;
+  }
+
+  getVisibleNotifications(): Notification[] {
+    const sortedNotifications = [...this.notifications].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    // Return empty array when collapsed, full list when expanded
+    return this.showAllNotifications ? sortedNotifications : [];
   }
 }

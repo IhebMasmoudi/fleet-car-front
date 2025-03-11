@@ -1,4 +1,4 @@
-<!-- A bell button that shows unread count and opens a dropdown menu -->
+<!-- Notification bell button that triggers a dropdown menu -->
 <button mat-icon-button aria-label="Notifications" [matMenuTriggerFor]="menu" class="notification-button">
   <div *ngIf="unreadCount > 0" [matBadge]="unreadCount" matBadgeSize="small" matBadgeOverlap="false">
     <i class="iconify icon-20" data-icon="solar:bell-line-duotone"></i>
@@ -31,7 +31,6 @@
   
   <div *ngIf="notifications.length === 0" class="p-3 text-center">
     <p>No notifications</p>
-
   </div>
   <button mat-menu-item class="view-all" (click)="navigateToNotificationList()">
     View all notifications

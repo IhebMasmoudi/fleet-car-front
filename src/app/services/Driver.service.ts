@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { IDriver } from '../interfaces/IDriver';
 
 @Injectable({
@@ -58,6 +58,30 @@ export class DriverService {
    */
   deleteDriver(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Assign a vehicle to a driver.
+   * @param driverId The ID of the driver.
+   * @param vehicleId The ID of the vehicle (optional).
+   */
+  assignVehicle(driverId: number, vehicleId?: number): Observable<IDriver> {
+    const url = `${this.apiUrl}/${driverId}/assign-vehicle`;
+    const params = vehicleId ? new HttpParams().set('vehicleId', vehicleId.toString()) : new HttpParams();
+    return this.http.post<IDriver>(url, null, { params: params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Remove a vehicle from a driver.
+   * @param driverId The ID of the driver.
+   */
+  removeVehicle(driverId: number): Observable<IDriver> {
+    const url = `${this.apiUrl}/${driverId}/remove-vehicle`;
+    return this.http.post<IDriver>(url, null).pipe(
       catchError(this.handleError)
     );
   }

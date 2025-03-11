@@ -50,6 +50,20 @@ export class UserService {
       })
     );
   }
+/**
+   * Get a user by their Email.
+   */
+
+  getUserByEmail(email: string): Observable<IUser> {
+    return this.http.get<IUser>(`${this.apiUrl}/email/${email}`).pipe(
+      tap(user => console.log('Fetched user by email:', user)),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error fetching user by email:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
 
   /**
    * Update a user's details and role.

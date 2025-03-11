@@ -7,6 +7,7 @@ import { CarDetailsComponent } from './car-detaills/car-detaills.component';
 import { DrivertasksComponent } from './drivertasks/drivertasks.component';
 import { NotificationComponent } from './notification/notification.component';
 import { NotificationListComponent } from './notification-list/notification-list.component';
+import { AssignmentlogComponent } from './assignmentlog/assignmentlog.component';
 export const ExtraRoutes: Routes = [
   {
     path: '',
@@ -25,6 +26,15 @@ export const ExtraRoutes: Routes = [
         data: {
           title: 'Profile',
           urls: [{ title: 'Profile', url: '/Profile' }, { title: 'Profile' }],
+        },
+      },
+      {
+        path: 'assignmentlog', 
+        component: AssignmentlogComponent,
+        data: {
+          title: 'Assignmentlog',
+          urls: [{ title: 'Assignmentlog', url: '/Assignmentlog' }, { title: 'Assignmentlog' }],
+    
         },
       },
       {

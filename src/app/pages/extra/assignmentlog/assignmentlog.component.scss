@@ -1,0 +1,261 @@
+.assignment-admin-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      
+      .title-section {
+        h1 {
+          margin: 0;
+          font-size: 1.8rem;
+          font-weight: 500;
+          color: #2c3e50;
+        }
+        
+        .subtitle {
+          margin: 0.5rem 0 0;
+          color: #7f8c8d;
+          font-size: 1rem;
+        }
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: 0.8rem;
+      }
+    }
+    
+    .error-container {
+      margin-bottom: 1.5rem;
+      
+      .error-card {
+        background-color: #ffebee;
+        
+        .error-message {
+          display: flex;
+          align-items: center;
+          color: #d32f2f;
+          margin-bottom: 0.5rem;
+          
+          mat-icon {
+            margin-right: 0.5rem;
+          }
+        }
+      }
+    }
+    
+    .assignment-form-container {
+      margin-bottom: 1.5rem;
+      
+      .form-card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        
+        mat-card-title {
+          margin-bottom: 1rem;
+          color: #2c3e50;
+        }
+        
+        .form-row {
+          margin-bottom: 1rem;
+        }
+        
+        .full-width {
+          width: 100%;
+        }
+        
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.8rem;
+          margin-top: 1rem;
+        }
+      }
+    }
+    
+    .filters-container {
+      margin-bottom: 1.5rem;
+      
+      .filter-card {
+        border-radius: 8px;
+        
+        .filter-row {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          
+          mat-form-field {
+            flex: 1 1 300px;
+          }
+        }
+      }
+    }
+    
+    .table-container {
+      margin-bottom: 1.5rem;
+      position: relative;
+      
+      .table-card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+      }
+      
+      .assignment-table {
+        width: 100%;
+        
+        .mat-column-id {
+          width: 70px;
+        }
+        
+        .mat-column-actions {
+          width: 100px;
+          text-align: center;
+        }
+        
+        .driver-info, .vehicle-info, .date-info {
+          display: flex;
+          align-items: center;
+          
+          mat-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            color: #607d8b;
+          }
+        }
+        
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          
+          &.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+          }
+          
+          &.completed {
+            background-color: #e8f5e9;
+            color: #388e3c;
+          }
+        }
+        
+        .ongoing-label {
+          color: #1976d2;
+          font-style: italic;
+        }
+        
+        .active-row {
+          background-color: #f5f9ff;
+        }
+        
+        .empty-state {
+          padding: 2rem;
+          text-align: center;
+          color: #7f8c8d;
+          
+          mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+          }
+        }
+      }
+    }
+    
+    .summary-container {
+      .summary-cards {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        
+        .summary-card {
+          flex: 1 1 250px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          
+          mat-card-content {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            
+            .summary-icon {
+              background-color: #e3f2fd;
+              border-radius: 50%;
+              width: 60px;
+              height: 60px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 1rem;
+              
+              mat-icon {
+                color: #1976d2;
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+              }
+            }
+            
+            .summary-text {
+              display: flex;
+              flex-direction: column;
+              
+              .summary-value {
+                font-size: 1.8rem;
+                font-weight: 500;
+                color: #2c3e50;
+              }
+              
+              .summary-label {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .assignment-admin-container {
+      .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .action-buttons {
+          margin-top: 1rem;
+        }
+      }
+      
+      .filters-container .filter-row {
+        flex-direction: column;
+        
+        mat-form-field {
+          width: 100%;
+        }
+      }
+    }
+  }
