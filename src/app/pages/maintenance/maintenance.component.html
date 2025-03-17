@@ -1,159 +1,298 @@
-<!-- maintenance.component.html -->
 <mat-card class="cardWithShadow">
   <mat-card-content>
-    <mat-card-title>Maintenance Records</mat-card-title>
-    <a>&#8203;&#8203;&#8203;&#8203;&#8203;</a>
-    <!-- Filter Section -->
-    <div class="filter-container" *ngIf="!showAddForm">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Type</mat-label>
-        <input matInput [(ngModel)]="filterType" (ngModelChange)="applyFilters()">
-        <mat-icon matSuffix>build</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Min Cost</mat-label>
-        <input matInput type="number" [(ngModel)]="filterMinCost" (ngModelChange)="applyFilters()">
-        <mat-icon matSuffix>attach_money</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Max Cost</mat-label>
-        <input matInput type="number" [(ngModel)]="filterMaxCost" (ngModelChange)="applyFilters()">
-        <mat-icon matSuffix>attach_money</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Date From</mat-label>
-        <input matInput [matDatepicker]="startFilter" [(ngModel)]="filterStartDate" 
-               (ngModelChange)="applyFilters()">
-        <mat-datepicker-toggle matSuffix [for]="startFilter"></mat-datepicker-toggle>
-        <mat-datepicker #startFilter></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Date To</mat-label>
-        <input matInput [matDatepicker]="endFilter" [(ngModel)]="filterEndDate" 
-               (ngModelChange)="applyFilters()">
-        <mat-datepicker-toggle matSuffix [for]="endFilter"></mat-datepicker-toggle>
-        <mat-datepicker #endFilter></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Vehicle</mat-label>
-        <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()">
-        <mat-icon matSuffix>directions_car</mat-icon>
-      </mat-form-field>
-      <button mat-icon-button class="sort-btn" (click)="toggleCostSort()" 
-              [matTooltip]="sortCostAsc ? 'Sort Cost Descending' : 'Sort Cost Ascending'">
-        <mat-icon>{{sortCostAsc ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
-      </button>
-
-      <button mat-stroked-button color="warn" (click)="resetFilters()">
-        <mat-icon>clear</mat-icon> Reset Filters
-      </button>
-    </div>
-
-    <!-- Add/Edit Form -->
-    <div *ngIf="showAddForm" class="form-container">
-      <mat-card class="form-card">
-        <mat-card-title>{{ isEditing ? 'Edit Maintenance Record' : 'Add Maintenance Record' }}</mat-card-title>
-        <mat-card-content>
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Type of Maintenance</mat-label>
-            <input matInput [(ngModel)]="maintenanceType" required />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Cost  Dinar</mat-label>
-            <input matInput type="number" [(ngModel)]="maintenanceCost" required />
-            <span matPrefix>$</span>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Maintenance Date</mat-label>
-            <input matInput [matDatepicker]="picker" [(ngModel)]="maintenanceDate" required />
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Notes</mat-label>
-            <textarea matInput [(ngModel)]="maintenanceNotes"></textarea>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Vehicle</mat-label>
-            <mat-select [(ngModel)]="maintenanceVehicleID" required>
-              <mat-option *ngFor="let car of cars" [value]="car.id">
-                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-raised-button color="primary" (click)="isEditing ? saveEditedMaintenance() : addMaintenance()">
-              {{ isEditing ? 'Save Changes' : 'Add Maintenance' }}
-            </button>
-            <button mat-stroked-button color="warn" (click)="resetForm()">Cancel</button>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <!-- Maintenance Table -->
-    <div *ngIf="!showAddForm" class="table-responsive">
-      <div class="table-header">
-        <button mat-raised-button color="primary" class="add-btn" (click)="showAddForm = true">
-          <mat-icon>add</mat-icon> Add Maintenance
+    <div class="page-header">
+      <mat-card-title>Maintenance Records</mat-card-title>
+      
+      <!-- Pending Requests Toggle Button (ADMIN/MANAGER) -->
+      <div *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER'" class="header-actions">
+        <button mat-flat-button color="primary" (click)="togglePendingRequestsTable()">
+          <mat-icon>list_alt</mat-icon> {{ showPendingRequests ? 'Hide Pending Requests' : 'Show Pending Requests' }}
         </button>
       </div>
-      <table mat-table [dataSource]="dataSource" class="w-100">
+    </div>
+
+    <!-- Pending Maintenance Requests Table (ADMIN/MANAGER) -->
+    <div *ngIf="showPendingRequests && (userRole === 'ADMIN' || userRole === 'MANAGER')" class="table-container">
+      <div class="section-header">
+        <h2>Pending Maintenance Requests</h2>
+      </div>
+      <table mat-table [dataSource]="pendingDataSource" class="w-100">
+        <!-- Type Column -->
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef> Type </th>
           <td mat-cell *matCellDef="let record"> {{ record.type }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="cost">
-          <th mat-header-cell *matHeaderCellDef> Cost (Dinar) </th>
-          <td mat-cell *matCellDef="let record"> {{ record.cost | currency }} </td>
-        </ng-container>
-
+        <!-- Date Column -->
         <ng-container matColumnDef="maintenanceDate">
           <th mat-header-cell *matHeaderCellDef> Date </th>
           <td mat-cell *matCellDef="let record"> {{ record.maintenanceDate | date }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="notes">
-          <th mat-header-cell *matHeaderCellDef> Notes </th>
-          <td mat-cell *matCellDef="let record"> {{ record.notes || 'N/A' }} </td>
-        </ng-container>
-
+        <!-- Vehicle Column -->
         <ng-container matColumnDef="vehicle">
           <th mat-header-cell *matHeaderCellDef> Vehicle </th>
           <td mat-cell *matCellDef="let record"> {{ getVehicleModel(record.vehicleID) }} </td>
         </ng-container>
 
+        <!-- Driver Column -->
+        <ng-container matColumnDef="driver">
+          <th mat-header-cell *matHeaderCellDef> Requested By </th>
+          <td mat-cell *matCellDef="let record"> {{ getDriverName(record.driverId) }} </td>
+        </ng-container>
+
+        <!-- Notes Column -->
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef> Notes </th>
+          <td mat-cell *matCellDef="let record"> {{ record.notes || 'N/A' }} </td>
+        </ng-container>
+
+        <!-- Actions Column for Pending Requests -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
           <td mat-cell *matCellDef="let record">
-            <button mat-icon-button [matMenuTriggerFor]="menu">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="startEdit(record)">
-                <mat-icon>edit</mat-icon> Edit
+            <div class="action-buttons">
+              <button mat-icon-button color="primary" (click)="acceptMaintenanceRequest(record.id!)" matTooltip="Accept">
+                <mat-icon>check_circle</mat-icon>
               </button>
-              <button mat-menu-item (click)="deleteMaintenance(record.id)">
-                <mat-icon>delete</mat-icon> Delete
+              <button mat-icon-button color="warn" (click)="rejectMaintenanceRequest(record.id!)" matTooltip="Reject">
+                <mat-icon>cancel</mat-icon>
               </button>
-            </mat-menu>
+              <button mat-icon-button (click)="startEdit(record)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteMaintenance(record.id!)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr mat-header-row *matHeaderRowDef="pendingDisplayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: pendingDisplayedColumns;"></tr>
       </table>
+    </div>
+
+    <!-- Main Content Area -->
+    <div *ngIf="!showAddForm && !showPendingRequests" class="main-content">
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <button mat-flat-button class="filter-toggle-btn" (click)="toggleFilters()">
+          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+          Filters
+        </button>
+        
+        <!-- Add/Request Maintenance Button -->
+        <div class="action-buttons">
+          <!-- Add Maintenance Button (ADMIN/MANAGER) -->
+          <button mat-flat-button color="primary" class="add-btn" (click)="showAddForm = true"
+            *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER'">
+            <mat-icon>add</mat-icon> Add Maintenance
+          </button>
+          <!-- Request Maintenance Button (DRIVER) -->
+          <button mat-flat-button color="primary" class="add-btn" (click)="startRequestMaintenance()"
+            *ngIf="userRole === 'DRIVER'">
+            <mat-icon>add</mat-icon> Request Maintenance
+          </button>
+        </div>
+      </div>
+
+      <!-- Collapsible Filter Section -->
+      <div class="filter-container" *ngIf="filtersExpanded">
+        <div class="filter-grid">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Type</mat-label>
+            <input matInput [(ngModel)]="filterType" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>build</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Min Cost</mat-label>
+            <input matInput type="number" [(ngModel)]="filterMinCost" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>attach_money</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Max Cost</mat-label>
+            <input matInput type="number" [(ngModel)]="filterMaxCost" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>attach_money</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Date From</mat-label>
+            <input matInput [matDatepicker]="startFilter" [(ngModel)]="filterStartDate"
+                  (ngModelChange)="applyFilters()">
+            <mat-datepicker-toggle matSuffix [for]="startFilter"></mat-datepicker-toggle>
+            <mat-datepicker #startFilter></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Date To</mat-label>
+            <input matInput [matDatepicker]="endFilter" [(ngModel)]="filterEndDate"
+                  (ngModelChange)="applyFilters()">
+            <mat-datepicker-toggle matSuffix [for]="endFilter"></mat-datepicker-toggle>
+            <mat-datepicker #endFilter></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Vehicle</mat-label>
+            <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()">
+            <mat-icon matSuffix>directions_car</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+              <mat-option value="">All</mat-option>
+              <mat-option value="Pending">Pending</mat-option>
+              <mat-option value="Accepted">Accepted</mat-option>
+              <mat-option value="Rejected">Rejected</mat-option>
+              <mat-option value="Completed">Completed</mat-option>
+              <mat-option value="Cancelled">Cancelled</mat-option>
+              <mat-option value="In Progress">In Progress</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>filter_list</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-actions">
+          <button mat-flat-button class="sort-btn" (click)="toggleCostSort()"
+                  [matTooltip]="sortCostAsc ? 'Sort Cost Descending' : 'Sort Cost Ascending'">
+            <mat-icon>sort</mat-icon> Cost {{ sortCostAsc ? '↑' : '↓' }}
+          </button>
+
+          <button mat-flat-button color="warn" (click)="resetFilters()">
+            <mat-icon>clear</mat-icon> Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Maintenance Table -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="w-100">
+          <!-- Type Column -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <td mat-cell *matCellDef="let record"> {{ record.type }} </td>
+          </ng-container>
+
+          <!-- Cost Column -->
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef> Cost (Dinar) </th>
+            <td mat-cell *matCellDef="let record"> {{ record.cost | currency }} </td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="maintenanceDate">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let record"> {{ record.maintenanceDate | date }} </td>
+          </ng-container>
+
+          <!-- Notes Column -->
+          <ng-container matColumnDef="notes">
+            <th mat-header-cell *matHeaderCellDef> Notes </th>
+            <td mat-cell *matCellDef="let record"> {{ record.notes || 'N/A' }} </td>
+          </ng-container>
+
+          <!-- Vehicle Column -->
+          <ng-container matColumnDef="vehicle">
+            <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+            <td mat-cell *matCellDef="let record"> {{ getVehicleModel(record.vehicleID) }} </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let record"> 
+              <span class="status-badge" [ngClass]="{
+                'status-pending': record.status === 'Pending',
+                'status-accepted': record.status === 'Accepted',
+                'status-rejected': record.status === 'Rejected',
+                'status-completed': record.status === 'Completed',
+                'status-cancelled': record.status === 'Cancelled',
+                'status-in-progress': record.status === 'In Progress'
+              }">
+                {{ record.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef> Actions </th>
+            <td mat-cell *matCellDef="let record">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="startEdit(record)" 
+                        *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER'" 
+                        matTooltip="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteMaintenance(record.id)" 
+                        *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER'" 
+                        matTooltip="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add/Request Form -->
+    <div *ngIf="showAddForm" class="form-container">
+      <div class="section-header">
+        <h2>{{ isEditing ? 'Edit Maintenance Record' : (isRequestingMaintenance ? 'Request Maintenance' : 'Add Maintenance Record') }}</h2>
+      </div>
+      <div class="form-content">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Type of Maintenance</mat-label>
+          <input matInput [(ngModel)]="maintenanceType" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100" *ngIf="!isRequestingMaintenance">
+          <!-- Cost field only for ADMIN/MANAGER add/edit -->
+          <mat-label>Cost Dinar</mat-label>
+          <input matInput type="number" [(ngModel)]="maintenanceCost" required />
+          <span matPrefix>$</span>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Maintenance Date</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="maintenanceDate" required />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Notes</mat-label>
+          <textarea matInput [(ngModel)]="maintenanceNotes"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Vehicle</mat-label>
+          <mat-select [(ngModel)]="maintenanceVehicleID" required>
+            <mat-option *ngFor="let car of cars" [value]="car.id">
+              {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-flat-button color="primary"
+            (click)="isEditing ? saveEditedMaintenance() : (isRequestingMaintenance ? requestMaintenance() : addMaintenance())">
+            {{ isEditing ? 'Save Changes' : (isRequestingMaintenance ? 'Request Maintenance' : 'Add Maintenance') }}
+          </button>
+          <button mat-stroked-button (click)="resetForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
     </div>
   </mat-card-content>
 </mat-card>

@@ -1,4 +1,3 @@
-// cars.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,6 +23,9 @@ import { forkJoin, finalize } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+
 @Component({
   selector: 'app-cars',
   standalone: true,
@@ -42,7 +44,8 @@ import { FormsModule } from '@angular/forms';
     MatDialogModule,
     MatSnackBarModule,
     MatSelectModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule
   ],
   templateUrl: './cars.component.html',
   styleUrls: ['./cars.component.scss']
@@ -68,8 +71,14 @@ export class CarsComponent implements OnInit {
   sortBrandAsc: boolean = true;
   availableStatuses: string[] = ['All', 'Available', 'In Use', 'Under Maintenance'];
   availableTypes: string[] = ['All', 'Sedan', 'SUV', 'Hatchback', 'Truck', 'Van'];
+  filtersExpanded = false; // New property for collapsible filters
 
   loading = false;
+  viewMode: 'card' | 'list' = 'card';
+  dataSource = new MatTableDataSource<ICars>([]);
+  displayedColumns: string[] = ['id', 'brand', 'model', 'licensePlate', 'year', 'status', 'actions'];
+  pageSize = 10;
+  pageIndex = 0;
 
   constructor(
     private carsService: CarsService,
@@ -96,7 +105,7 @@ export class CarsComponent implements OnInit {
       mileage: [0, [Validators.required, Validators.min(0)]],
       status: ['', Validators.required],
       type: ['', Validators.required],
-      photoUrl: [null] // Optional field for photo URL
+      photoUrl: [null]
     });
   }
 
@@ -108,7 +117,7 @@ export class CarsComponent implements OnInit {
         next: (cars) => {
           this.cars = cars.map(car => ({ ...car, loadingPhoto: false }));
           this.loadCarPhotos();
-          this.applyFilters();
+          this.applyFiltersAndUpdateDataSource();
         },
         error: (error) => {
           console.error('Error fetching cars:', error);
@@ -122,7 +131,7 @@ export class CarsComponent implements OnInit {
       this.documentService.getDocumentsByVehicleId(car.id!)
         .pipe(
           switchMap(documents => {
-            const photoDoc = documents.find(doc => doc.documentName.toLowerCase() === 'photo');
+            const photoDoc = documents.find(doc => ['png', 'jpg', 'jpeg'].includes(doc.documentType.toLowerCase()));
             if (!photoDoc) return of(null);
             return this.documentService.downloadDocument(car.id!, photoDoc.documentName)
               .pipe(map((blob: Blob) => ({ carId: car.id!, blob })));
@@ -139,6 +148,7 @@ export class CarsComponent implements OnInit {
             if (car) car.photoUrl = URL.createObjectURL(result.blob);
           }
         });
+        this.applyFiltersAndUpdateDataSource();
       },
       error: (error) => console.error('Error loading car photos:', error)
     });
@@ -167,7 +177,7 @@ export class CarsComponent implements OnInit {
         next: (car) => {
           this.cars.push(car);
           this.closeForm();
-          this.applyFilters();
+          this.applyFiltersAndUpdateDataSource();
           this.showNotification('Car added successfully!', 'success');
         },
         error: (error) => {
@@ -188,7 +198,7 @@ export class CarsComponent implements OnInit {
           const index = this.cars.findIndex(car => car.id === carId);
           if (index !== -1) this.cars[index] = { ...this.carForm.value };
           this.closeForm();
-          this.applyFilters();
+          this.applyFiltersAndUpdateDataSource();
           this.showNotification('Car updated successfully!', 'success');
         },
         error: (error) => {
@@ -206,7 +216,7 @@ export class CarsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.cars = this.cars.filter(car => car.id !== id);
-          this.applyFilters();
+          this.applyFiltersAndUpdateDataSource();
           this.showNotification('Car deleted successfully!', 'success');
         },
         error: (error) => {
@@ -225,23 +235,23 @@ export class CarsComponent implements OnInit {
     this.isEditing = false;
   }
 
-  applyFilters(): void {
+  applyFiltersAndUpdateDataSource(): void {
     let filteredData = [...this.cars];
 
     if (this.filterBrand) {
-      filteredData = filteredData.filter(car => 
+      filteredData = filteredData.filter(car =>
         car.brand.toLowerCase().includes(this.filterBrand.toLowerCase())
       );
     }
 
     if (this.filterModel) {
-      filteredData = filteredData.filter(car => 
+      filteredData = filteredData.filter(car =>
         car.model.toLowerCase().includes(this.filterModel.toLowerCase())
       );
     }
 
     if (this.filterLicensePlate) {
-      filteredData = filteredData.filter(car => 
+      filteredData = filteredData.filter(car =>
         car.licensePlate.toLowerCase().includes(this.filterLicensePlate.toLowerCase())
       );
     }
@@ -254,22 +264,23 @@ export class CarsComponent implements OnInit {
     }
 
     if (this.filterStatus && this.filterStatus !== 'All') {
-      filteredData = filteredData.filter(car => 
+      filteredData = filteredData.filter(car =>
         car.status.toLowerCase() === this.filterStatus.toLowerCase()
       );
     }
 
     if (this.filterType && this.filterType !== 'All') {
-      filteredData = filteredData.filter(car => 
+      filteredData = filteredData.filter(car =>
         car.type.toLowerCase() === this.filterType.toLowerCase()
       );
     }
 
-    filteredData.sort((a, b) => 
+    filteredData.sort((a, b) =>
       this.sortBrandAsc ? a.brand.localeCompare(b.brand) : b.brand.localeCompare(a.brand)
     );
 
     this.cars = filteredData;
+    this.dataSource.data = filteredData;
   }
 
   resetFilters(): void {
@@ -285,7 +296,12 @@ export class CarsComponent implements OnInit {
 
   toggleBrandSort(): void {
     this.sortBrandAsc = !this.sortBrandAsc;
-    this.applyFilters();
+    this.applyFiltersAndUpdateDataSource();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'card' ? 'list' : 'card';
+    this.applyFiltersAndUpdateDataSource();
   }
 
   uploadDocument(carId: number): void {
@@ -296,9 +312,9 @@ export class CarsComponent implements OnInit {
     inputElement.onchange = (event: any) => {
       const file: File = event.target.files[0];
       if (file) {
-        const documentName = prompt('Enter Document Name:', file.name.split('.')[0] || 'Document') || '';
+        const documentName = prompt('Enter Document Name:', file.name.split('.')[0] || '') || '';
         const documentType = file.name.split('.').pop()?.toLowerCase() || 'pdf';
-        
+
         if (documentName) {
           this.loading = true;
           this.documentService.uploadDocument(carId, documentName, documentType, file)
@@ -309,9 +325,7 @@ export class CarsComponent implements OnInit {
                 if (this.showDocuments && this.selectedCarId === carId) {
                   this.fetchDocumentsForCar(carId);
                 }
-                if (documentName.toLowerCase() === 'photo') {
-                  this.fetchCars();
-                }
+                this.fetchCars();
               },
               error: (error) => {
                 console.error('Error uploading document:', error);
@@ -382,7 +396,7 @@ export class CarsComponent implements OnInit {
         next: () => {
           this.documents = this.documents.filter(doc => doc.id !== documentId);
           this.showNotification('Document deleted successfully!', 'success');
-          this.fetchCars(); // Refresh in case a photo was deleted
+          this.fetchCars();
         },
         error: (error) => this.showNotification('Failed to delete document', 'error')
       });
@@ -400,5 +414,11 @@ export class CarsComponent implements OnInit {
       horizontalPosition: 'end',
       verticalPosition: 'top'
     });
+  }
+
+  onPageChange(event: any): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.applyFiltersAndUpdateDataSource();
   }
 }

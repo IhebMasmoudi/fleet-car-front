@@ -1,172 +1,125 @@
-// cars.component.scss (updated section)
-.filter-container {
-  padding: 16px;
-}
-
-.filter-btn {
-  margin-left: 10px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: #e0e0e0;
-    transform: scale(1.05);
-  }
-}
-
-.filter-menu {
-  max-width: 400px;
-  padding: 15px;
-  background: #fff;
+.cardWithShadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 16px;
 }
 
-.filter-content {
+.filter-container {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-
-  .filter-field {
-    width: 100%;
-  }
-
-  .sort-btn {
-    align-self: center;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    
-    &:hover {
-      transform: scale(1.1);
-      background: #e0e0e0;
-    }
-  }
-
-  .reset-btn {
-    margin-top: 10px;
-    width: 100%;
-  }
-}
-
-/* Rest of the existing SCSS remains unchanged */
-.cars-container {
+  gap: 16px;
   padding: 16px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: flex-end;
+  background: #f5f5f5;
+  border-radius: 8px;
   margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.add-btn {
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
+.filter-field {
+  min-width: 200px;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+  padding: 16px;
+  align-items: center;
+}
+
+.cars-container {
+  padding: 20px;
+  display: flex;
+  justify-content: center; /* Center items horizontally */
 }
 
 .cars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
   gap: 20px;
+  width: 90%; /* Limit width for better centering on large screens */
+  max-width: 1200px; /* Maximum width for the grid */
 }
 
 .car-tile {
   display: flex;
   flex-direction: column;
+  height: 100%; /* Ensure tiles take full height of their row */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
+  overflow: hidden; /* Clip image corners */
+  transition: transform 0.3s ease;
+
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.03);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
   }
 }
 
 .photo-wrapper {
-  height: 180px;
-  overflow: hidden;
-  position: relative;
-  background: #f0f0f0;
+  height: 200px; /* Fixed height for photo area */
+  width: 100%;
+  overflow: hidden; /* Clip image if it overflows */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0; /* Default background color when no image */
 }
 
 .car-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
+  height: auto;
+  object-fit: cover; /* Cover photo-wrapper area */
+  display: block; /* Remove extra bottom space in some browsers */
 }
 
 .no-photo {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  color: #666;
-  font-size: 16px;
-  text-align: center;
-  padding: 10px;
+  color: #bbb;
+
+  mat-icon {
+    font-size: 60px;
+    width: 60px;
+    height: 60px;
+  }
 }
 
 .details-section {
   padding: 16px;
-  flex-grow: 1;
 }
 
 .action-row {
-  display: flex;
-  justify-content: space-around;
-  padding: 8px;
+  margin-top: auto; /* Push actions to the bottom */
   border-top: 1px solid #eee;
-}
-
-.form-container {
-  padding: 16px;
-  animation: slideIn 0.3s ease-in-out;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.form-card {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.form-actions {
+  padding: 8px 16px;
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.w-100 {
-  width: 100%;
+  justify-content: flex-end;
 }
 
 .table-responsive {
   overflow-x: auto;
-  border-radius: 8px;
-  background: white;
-  padding: 16px;
 }
 
-.success-snackbar {
-  background-color: #4caf50;
-  color: white;
+.table-header {
+  margin-bottom: 10px;
 }
 
-.error-snackbar {
-  background-color: #f44336;
-  color: white;
+.form-container {
+  margin-top: 20px;
+}
+
+.form-card {
+  padding: 20px;
+}
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.w-100 {
+  width: 100%;
 }

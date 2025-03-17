@@ -21,8 +21,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
-import { DriverDetailsDialogComponent } from '../missions/driver-details-dialog.component';
-import { CarDetailsDialogComponent } from '../missions/car-details-dialog.component';
+import { DriverDetailsDialogComponent } from './driver-details-dialog.component';
+import { CarDetailsDialogComponent } from './car-details-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -54,6 +54,9 @@ export class MissionsComponent implements OnInit {
   showAddForm: boolean = false;
   isEditing: boolean = false;
   selectedMission: IMission | null = null;
+  
+  // Filter toggle
+  filtersExpanded: boolean = false;
 
   // Form fields
   destination: string = '';
@@ -319,6 +322,10 @@ export class MissionsComponent implements OnInit {
     this.applyFilters();
   }
 
+  toggleFilters(): void {
+    this.filtersExpanded = !this.filtersExpanded;
+  }
+
   openDriverDetails(mission: IMission): void {
     const driver = this.drivers.find(d => d.id === mission.driverID);
     if (driver) {
@@ -333,7 +340,7 @@ export class MissionsComponent implements OnInit {
     const vehicle = this.vehicles.find(v => v.id === mission.vehicleID);
     if (vehicle) {
       this.dialog.open(CarDetailsDialogComponent, {
-        width: '400px',
+        width: '500px',
         data: vehicle
       });
     }

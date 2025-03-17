@@ -71,7 +71,7 @@ export class DriversComponent implements OnInit {
   availableStatuses: string[] = ['All', 'Active', 'Suspended'];
   filtersExpanded: boolean = false;
 
-  displayedColumns: string[] = [ 'licenseNumber', 'phoneNumber', 'status', 'user', 'vehicle', 'actions'];
+  displayedColumns: string[] = [ 'licenseNumber', 'phoneNumber', 'status-actions', 'user', 'vehicle', 'actions']; // Updated displayedColumns
   dataSource = new MatTableDataSource<IDriver>(this.drivers);
 
   userNames: { [key: number]: string } = {};
@@ -288,7 +288,7 @@ export class DriversComponent implements OnInit {
         return;
       }
 
-      if (this.affectedVehicleID && this.isVehicleAssigned(this.affectedVehicleID) && 
+      if (this.affectedVehicleID && this.isVehicleAssigned(this.affectedVehicleID) &&
           this.selectedDriver.affectedVehicleID !== this.affectedVehicleID) {
         this.snackBar.open('This vehicle is already assigned to another driver', 'Close', { duration: 3000 });
         this.isProcessing = false;
@@ -323,6 +323,40 @@ export class DriversComponent implements OnInit {
           }
         );
     }
+  }
+
+  updateDriverStatus(driver: IDriver, newStatus: string): void {
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
+    const updatedDriver: IDriver = {
+      ...driver, // Keep existing driver properties
+      status: newStatus // Just update the status
+    };
+
+    this.driverService.updateDriver(driver.id!, updatedDriver)
+      .pipe(finalize(() => this.isProcessing = false))
+      .subscribe(
+        () => {
+          const index = this.drivers.findIndex(d => d.id === driver.id);
+          if (index !== -1) {
+            this.drivers[index] = updatedDriver;
+            this.dataSource.data = this.drivers;
+            this.applyFilters();
+          }
+          this.snackBar.open(`Driver status updated to ${newStatus}`, 'Close', { duration: 3000 });
+        },
+        (error) => {
+          console.error('Error updating driver status:', error);
+          this.snackBar.open('Error updating driver status', 'Close', { duration: 3000 });
+          // Revert status in table in case of error (optional, for better UX)
+          const index = this.drivers.findIndex(d => d.id === driver.id);
+          if (index !== -1) {
+            this.drivers[index].status = driver.status; // Revert to original status
+            this.dataSource.data = this.drivers; // Refresh table
+          }
+        }
+      );
   }
 
   updateVehicleAssignment(driver: IDriver, vehicleId: number | null): void {
@@ -448,5 +482,9 @@ export class DriversComponent implements OnInit {
     this.filterStatus = '';
     this.filterLicenseNumber = '';
     this.dataSource.data = this.drivers;
+  }
+  onStatusChange(newStatus: string): void {
+    this.status = newStatus;
+    console.log('Status changed to:', newStatus);
   }
 }
