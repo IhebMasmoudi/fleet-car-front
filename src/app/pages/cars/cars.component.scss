@@ -1,75 +1,78 @@
 .cardWithShadow {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  margin: 16px;
+  border-radius: 12px;
+  margin: 12px;
+}
+
+.action-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.filter-panel {
+  margin-bottom: 16px;
 }
 
 .filter-container {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  align-items: center;
-  flex-wrap: wrap;
+  gap: 12px;
+  flex-wrap: wrap; /* Allow filter fields to wrap */
 }
 
 .filter-field {
-  min-width: 200px;
-}
-
-.button-container {
-  display: flex;
-  gap: 10px; /* Space between buttons */
-  padding: 16px;
-  align-items: center;
-}
-
-.cars-container {
-  padding: 20px;
-  display: flex;
-  justify-content: center; /* Center items horizontally */
+  margin-right: 12px;
 }
 
 .cars-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
-  gap: 20px;
-  width: 90%; /* Limit width for better centering on large screens */
-  max-width: 1200px; /* Maximum width for the grid */
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
 }
 
+/* Set the card tile to a small fixed width with responsive adjustments */
 .car-tile {
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure tiles take full height of their row */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden; /* Clip image corners */
-  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 0 0 calc(33.33% - 16px);
+  max-width: calc(33.33% - 16px);
+}
 
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+@media (max-width: 768px) {
+  .car-tile {
+    flex: 0 0 calc(50% - 16px);
+    max-width: calc(50% - 16px);
+  }
+}
+
+@media (max-width: 480px) {
+  .car-tile {
+    flex: 0 0 calc(100% - 16px);
+    max-width: calc(100% - 16px);
   }
 }
 
 .photo-wrapper {
-  height: 200px; /* Fixed height for photo area */
+  height: 180px;
   width: 100%;
-  overflow: hidden; /* Clip image if it overflows */
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0; /* Default background color when no image */
+  background-color: #f0f0f0;
 }
 
 .car-image {
   width: 100%;
   height: auto;
-  object-fit: cover; /* Cover photo-wrapper area */
-  display: block; /* Remove extra bottom space in some browsers */
+  object-fit: cover;
+  display: block;
 }
 
 .no-photo {
@@ -80,22 +83,23 @@
   color: #bbb;
 
   mat-icon {
-    font-size: 60px;
-    width: 60px;
-    height: 60px;
+    font-size: 50px;
+    width: 50px;
+    height: 50px;
   }
 }
 
 .details-section {
-  padding: 16px;
+  padding: 12px;
 }
 
 .action-row {
-  margin-top: auto; /* Push actions to the bottom */
+  margin-top: auto;
   border-top: 1px solid #eee;
   padding: 8px 16px;
   display: flex;
   justify-content: flex-end;
+  gap: 6px;
 }
 
 .table-responsive {
@@ -107,17 +111,18 @@
 }
 
 .form-container {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .form-card {
-  padding: 20px;
+  padding: 16px;
 }
 
 .form-actions {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
 }
 
 .w-100 {

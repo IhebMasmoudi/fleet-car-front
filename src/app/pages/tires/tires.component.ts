@@ -1,4 +1,3 @@
-// tires.component.ts
 import { Component, OnInit } from '@angular/core';
 import { TiresService } from '../../services/Tires.Service';
 import { ITire } from '../../interfaces/ITire';
@@ -47,6 +46,8 @@ export class TiresComponent implements OnInit {
   tireForm: ITire = this.initTireForm();
   isEditing = false;
   showForm = false;
+  filtersExpanded: boolean = false; // Added for filter section collapse
+
 
   // Filter properties
   filterBrand = '';
@@ -192,53 +193,53 @@ export class TiresComponent implements OnInit {
 
     // Filter by brand
     if (this.filterBrand) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         tire.brand.toLowerCase().includes(this.filterBrand.toLowerCase())
       );
     }
 
     // Filter by model
     if (this.filterModel) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         tire.model.toLowerCase().includes(this.filterModel.toLowerCase())
       );
     }
 
     // Filter by date range
     if (this.filterStartDate) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         new Date(tire.installationDate) >= this.filterStartDate!
       );
     }
     if (this.filterEndDate) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         new Date(tire.installationDate) <= this.filterEndDate!
       );
     }
 
     // Filter by mileage range
     if (this.filterMinMileage !== null) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         tire.mileageAtInstallation >= this.filterMinMileage!
       );
     }
     if (this.filterMaxMileage !== null) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         tire.mileageAtInstallation <= this.filterMaxMileage!
       );
     }
 
     // Filter by vehicle
     if (this.filterVehicle) {
-      filteredData = filteredData.filter(tire => 
+      filteredData = filteredData.filter(tire =>
         this.getVehicleModel(tire.vehicleId).toLowerCase()
           .includes(this.filterVehicle.toLowerCase())
       );
     }
 
     // Sort by mileage
-    filteredData.sort((a, b) => 
-      this.sortMileageAsc ? a.mileageAtInstallation - b.mileageAtInstallation : 
+    filteredData.sort((a, b) =>
+      this.sortMileageAsc ? a.mileageAtInstallation - b.mileageAtInstallation :
                             b.mileageAtInstallation - a.mileageAtInstallation
     );
 
@@ -259,5 +260,11 @@ export class TiresComponent implements OnInit {
   toggleMileageSort(): void {
     this.sortMileageAsc = !this.sortMileageAsc;
     this.applyFilters();
+  }
+
+  openVehicleDetails(vehicleId: number): void {
+    // Implement navigation or dialog to show vehicle details here
+    console.log(`Vehicle details requested for vehicle ID: ${vehicleId}`);
+    alert(`Vehicle details requested for vehicle ID: ${vehicleId}.  \nThis functionality can be implemented to navigate to vehicle details page or open a dialog.`);
   }
 }

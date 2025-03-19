@@ -1,37 +1,50 @@
 <!-- Notification bell button that triggers a dropdown menu -->
 <button mat-icon-button aria-label="Notifications" [matMenuTriggerFor]="menu" class="notification-button">
-  <div *ngIf="unreadCount > 0" [matBadge]="unreadCount" matBadgeSize="small" matBadgeOverlap="false">
-    <i class="iconify icon-20" data-icon="solar:bell-line-duotone"></i>
-  </div>
-  <div *ngIf="unreadCount === 0">
-    <i class="iconify icon-20" data-icon="solar:bell-line-duotone"></i>
-  </div>
+  <mat-icon matBadgeColor="warn" *ngIf="unreadCount > 0" [matBadge]="unreadCount" matBadgeSize="small" matBadgeOverlap="false">
+    notifications
+  </mat-icon>
+  <mat-icon *ngIf="unreadCount === 0">
+    notifications
+  </mat-icon>
 </button>
 
 <mat-menu #menu="matMenu" class="notification-menu">
-  <div class="notification-header d-flex justify-content-between align-items-center">
-    <h4 class="m-0">Notifications</h4>
-    <button mat-button *ngIf="unreadCount > 0" (click)="markAllAsRead(); $event.stopPropagation()" color="primary">
-      Mark all as read
+  <div class="notification-header">
+    <h4 class="menu-title">Notifications</h4>
+    <button mat-flat-button color="primary" *ngIf="unreadCount > 0" (click)="markAllAsRead(); $event.stopPropagation()">
+      <mat-icon>done_all</mat-icon> Mark all as read
     </button>
   </div>
-  
-  <div class="notification-list" *ngIf="notifications.length > 0">
-    <mat-divider></mat-divider>
-    <button mat-menu-item *ngFor="let notification of notifications.slice(0, 5)" class="notification-item"
-            [ngClass]="{'unread': !notification.isRead}" (click)="markAsRead(notification)">
-      <div class="notification-content">
-        <div class="notification-title">{{ notification.title }}</div>
-        <div class="notification-message">{{ notification.message }}</div>
-        <div class="notification-time">{{ formatTimeAgo(notification.createdAt) }}</div>
-      </div>
-    </button>
-    <mat-divider></mat-divider>
-  </div>
-  
-  <div *ngIf="notifications.length === 0" class="p-3 text-center">
-    <p>No notifications</p>
-  </div>
+
+  <mat-divider></mat-divider>
+
+  <ng-container *ngIf="notifications.length > 0; else noNotifications">
+    <div class="notification-list">
+      <button mat-menu-item *ngFor="let notification of notifications.slice(0, 5)" class="notification-item"
+              [ngClass]="{'unread': !notification.isRead}" (click)="markAsRead(notification)">
+        <div class="notification-content">
+          <div class="notification-header-item">
+            <div class="notification-title">{{ notification.title }}</div>
+            <div class="notification-time">{{ formatTimeAgo(notification.createdAt) }}</div>
+          </div>
+          <div class="notification-message">{{ notification.message }}</div>
+        </div>
+        <mat-icon *ngIf="!notification.isRead" class="unread-indicator">fiber_manual_record</mat-icon>
+      </button>
+    </div>
+     <mat-divider></mat-divider>
+  </ng-container>
+
+
+  <ng-template #noNotifications>
+    <div class="no-notifications p-3 text-center">
+      <mat-icon class="icon-48">notifications_none</mat-icon>
+      <p class="mt-2">No new notifications.</p>
+    </div>
+     <mat-divider></mat-divider>
+  </ng-template>
+
+
   <button mat-menu-item class="view-all" (click)="navigateToNotificationList()">
     View all notifications
   </button>

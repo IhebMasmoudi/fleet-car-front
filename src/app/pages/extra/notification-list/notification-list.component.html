@@ -1,70 +1,86 @@
-<div class="notifications-container mat-elevation-z2">
-  <div class="notifications-header p-3 d-flex justify-content-between align-items-center">
-    <h2>Notifications</h2>
-    <div class="d-flex gap-2">
-      <!-- Button to mark all notifications as read -->
-      <button mat-raised-button color="primary" *ngIf="notifications.length > 0" (click)="markAllAsRead()">
-        Mark all as read
-      </button>
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="page-header">
+      <mat-card-title>Notifications</mat-card-title>
+      <div class="header-actions">
+        <!-- Button to mark all notifications as read -->
+        <button mat-flat-button color="primary" *ngIf="notifications.length > 0" (click)="markAllAsRead()">
+          <mat-icon>done_all</mat-icon> Mark all as read
+        </button>
 
-      <!-- Button to toggle between showing all notifications or just the last 5 -->
-      <button mat-raised-button (click)="toggleNotifications()" *ngIf="notifications.length >= 3">
-        {{ showAllNotifications ? 'Collapse' : 'Show All' }}
-      </button>
-    </div>
-  </div>
-  <mat-divider></mat-divider>
-
-  <!-- Notifications List -->
-  <ng-container *ngIf="notifications.length > 0; else noNotifications">
-    <div class="notification-item" 
-         *ngFor="let notification of getVisibleNotifications()" 
-         [ngClass]="{'unread': !notification.isRead}"
-         (click)="markAsRead(notification)">
-      <div class="d-flex justify-content-between">
-        <h4 class="notification-title">{{ notification.title }}</h4>
-        <span class="notification-time text-muted">{{ formatDate(notification.createdAt) }}</span>
-      </div>
-      <p class="notification-message mb-0">{{ notification.message }}</p>
-      <div *ngIf="notification.targetRole" class="notification-meta mt-1">
-        <span class="badge bg-info">{{ notification.targetRole }}</span>
+        <!-- Button to toggle between showing all notifications or just the last 5 -->
+        <button mat-flat-button *ngIf="notifications.length >= 3" (click)="toggleNotifications()">
+          <mat-icon>{{ showAllNotifications ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ showAllNotifications ? 'Collapse' : 'Show All' }}
+        </button>
       </div>
     </div>
-  </ng-container>
+    <mat-divider></mat-divider>
 
-  <!-- Placeholder for when there are no notifications -->
-  <ng-template #noNotifications>
-    <div class="no-notifications p-5 text-center">
-      <mat-icon class="icon-48">notifications_none</mat-icon>
-      <p class="mt-3">You don't have any notifications yet.</p>
+    <div class="main-content">
+      <!-- Notifications List -->
+      <ng-container *ngIf="notifications.length > 0; else noNotifications">
+        <div class="notification-list">
+          <div class="notification-item"
+               *ngFor="let notification of getVisibleNotifications()"
+               [ngClass]="{'unread': !notification.isRead}"
+               (click)="markAsRead(notification)">
+            <div class="notification-content">
+              <div class="notification-header">
+                <h4 class="notification-title">{{ notification.title }}</h4>
+                <span class="notification-time text-muted">{{ formatDate(notification.createdAt) }}</span>
+              </div>
+              <p class="notification-message mb-0">{{ notification.message }}</p>
+              <div *ngIf="notification.targetRole" class="notification-meta mt-1">
+                <span class="badge bg-info">{{ notification.targetRole }}</span>
+              </div>
+            </div>
+            <mat-icon *ngIf="!notification.isRead" class="unread-indicator">fiber_manual_record</mat-icon>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Placeholder for when there are no notifications -->
+      <ng-template #noNotifications>
+        <div class="no-notifications p-5 text-center">
+          <mat-icon class="icon-48">notifications_none</mat-icon>
+          <p class="mt-3">You don't have any notifications yet.</p>
+        </div>
+      </ng-template>
     </div>
-  </ng-template>
-</div>
+
+
+  </mat-card-content>
+</mat-card>
 
 <!-- Admin Panel for creating notifications (visible only to admins) -->
-<div class="create-notification-panel mat-elevation-z2 mt-4" *ngIf="isAdmin">
-  <div class="p-3">
-    <h3>Create Notification</h3>
-    <form #notificationForm="ngForm" (ngSubmit)="createNotification(notificationForm.value); notificationForm.reset()">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Title</mat-label>
-        <input matInput name="title" ngModel required>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Message</mat-label>
-        <textarea matInput name="message" ngModel required rows="3"></textarea>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Target Role</mat-label>
-        <mat-select name="targetRole" ngModel required>
-          <mat-option value="ADMIN">Admin</mat-option>
-          <mat-option value="DRIVER">Driver</mat-option>
-          <mat-option value="ALL">All</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit" [disabled]="!notificationForm.valid">
-        Create Notification
-      </button>
-    </form>
-  </div>
-</div>
+<mat-card class="cardWithShadow create-notification-panel mt-4" *ngIf="isAdmin">
+  <mat-card-content>
+    <mat-card-title>Create Notification</mat-card-title>
+    <div class="form-container">
+      <form #notificationForm="ngForm" (ngSubmit)="createNotification(notificationForm.value); notificationForm.reset()">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Title</mat-label>
+          <input matInput name="title" ngModel required>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Message</mat-label>
+          <textarea matInput name="message" ngModel required rows="3"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Target Role</mat-label>
+          <mat-select name="targetRole" ngModel required>
+            <mat-option value="ADMIN">Admin</mat-option>
+            <mat-option value="DRIVER">Driver</mat-option>
+            <mat-option value="ALL">All</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="!notificationForm.valid">
+            Create Notification
+          </button>
+        </div>
+      </form>
+    </div>
+  </mat-card-content>
+</mat-card>

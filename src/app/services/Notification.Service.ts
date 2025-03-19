@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { Notification } from '../interfaces/Notification';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
 import * as SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { AuthService } from './AuthService.Service';
@@ -113,6 +113,10 @@ export class NotificationService {
       tap(notifications => {
         this.notificationsSubject.next(notifications);
         this.unreadCountSubject.next(notifications.filter(n => !n.isRead).length);
+      }),
+      catchError(error => {
+        console.error('Error fetching notifications:', error);
+        return of([]); // Return empty array in case of error
       })
     );
   }
@@ -128,11 +132,20 @@ export class NotificationService {
     }
     return this.http.get<{ count: number }>(`${this.apiUrl}/user/${userId}/unread/count`).pipe(
       map(response => response.count),
-      tap(count => this.unreadCountSubject.next(count))
+      tap(count => this.unreadCountSubject.next(count)),
+       catchError(error => {
+        console.error('Error fetching unread count:', error);
+        return of(0); // Return 0 in case of error
+      })
     );
   }
 
-  markAsRead(id: number): Observable<void> {
+  updateNotificationList(notifications: Notification[]): void { // ADDED METHOD
+    this.notificationsSubject.next(notifications);
+    this.unreadCountSubject.next(notifications.filter(n => !n.isRead).length);
+  }
+
+  markAsRead(id: number): Observable<Notification[]> { // Changed return type to Observable<Notification[]>
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for marking notification as read:', userId);
@@ -140,18 +153,20 @@ export class NotificationService {
         observer.complete();
       });
     }
-    return this.http.put<void>(`${this.apiUrl}/${id}/read?userId=${userId}`, {}).pipe(
-      tap(() => {
-        const notifications = this.notificationsSubject.getValue().map(n =>
-          n.id === id ? { ...n, isRead: true } : n
-        );
-        this.notificationsSubject.next(notifications);
-        this.unreadCountSubject.next(Math.max(0, this.unreadCountSubject.getValue() - 1));
-      })
-    );
+    return this.http.put<Notification[]>(`${this.apiUrl}/${id}/read?userId=${userId}`, {}) // Expecting Notification[] response
+      .pipe(
+        tap((updatedNotifications: Notification[]) => { // Capture updated list
+          this.notificationsSubject.next(updatedNotifications); // Update with the fresh list from backend
+          this.unreadCountSubject.next(updatedNotifications.filter(n => !n.isRead).length);
+        }),
+        catchError(error => { // Add catchError for error handling
+          console.error('Error marking as read:', error);
+          return of(this.notificationsSubject.value);
+        })
+      );
   }
 
-  markAllAsRead(): Observable<void> {
+  markAllAsRead(): Observable<Notification[]> { // Changed return type to Observable<Notification[]>
     const userId = this.authService.getUserId();
     if (!userId || isNaN(Number(userId))) {
       console.error('Invalid userId for marking all notifications as read:', userId);
@@ -159,13 +174,17 @@ export class NotificationService {
         observer.complete();
       });
     }
-    return this.http.put<void>(`${this.apiUrl}/user/${userId}/read-all`, {}).pipe(
-      tap(() => {
-        const notifications = this.notificationsSubject.getValue().map(n => ({ ...n, isRead: true }));
-        this.notificationsSubject.next(notifications);
-        this.unreadCountSubject.next(0);
-      })
-    );
+    return this.http.put<Notification[]>(`${this.apiUrl}/user/${userId}/read-all`, {}) // Expecting Notification[] response
+      .pipe(
+        tap((updatedNotifications: Notification[]) => { // Capture updated list
+          this.notificationsSubject.next(updatedNotifications); // Update with the fresh list from backend
+          this.unreadCountSubject.next(updatedNotifications.filter(n => !n.isRead).length);
+        }),
+        catchError(error => { // Add catchError for error handling
+          console.error('Error marking all as read:', error);
+          return of(this.notificationsSubject.value);
+        })
+      );
   }
 
   createNotification(title: string, message: string, targetRole: string): Observable<void> {

@@ -1,4 +1,3 @@
-// fuelconsumption.component.ts
 import { Component, OnInit } from '@angular/core';
 import { IFuelConsumption } from 'src/app/interfaces/IFuelConsumption';
 import { FuelConsumptionsService } from 'src/app/services/FuelConsumption.Service';
@@ -48,6 +47,7 @@ export class FuelConsumptionComponent implements OnInit {
 
   showAddForm: boolean = false;
   isEditing: boolean = false;
+  filtersExpanded: boolean = false; // Added for filter section collapse
 
   // Form fields
   fuelDate: Date | null = null;
@@ -237,12 +237,12 @@ export class FuelConsumptionComponent implements OnInit {
 
     // Filter by date range
     if (this.filterStartDate) {
-      filteredData = filteredData.filter(record => 
+      filteredData = filteredData.filter(record =>
         new Date(record.date) >= this.filterStartDate!
       );
     }
     if (this.filterEndDate) {
-      filteredData = filteredData.filter(record => 
+      filteredData = filteredData.filter(record =>
         new Date(record.date) <= this.filterEndDate!
       );
     }
@@ -273,14 +273,14 @@ export class FuelConsumptionComponent implements OnInit {
 
     // Filter by vehicle
     if (this.filterVehicle) {
-      filteredData = filteredData.filter(record => 
+      filteredData = filteredData.filter(record =>
         this.getVehicleModel(record.vehicleID).toLowerCase()
           .includes(this.filterVehicle.toLowerCase())
       );
     }
 
     // Sort by cost
-    filteredData.sort((a, b) => 
+    filteredData.sort((a, b) =>
       this.sortCostAsc ? a.cost - b.cost : b.cost - a.cost
     );
 
@@ -303,5 +303,11 @@ export class FuelConsumptionComponent implements OnInit {
   toggleCostSort(): void {
     this.sortCostAsc = !this.sortCostAsc;
     this.applyFilters();
+  }
+
+  openVehicleDetails(vehicleID: number): void {
+    // Implement navigation or dialog to show vehicle details here
+    console.log(`Vehicle details requested for vehicle ID: ${vehicleID}`);
+    alert(`Vehicle details requested for vehicle ID: ${vehicleID}.  \nThis functionality can be implemented to navigate to vehicle details page or open a dialog.`);
   }
 }

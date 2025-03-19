@@ -54,6 +54,8 @@ export class InvoiceComponent implements OnInit {
   showAddForm: boolean = false;
   isEditing: boolean = false;
   selectedInvoice: IInvoice | null = null;
+  filtersExpanded: boolean = false; // Added for filter section collapse
+
 
   invoiceIssueDate: Date | null = null;
   invoiceDueDate: Date | null = null;
@@ -88,6 +90,7 @@ export class InvoiceComponent implements OnInit {
         this.invoices = records;
         this.dataSource.data = this.invoices;
         this.filteredDataSource.data = this.invoices;
+        this.applyFilters(); // Apply filters on load to reflect initial state
         console.log('Fetched invoices:', records);
       },
       (error) => {
@@ -124,12 +127,20 @@ export class InvoiceComponent implements OnInit {
   applyFilters(): void {
     const filteredInvoices = this.invoices.filter(invoice => {
       const matchesStatus = this.filterStatus ? invoice.status === this.filterStatus : true;
-      const matchesSearch = invoice.supplierID.toString().includes(this.searchTerm) || 
-                            invoice.vehicleID.toString().includes(this.searchTerm);
+      const matchesSearch = this.searchTerm ?
+                            (this.getSupplierName(invoice.supplierID).toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                             this.getVehicleModel(invoice.vehicleID).toLowerCase().includes(this.searchTerm.toLowerCase())) : true;
       return matchesStatus && matchesSearch;
     });
     this.filteredDataSource.data = filteredInvoices;
   }
+
+  resetFilters(): void {
+    this.filterStatus = '';
+    this.searchTerm = '';
+    this.applyFilters(); // Re-apply filters to reset table view
+  }
+
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
@@ -172,6 +183,7 @@ export class InvoiceComponent implements OnInit {
         this.filteredDataSource.data = this.invoices;
         this.resetForm();
         this.showAddForm = false;
+        this.applyFilters(); // Re-apply filters to update table view
         alert('Invoice added successfully!');
       },
       (error) => {
@@ -219,6 +231,7 @@ export class InvoiceComponent implements OnInit {
           this.invoices[index] = updatedInvoice;
           this.dataSource.data = this.invoices;
           this.filteredDataSource.data = this.invoices;
+          this.applyFilters(); // Re-apply filters to update table view
         }
         this.cancelEdit();
         alert('Invoice updated successfully!');
@@ -242,6 +255,7 @@ export class InvoiceComponent implements OnInit {
         this.invoices = this.invoices.filter(inv => inv.id !== id);
         this.dataSource.data = this.invoices;
         this.filteredDataSource.data = this.invoices;
+        this.applyFilters(); // Re-apply filters to update table view
         alert('Invoice deleted successfully!');
       },
       (error) => {
@@ -251,6 +265,7 @@ export class InvoiceComponent implements OnInit {
     );
   }
 
+  
   // Helper to display supplier name
   getSupplierName(supplierID: number): string {
     const supplier = this.suppliers.find(s => s.id === supplierID);

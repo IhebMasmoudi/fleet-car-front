@@ -68,6 +68,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.notificationService.getNotifications().subscribe({
+        next: (fetchedNotifications) => {
+          // Correctly map 'read' from API to component's 'isRead'
+          this.notifications = fetchedNotifications.map(notification => ({
+            ...notification,
+            isRead: notification.read
+          }));
+          this.notificationService.updateNotificationList(this.notifications); // Update shared list with correct isRead status
+        },
         error: err => {
           console.error('Error fetching notifications:', err);
           this.snackBar.open('Failed to load notifications', 'Close', { duration: 3000 });
@@ -84,8 +92,9 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     if (!notification.isRead) {
       this.subscriptions.add(
         this.notificationService.markAsRead(notification.id).subscribe({
-          next: () => {
-            notification.isRead = true;
+          next: (updatedNotifications) => { // Receive updated notification list from backend
+            this.notifications = updatedNotifications; // Update local notifications with fresh data
+            this.notificationService.updateNotificationList(this.notifications); // Update shared list
             this.snackBar.open('Notification marked as read', 'Close', { duration: 3000 });
           },
           error: err => {
@@ -103,7 +112,9 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   markAllAsRead(): void {
     this.subscriptions.add(
       this.notificationService.markAllAsRead().subscribe({
-        next: () => {
+        next: (updatedNotifications) => { // Receive updated notification list from backend
+          this.notifications = updatedNotifications; // Update local notifications with fresh data
+          this.notificationService.updateNotificationList(this.notifications); // Update shared list
           this.snackBar.open('All notifications marked as read', 'Close', { duration: 3000 });
         },
         error: err => {
@@ -123,7 +134,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     if (this.isAdmin) {
       this.subscriptions.add(
         this.notificationService.createNotification(data.title, data.message, data.targetRole).subscribe({
-          next: () => {
+          next: (newNotification) => {
+            // Assuming the backend returns the newly created notification with correct 'read' status
+            this.notifications = [newNotification!, ...this.notifications];
+            this.notificationService.updateNotificationList(this.notifications); // Update shared list
             this.snackBar.open('Notification sent successfully', 'Close', { duration: 3000 });
           },
           error: err => {
@@ -141,10 +155,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   }
 
   getVisibleNotifications(): Notification[] {
-    const sortedNotifications = [...this.notifications].sort((a, b) => 
+    const sortedNotifications = [...this.notifications].sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    // Return empty array when collapsed, full list when expanded
-    return this.showAllNotifications ? sortedNotifications : [];
+    // Return last 3 notifications when collapsed, full list when expanded
+    return this.showAllNotifications ? sortedNotifications : sortedNotifications.slice(0, 3); // Show last 3 when collapsed
   }
 }

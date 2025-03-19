@@ -1,4 +1,3 @@
-// supplier.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ISupplier } from '../../interfaces/ISupplier';
 import { SuppliersService } from '../../services/Supplier.Service';
@@ -35,10 +34,11 @@ export class SupplierComponent implements OnInit {
   errorMessage: string = '';
   showAddForm: boolean = false;
   isEditing: boolean = false;
-  
+  filtersExpanded: boolean = false; // Added for filter section collapse
+
   // Form data
   supplierForm: ISupplier = this.initSupplierForm();
-  
+
   // Filter properties
   filterName: string = '';
   filterContactInfo: string = '';
@@ -83,7 +83,7 @@ export class SupplierComponent implements OnInit {
   startEdit(supplier: ISupplier): void {
     this.supplierForm = { ...supplier };
     this.isEditing = true;
-    this.showAddForm = false;
+    this.showAddForm = true; // Keep form visible for editing
   }
 
   addSupplier(): void {
@@ -152,8 +152,8 @@ export class SupplierComponent implements OnInit {
   }
 
   private isValidForm(): boolean {
-    return !!(this.supplierForm.name.trim() && 
-              this.supplierForm.contactInfo.trim() && 
+    return !!(this.supplierForm.name.trim() &&
+              this.supplierForm.contactInfo.trim() &&
               this.supplierForm.servicesOffered.trim());
   }
 
@@ -162,27 +162,27 @@ export class SupplierComponent implements OnInit {
 
     // Filter by name
     if (this.filterName) {
-      filteredData = filteredData.filter(supplier => 
+      filteredData = filteredData.filter(supplier =>
         supplier.name.toLowerCase().includes(this.filterName.toLowerCase())
       );
     }
 
     // Filter by contact info
     if (this.filterContactInfo) {
-      filteredData = filteredData.filter(supplier => 
+      filteredData = filteredData.filter(supplier =>
         supplier.contactInfo.toLowerCase().includes(this.filterContactInfo.toLowerCase())
       );
     }
 
     // Filter by services offered
     if (this.filterServices) {
-      filteredData = filteredData.filter(supplier => 
+      filteredData = filteredData.filter(supplier =>
         supplier.servicesOffered.toLowerCase().includes(this.filterServices.toLowerCase())
       );
     }
 
     // Sort by name
-    filteredData.sort((a, b) => 
+    filteredData.sort((a, b) =>
       this.sortNameAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
     );
 
