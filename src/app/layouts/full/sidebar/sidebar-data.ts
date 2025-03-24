@@ -57,6 +57,11 @@ export const navItems: NavItem[] = [
     divider: true
   },
   {
+    displayName: 'Insurance',
+    iconName: 'solar:atom-line-duotone',
+    route: '/insurance',  
+  },
+  {
     displayName: 'Suppliers',
     iconName: 'solar:atom-line-duotone',
     route: '/supplier',  

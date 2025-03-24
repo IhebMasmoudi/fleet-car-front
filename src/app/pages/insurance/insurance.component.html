@@ -1,0 +1,326 @@
+<mat-card class="modern-card">
+    <mat-card-content>
+      <!-- Header -->
+      <div class="page-header-modern">
+        <div class="header-content">
+          <h1 class="mat-headline-5">Insurance Records</h1>
+          <p class="mat-subtitle-1">Manage your vehicle insurance policies</p>
+        </div>
+        <div class="header-actions" *ngIf="!showAddForm">
+          <button mat-flat-button class="add-button" (click)="toggleAddForm()" aria-label="Add New Insurance">
+            <mat-icon>add</mat-icon> New Insurance
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filter-section-modern">
+        <button mat-button class="filter-toggle-modern" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+          {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+
+        <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+          <div class="filter-grid-modern">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Policy Number</mat-label>
+              <input matInput [(ngModel)]="filterPolicyNumber" (ngModelChange)="applyFilters()">
+              <button *ngIf="filterPolicyNumber" matSuffix mat-icon-button aria-label="Clear Policy Number" (click)="clearFilterPolicyNumber()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Provider</mat-label>
+              <input matInput [(ngModel)]="filterProvider" (ngModelChange)="applyFilters()">
+              <button *ngIf="filterProvider" matSuffix mat-icon-button aria-label="Clear Provider" (click)="clearFilterProvider()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Status</mat-label>
+              <mat-select [(ngModel)]="filterStatus" (selectionChange)="applyFilters()">
+                <mat-option value="">All</mat-option>
+                <mat-option value="Active">Active</mat-option>
+                <mat-option value="Expired">Expired</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Start Date From</mat-label>
+              <input matInput [matDatepicker]="filterStartPicker" [(ngModel)]="filterStartDate" (dateChange)="applyFilters()">
+              <mat-datepicker-toggle matSuffix [for]="filterStartPicker"></mat-datepicker-toggle>
+              <mat-datepicker #filterStartPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>End Date To</mat-label>
+              <input matInput [matDatepicker]="filterEndPicker" [(ngModel)]="filterEndDate" (dateChange)="applyFilters()">
+              <mat-datepicker-toggle matSuffix [for]="filterEndPicker"></mat-datepicker-toggle>
+              <mat-datepicker #filterEndPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="filter-actions-modern">
+            <button mat-stroked-button color="primary" (click)="applyFilters()" aria-label="Apply Filters">
+              <mat-icon>search</mat-icon> Apply Filters
+            </button>
+            <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset Filters">
+              <mat-icon>clear</mat-icon> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Display -->
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <!-- Table Section -->
+      <div *ngIf="!showAddForm" class="table-container-modern">
+        <!-- Table Stats -->
+        <div class="table-stats" *ngIf="dataSource.data.length > 0">
+          <div class="stat-item">
+            <span class="stat-value">{{ dataSource.data.length }}</span>
+            <span class="stat-label">Total Policies</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ activePoliciesCount }}</span>  <!-- Corrected line 87 -->
+            <span class="stat-label">Active</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ expiringSoonPoliciesCount }}</span> <!-- Corrected line 91 -->
+            <span class="stat-label">Expiring Soon</span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="dataSource.data.length === 0 && !isLoading" class="empty-state">
+          <mat-icon>no_accounts</mat-icon>
+          <h3>No insurance records found</h3>
+          <p>Try adjusting your filters or add a new insurance record</p>
+          <button mat-flat-button color="primary" (click)="toggleAddForm()">Add Insurance</button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Loading insurance records...</p>
+        </div>
+
+        <!-- Data Table -->
+        <table mat-table [dataSource]="dataSource" class="modern-table" *ngIf="dataSource.data.length > 0">
+          <!-- Policy Number Column -->
+          <ng-container matColumnDef="policyNumber">
+            <th mat-header-cell *matHeaderCellDef> Policy # </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="cell-content">
+                <span class="primary-text">{{ record.policyNumber }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Provider Column -->
+          <ng-container matColumnDef="provider">
+            <th mat-header-cell *matHeaderCellDef> Provider </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="cell-content with-icon">
+                <mat-icon class="provider-icon">business</mat-icon>
+                <span>{{ record.provider }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Start Date Column -->
+          <ng-container matColumnDef="startDate">
+            <th mat-header-cell *matHeaderCellDef> Start Date </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="cell-content">
+                <span>{{ record.startDate | date:'yyyy-MM-dd' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- End Date Column -->
+          <ng-container matColumnDef="endDate">
+            <th mat-header-cell *matHeaderCellDef> End Date </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="cell-content">
+                <span>{{ record.endDate | date:'yyyy-MM-dd' }}</span>
+                <span *ngIf="isExpiring(record.endDate)" class="expiry-tag">Expiring soon</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Cost Column -->
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef> Cost (TND) </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="cell-content cost-cell">
+                <span class="cost-value">{{ record.cost | currency:'TND ':'symbol' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="status-badge-modern" [ngClass]="{
+                'active-badge': record.status === 'Active',
+                'expired-badge': record.status === 'Expired',
+                'warning-badge': isExpiring(record.endDate)
+              }">
+                <span class="status-dot"></span>
+                {{ record.status }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Vehicle Column -->
+          <ng-container matColumnDef="car">
+            <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+            <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
+              <div class="car-chip" (click)="openCarDetails(record.vehicleID)" matTooltip="View Vehicle Details">
+                <mat-icon>directions_car</mat-icon>
+                <span>{{ getVehicleModel(record.vehicleID) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef> Actions </th>
+            <td mat-cell *matCellDef="let record">
+              <div class="action-buttons-modern">
+                <button mat-mini-fab color="primary" (click)="startEdit(record)" matTooltip="Edit Insurance" aria-label="Edit Insurance">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-mini-fab color="warn" (click)="deleteInsurance(record)" matTooltip="Delete Insurance" aria-label="Delete Insurance">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="getRowClass(row)" class="table-row-modern"></tr>
+        </table>
+      </div>
+
+      <!-- Form Section -->
+      <div *ngIf="showAddForm" class="form-container-modern">
+        <div class="form-header">
+          <h2>{{ isEditing ? 'Edit Insurance Policy' : 'Add New Insurance Policy' }}</h2>
+          <button mat-icon-button color="primary" (click)="cancelEdit()" matTooltip="Close Form" aria-label="Close Form">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="form-content">
+          <form #insuranceForm="ngForm" (ngSubmit)="isEditing ? saveEditedInsurance() : addInsurance()">
+            <div class="form-section">
+              <h3 class="section-title">Policy Information</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Policy Number</mat-label>
+                  <input matInput [(ngModel)]="policyNumber" name="policyNumber" required placeholder="e.g., POL-123456">
+                  <mat-hint>Enter the policy identifier</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['policyNumber']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    Policy Number is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Provider</mat-label>
+                  <input matInput [(ngModel)]="provider" name="provider" required placeholder="e.g., ABC Insurance">
+                  <mat-hint>Enter the insurance company name</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['provider']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    Provider is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Start Date</mat-label>
+                  <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" name="startDate" required>
+                  <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                  <mat-hint>Policy effective date</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['startDate']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    Start Date is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>End Date</mat-label>
+                  <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" name="endDate" required>
+                  <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                  <mat-hint>Policy expiry date</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['endDate']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    End Date is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3 class="section-title">Cost & Status</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Cost (TND)</mat-label>
+                  <input matInput type="number" [(ngModel)]="cost" name="cost" required min="0">
+                  <span matPrefix>TND </span>
+                  <mat-hint>Total policy cost</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['cost']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    Cost is required
+                  </mat-error>
+                  <mat-error *ngIf="insuranceForm.controls['cost']?.errors?.['min']"> <!-- Corrected NG1 error -->
+                    Cost must be positive
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Status</mat-label>
+                  <mat-select [(ngModel)]="status" name="status" required>
+                    <mat-option value="Active">Active</mat-option>
+                    <mat-option value="Expired">Expired</mat-option>
+                  </mat-select>
+                  <mat-hint>Current policy status</mat-hint>
+                  <mat-error *ngIf="insuranceForm.controls['status']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                    Status is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3 class="section-title">Vehicle Information</h3>
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Vehicle</mat-label>
+                <mat-select [(ngModel)]="vehicleID" name="vehicleID" required>
+                  <mat-option *ngFor="let car of cars" [value]="car.id">
+                    {{ car.model }} ({{ car.licensePlate }})
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Select the insured vehicle</mat-hint>
+                <mat-error *ngIf="insuranceForm.controls['vehicleID']?.errors?.['required']"> <!-- Corrected NG1 error -->
+                  Vehicle is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions-modern">
+              <button mat-flat-button color="primary" type="submit" [disabled]="insuranceForm.invalid">
+                <mat-icon>{{ isEditing ? 'save' : 'add_circle' }}</mat-icon>
+                {{ isEditing ? 'Save Changes' : 'Add Insurance' }}
+              </button>
+              <button mat-stroked-button type="button" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>

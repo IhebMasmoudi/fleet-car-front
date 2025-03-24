@@ -11,6 +11,7 @@ import { SupplierComponent } from './supplier/supplier.component';
 import { InvoiceComponent } from './invoice/invoice.component';
 import { DriversComponent } from './drivers/drivers.component';
 import { MissionsComponent } from './missions/missions.component';
+import { InsuranceComponent } from './insurance/insurance.component';
 export const PagesRoutes: Routes = [
   {
     path: '',
@@ -109,6 +110,14 @@ export const PagesRoutes: Routes = [
     data: {
       title: 'Missions',
       urls: [{ title: 'Missions', url: '/Missions' }, { title: 'Missions' }],
+    },
+  },
+  {
+    path: 'insurance',
+    component: InsuranceComponent,
+    data: {
+      title: 'Insurance',
+      urls: [{ title: 'Insurance', url: '/Insurance' }, { title: 'Insurance' }],
     },
   },
 
