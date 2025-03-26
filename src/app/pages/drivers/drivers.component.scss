@@ -1,265 +1,414 @@
-// driver.component.scss
-.cardWithShadow {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-  margin: 24px;
-  overflow: hidden;
-  background-color: #ffffff;
-}
+@use 'sass:color';
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
+// ----------------------------------------
+// Color Variables - Modern Theme (Consistent with Insurance Component)
+// ----------------------------------------
+$primary-color: #3f51b5;
+$primary-light: #e8eaf6;
+$primary-dark: #303f9f;
+$accent-color: #ff4081;
+$warning-color: #ff9800;
+$success-color: #4caf50;
+$danger-color: #f44336;
+$neutral-bg: #f5f7fa;
+$card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+$border-radius: 12px;
+$transition-speed: 0.3s;
 
-.mat-card-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
+// ----------------------------------------
+// Mixins - Reusable Styles (Consistent with Insurance Component)
+// ----------------------------------------
+@mixin rounded-button {
+  border-radius: 50px;
+  padding: 0 20px;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all $transition-speed ease;
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
+  &:hover,
+  &:focus {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
 
-.section-header {
-  margin-bottom: 20px;
-
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: #424242;
-    margin: 0;
+  mat-icon {
+    margin-right: 4px;
+    vertical-align: middle;
   }
 }
 
+@mixin card-container {
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  background-color: white;
+}
+
+// ----------------------------------------
+// Card Component Styling - Modern Card (consistent with Insurance Component)
+// ----------------------------------------
+.modern-card.cardWithShadow {
+  @include card-container;
+  margin: 24px;
+}
+
+// ----------------------------------------
+// Page Header Section - Modern (consistent with Insurance Component)
+// ----------------------------------------
+.page-header.page-header-modern {
+  background: linear-gradient(135deg, $primary-color, $primary-dark);
+  color: white;
+  padding: 24px;
+  border-radius: $border-radius $border-radius 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .header-content {
+    h1.mat-headline-5.mat-card-title {
+      margin: 0;
+      font-weight: 500;
+      font-size: 24px;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    .header-action-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .add-button {
+      @include rounded-button;
+      background-color: white;
+      color: $primary-color;
+      padding: 0 20px;
+    }
+
+    .header-filter-button {
+      @include rounded-button;
+      background-color: $primary-light;
+      color: $primary-color;
+      padding: 4px 16px;
+
+      &:hover,
+      &:focus {
+        background-color: color.adjust($primary-light, $lightness: -5%);
+        outline: none;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+        transition: transform $transition-speed ease;
+      }
+    }
+  }
+}
+
+// ----------------------------------------
+// Section Header - Form Section Titles (consistent with Insurance Component)
+// ----------------------------------------
+.form-section {
+  .section-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 16px;
+    color: rgba(0, 0, 0, 0.7);
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}
+
+
+// ----------------------------------------
+// Main Content Area
+// ----------------------------------------
 .main-content {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.filter-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+// ----------------------------------------
+// Filter Section - Modern (consistent with Insurance Component)
+// ----------------------------------------
+.filter-section-modern {
+  margin: 0 24px 24px;
+
+  .filter-container-modern {
+    background-color: $neutral-bg;
+    border-radius: $border-radius;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all $transition-speed ease;
+    border: 1px solid rgba(0, 0, 0, 0.05); // Added border for visual separation
+
+    &.expanded {
+      padding: 20px;
+      max-height: 500px;
+    }
+
+    .filter-grid-modern {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .filter-actions-modern {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+
+      button {
+        @include rounded-button;
+        padding: 0 16px;
+
+        mat-icon {
+          margin-right: 4px;
+        }
+
+        &:focus {
+          outline: 2px solid $primary-color;
+          outline-offset: 2px;
+        }
+      }
+    }
+  }
 }
 
-.filter-toggle-btn {
-  background-color: #f5f5f5;
-  color: #555;
-  display: flex;
+
+.filter-toggle-modern.filter-toggle-btn {
+  @include rounded-button;
+  background-color: $primary-light;
+  color: $primary-color;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-radius: 8px;
-  padding: 8px 16px;
-  transition: all 0.2s ease;
+  padding: 4px 16px;
+  margin-bottom: 12px;
+  transition: background-color 0.3s ease;
 
-  &:hover {
-    background-color: #e0e0e0;
+  &:hover,
+  &:focus {
+    background-color: color.adjust($primary-light, $lightness: -5%);
+    outline: none;
   }
 }
 
-.filter-container {
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  animation: fadeIn 0.3s ease;
+
+// ----------------------------------------
+// Table Container Section - Modern (consistent with Insurance Component)
+// ----------------------------------------
+.table-container-modern.table-container {
+  @include card-container;
+  margin: 0 24px 24px;
 }
 
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.filter-field {
+.modern-table.mat-table {
   width: 100%;
-  margin: 0;
+  border-collapse: collapse; // Ensure clean border rendering
+
+  th.mat-header-cell {
+    color: rgba(0, 0, 0, 0.7);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 16px;
+    background-color: $neutral-bg;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+    text-align: left; /* Align header text to the left */
+  }
+
+  td.mat-cell {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    font-size: 14px;
+    color: #333;
+
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+
+      &.vehicle-info {
+        flex-direction: row;
+        align-items: center;
+        mat-icon {
+          margin-right: 8px;
+          font-size: 18px;
+          height: 18px;
+          width: 18px;
+          color: rgba(0, 0, 0, 0.6);
+        }
+      }
+    }
+  }
+
+  tr.mat-row.table-row-modern:hover {
+    background-color: rgba(63, 81, 181, 0.03);
+  }
 }
 
-.filter-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
 
-.sort-btn {
-  background-color: #f0f0f0;
-  color: #555;
-  display: flex;
+// ----------------------------------------
+// Status Badge Styling - Modern (consistent with Insurance Component)
+// ----------------------------------------
+.status-badge-modern.status-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border-radius: 8px;
-  padding: 8px 16px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e0e0e0;
-  }
-}
-
-.table-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
-
-.add-btn {
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-}
-
-.mat-table {
-  width: 100%;
-}
-
-.mat-header-cell {
-  background-color: #f5f5f5;
-  color: #424242;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 13px;
   font-weight: 500;
-  font-size: 0.9rem;
-  padding: 16px;
-}
 
-.mat-cell {
-  padding: 16px;
-  font-size: 0.9rem;
-  color: #333;
-}
+  .status-dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
 
-.mat-row {
-  transition: background-color 0.2s ease;
+  &.active-badge {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: $success-color;
+    .status-dot { background-color: $success-color; }
+  }
 
-  &:hover {
-    background-color: #f9f9f9;
+  &.expired-badge {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: $danger-color;
+    .status-dot { background-color: $danger-color; }
   }
 }
 
-.status-select {
+.status-select.form-field {
+  @extend .form-field;
   width: 140px;
-  margin-top: -1.25em;
-  margin-bottom: -1.25em;
+  margin-top: -0.75em;
+  margin-bottom: -0.75em;
 }
 
-.status-badge {
-  border-radius: 4px;
-  font-weight: 500;
-  text-align: center;
-}
 
-.status-active {
-  background-color: #e8f5e9;
+// ----------------------------------------
+// Form Container Section - Modern (consistent with Insurance Component)
+// ----------------------------------------
+.form-container-modern.form-container {
+  @include card-container;
 
-  ::ng-deep .mat-select-value {
-    color: #2e7d32;
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background-color: $primary-light;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    h2 {
+      margin: 0;
+      font-weight: 500;
+      color: $primary-color;
+    }
+  }
+
+  .form-content.mat-card-content {
+    padding: 24px;
+
+    .form-section {
+      margin-bottom: 28px;
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 16px;
+        color: rgba(0, 0, 0, 0.7);
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      .form-field {
+        margin-bottom: 10px;
+      }
+    }
+
+
+    .form-actions-modern {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+
+      button {
+        @include rounded-button;
+        padding: 0 24px;
+
+        mat-icon {
+          margin-right: 8px;
+          vertical-align: middle;
+        }
+
+        &:focus {
+          outline: 2px solid $primary-color;
+          outline-offset: 2px;
+        }
+      }
+    }
   }
 }
 
-.status-suspended {
-  background-color: #ffebee;
 
-  ::ng-deep .mat-select-value {
-    color: #c62828;
-  }
+.submit-button {
+  @include rounded-button;
+  padding: 0 24px;
+    mat-icon {
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    &:focus {
+      outline: 2px solid $primary-color;
+      outline-offset: 2px;
+    }
 }
 
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
-  padding: 0.5em 0;
-}
-
-::ng-deep .mat-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-flex {
-  padding: 0 0.75em;
-  margin-top: 0;
-}
-
-.vehicle-info {
-  display: flex;
-  align-items: center;
-}
-
-.vehicle-info mat-icon {
-  margin-right: 8px;
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  color: #607d8b;
+.cancel-button {
+  @extend .cancel-button;
 }
 
 
-.action-buttons {
+.action-buttons-modern.action-buttons {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-}
 
-.form-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-  animation: slideIn 0.3s ease;
-}
+  button.mat-mini-fab {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all $transition-speed ease;
 
-.form-card {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
-
-  .form-field {
-    flex: 1;
+    &:hover,
+    &:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      outline: none;
+    }
   }
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-}
 
-.w-100 {
-  width: 100%;
-}
-
+// ----------------------------------------
+// Animations (consistent with Insurance Component)
+// ----------------------------------------
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -280,19 +429,23 @@
   }
 }
 
+
+// ----------------------------------------
+// Responsive Styles (Media Queries) - Adjusted for consistency
+// ----------------------------------------
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
     gap: 0;
   }
 
-  .page-header {
+  .page-header.page-header-modern {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
 
-  .filter-actions {
+  .filter-actions-modern.filter-actions {
     flex-direction: column;
     align-items: stretch;
   }

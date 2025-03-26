@@ -6,7 +6,7 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Dashboard',
-    iconName: 'solar:atom-line-duotone',
+    iconName: 'tabler:layout-dashboard', // Tabler icon
     route: '/dashboard',
   },
   {
@@ -15,13 +15,13 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Drivers',
-    iconName: 'solar:atom-line-duotone',
-    route: '/drivers',  
+    iconName: 'tabler:users', // Tabler icon
+    route: '/drivers', 
   },
   {
     displayName: 'Missions',
-    iconName: 'solar:atom-line-duotone',
-    route: '/missions',  
+    iconName: 'tabler:file-description', // Tabler icon for tasks/missions
+    route: '/missions',
   },
   {
     navCap: 'Garage',
@@ -29,28 +29,28 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Cars',
-    iconName: 'solar:atom-line-duotone',
-    route: '/cars',  
+    iconName: 'tabler:car', // Tabler icon for vehicles
+    route: '/cars',
   },
   {
     displayName: 'Maintenances',
-    iconName: 'solar:atom-line-duotone',
-    route: '/maintenance',  
+    iconName: 'tabler:tools', // Tabler icon for maintenance
+    route: '/maintenance',
   },
   {
     displayName: 'Fuel Consumptions',
-    iconName: 'solar:atom-line-duotone',
-    route: '/fuelconsumption',  
+    iconName: 'tabler:gas-station', // Tabler icon for fuel
+    route: '/fuelconsumption',
   },
   {
     displayName: 'Tires',
-    iconName: 'solar:atom-line-duotone',
-    route: '/tires',  
+    iconName: 'tabler:wheel', // Tabler icon for tires
+    route: '/tires',
   },
   {
     displayName: 'Parking Slots',
-    iconName: 'solar:atom-line-duotone',
-    route: '/parkingSlot',  
+    iconName: 'tabler:parking', // Tabler icon for parking slots
+    route: '/parkingSlot',
   },
   {
     navCap: 'Accounting',
@@ -58,36 +58,33 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Insurance',
-    iconName: 'solar:atom-line-duotone',
-    route: '/insurance',  
+    iconName: 'tabler:shield-check', // Tabler icon for security/insurance
+    route: '/insurance',
   },
   {
     displayName: 'Suppliers',
-    iconName: 'solar:atom-line-duotone',
-    route: '/supplier',  
+    iconName: 'tabler:package', // Tabler icon for suppliers/businesses
+    route: '/supplier',
   },
   {
     displayName: 'Invoices',
-    iconName: 'solar:atom-line-duotone',
-    route: '/invoice',  
+    iconName: 'tabler:receipt', // Tabler icon for invoices/billing
+    route: '/invoice',
   },
-  
   {
     navCap: 'Settings',
     divider: true
   },
   {
     displayName: 'Users',
-    iconName: 'solar:atom-line-duotone',
-    route: '/users',  
+    iconName: 'tabler:user', // Tabler icon for user management
+    route: '/users',
   },
- 
   {
     displayName: 'Roles',
-    iconName: 'solar:atom-line-duotone',
-    route: '/roles',  
+    iconName: 'tabler:settings', // Tabler icon for user roles/permissions
+    route: '/roles',
   },
-  
  
   {
     navCap: 'Ui Components',

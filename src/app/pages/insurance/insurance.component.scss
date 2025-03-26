@@ -1,7 +1,8 @@
-// Import the sass:color module
 @use 'sass:color';
 
-// Modern Color Variables
+// ----------------------------------------
+// Color Variables - Modern Theme
+// ----------------------------------------
 $primary-color: #3f51b5;
 $primary-light: #e8eaf6;
 $primary-dark: #303f9f;
@@ -14,10 +15,12 @@ $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 $border-radius: 12px;
 $transition-speed: 0.3s;
 
-// Mixins for Reusability
+// ----------------------------------------
+// Mixins - Reusable Styles
+// ----------------------------------------
 @mixin rounded-button {
   border-radius: 50px;
-  padding: 0 20px; // Adjusted padding for mixin to be more general
+  padding: 0 20px;
   font-weight: 500;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all $transition-speed ease;
@@ -42,13 +45,17 @@ $transition-speed: 0.3s;
 }
 
 
-// Card Styling
+// ----------------------------------------
+// Card Component Styling
+// ----------------------------------------
 .modern-card {
   @include card-container;
   margin: 24px;
 }
 
-// Header Styling
+// ----------------------------------------
+// Page Header Section - Updated
+// ----------------------------------------
 .page-header-modern {
   background: linear-gradient(135deg, $primary-color, $primary-dark);
   color: white;
@@ -71,15 +78,44 @@ $transition-speed: 0.3s;
     }
   }
 
-  .add-button {
-    @include rounded-button;
-    background-color: white;
-    color: $primary-color;
-    padding: 0 20px; // Specify padding again as the mixin is more general now
+  .header-actions {
+    display: flex;
+    align-items: center; // Vertically align buttons
+    .header-action-buttons {  // Style the button container
+      display: flex;
+      gap: 12px; // Space between buttons in the header
+    }
+
+    .add-button {
+      @include rounded-button;
+      background-color: white;
+      color: $primary-color;
+      padding: 0 20px;
+    }
+
+    .header-filter-button { // Style for the "Show Filters" button in header
+      @include rounded-button; // Re-use rounded button mixin
+      background-color: $primary-light;
+      color: $primary-color;
+      padding: 4px 16px; // Adjust padding to be smaller if needed
+
+      &:hover,
+      &:focus {
+        background-color: color.adjust($primary-light, $lightness: -5%);
+        outline: none;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+        transition: transform $transition-speed ease;
+      }
+    }
   }
 }
 
+// ----------------------------------------
 // Filter Section
+// ----------------------------------------
 .filter-section-modern {
   margin: 0 24px 24px;
 
@@ -88,8 +124,8 @@ $transition-speed: 0.3s;
     margin-bottom: 12px;
     color: $primary-color;
     background-color: $primary-light;
-    @include rounded-button; // Using mixin for rounded buttons
-    padding: 4px 16px; // Adjusted padding for toggle button
+    @include rounded-button;
+    padding: 4px 16px;
 
     mat-icon {
       margin-right: 8px;
@@ -98,7 +134,6 @@ $transition-speed: 0.3s;
 
     &:hover,
     &:focus {
-      // Corrected line - using color.adjust instead of darken and imported sass:color
       background-color: color.adjust($primary-light, $lightness: -5%);
       outline: none;
     }
@@ -130,8 +165,8 @@ $transition-speed: 0.3s;
       margin-top: 16px;
 
       button {
-        @include rounded-button; // Using mixin for rounded buttons
-        padding: 0 16px; // Adjusted padding for filter action buttons
+        @include rounded-button;
+        padding: 0 16px;
 
         mat-icon {
           margin-right: 4px;
@@ -146,7 +181,9 @@ $transition-speed: 0.3s;
   }
 }
 
-// Table Container Styling
+// ----------------------------------------
+// Table Container Section
+// ----------------------------------------
 .table-container-modern {
   @include card-container;
   margin: 0 24px 24px;
@@ -256,7 +293,9 @@ $transition-speed: 0.3s;
   }
 }
 
+// ----------------------------------------
 // Status Badge Styling
+// ----------------------------------------
 .status-badge-modern {
   display: inline-flex;
   align-items: center;
@@ -291,7 +330,9 @@ $transition-speed: 0.3s;
   }
 }
 
+// ----------------------------------------
 // Car Chip Styling
+// ----------------------------------------
 .car-chip {
   display: inline-flex;
   align-items: center;
@@ -317,7 +358,9 @@ $transition-speed: 0.3s;
   }
 }
 
+// ----------------------------------------
 // Action Buttons Styling
+// ----------------------------------------
 .action-buttons-modern {
   display: flex;
   gap: 8px;
@@ -335,7 +378,9 @@ $transition-speed: 0.3s;
   }
 }
 
-// Form Styling
+// ----------------------------------------
+// Form Container Styling - Updated for field spacing
+// ----------------------------------------
 .form-container-modern {
   @include card-container;
 
@@ -373,9 +418,15 @@ $transition-speed: 0.3s;
     .form-row {
       display: flex;
       gap: 16px;
+      margin-bottom: 16px; // Add margin below each form-row for spacing
 
       @media (max-width: 768px) {
         flex-direction: column;
+      }
+
+      // Add margin to form-field within form-row for spacing between fields in a row
+      .form-field {
+        margin-bottom: 10px; // Example: Add 10px margin below each field
       }
     }
 
@@ -390,8 +441,8 @@ $transition-speed: 0.3s;
       margin-top: 24px;
 
       button {
-        @include rounded-button; // Using mixin for form action buttons
-        padding: 0 24px; // Adjusted padding for form action buttons
+        @include rounded-button;
+        padding: 0 24px;
 
         mat-icon {
           margin-right: 8px;
@@ -407,7 +458,9 @@ $transition-speed: 0.3s;
   }
 }
 
+// ----------------------------------------
 // Error Message Styling
+// ----------------------------------------
 .error-message {
   color: $danger-color;
   padding: 12px 24px;
@@ -416,7 +469,9 @@ $transition-speed: 0.3s;
   margin: 0 24px 24px;
 }
 
-// Row States
+// ----------------------------------------
+// Row State Styling
+// ----------------------------------------
 .expired-row {
   background-color: rgba(244, 67, 54, 0.05);
 }

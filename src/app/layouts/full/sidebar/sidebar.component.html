@@ -1,10 +1,30 @@
-<div class="d-flex align-items-center justify-content-between">
-  <div class="branding"><app-branding></app-branding></div>
+<div class="sidebar">
+  <div class="branding">
+    <app-branding></app-branding>
+  </div>
 
-  @if(showToggle) {
-  <a href="javascript:void(0)" (click)="toggleMobileNav.emit()"
-    class="d-flex justify-content-center ng-star-inserted icon-40 align-items-center">
-    <i-tabler name="x" class="icon-20 d-flex"></i-tabler>
-  </a>
-  }
+  <ul class="nav-list">
+    <li *ngFor="let item of navItems">
+      <ng-container *ngIf="item.navCap">
+        <h6 class="nav-cap">{{ item.navCap }}</h6>
+      </ng-container>
+
+      <a *ngIf="item.displayName"  class="nav-link">
+        <!-- Material Icon -->
+        <mat-icon *ngIf="isMaterialIcon(item.iconName)">{{ item.iconName }}</mat-icon>
+
+        <!-- Tabler Icon -->
+        <i-tabler *ngIf="isTablerIcon(item.iconName)" [name]="item.iconName.replace('tabler-', '')" class="icon-20"></i-tabler>
+
+        <!-- Solar Icon -->
+        <i class="solar-icon" *ngIf="isSolarIcon(item.iconName)">{{ item.iconName.replace('solar:', '') }}</i>
+
+        <span>{{ item.displayName }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <button *ngIf="showToggle" (click)="toggleMobileNav.emit()" class="toggle-btn">
+    <i-tabler name="x" class="icon-20"></i-tabler>
+  </button>
 </div>

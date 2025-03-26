@@ -22,7 +22,7 @@ export class InsuranceService {
     return this.http.get<Insurance>(`${this.apiUrl}/${id}`);
   }
 
-  createInsurance(insurance: Insurance): Observable<Insurance> {
+  createInsurance(insurance: Omit<Insurance, 'id'>): Observable<Insurance> {
     return this.http.post<Insurance>(this.apiUrl, insurance);
   }
 

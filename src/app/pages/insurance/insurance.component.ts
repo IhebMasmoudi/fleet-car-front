@@ -138,8 +138,7 @@ export class InsuranceComponent implements OnInit {
       return;
     }
 
-    const newInsurance: Insurance = {
-      id: 0,
+    const newInsurance: Omit<Insurance, 'id'> = {
       policyNumber: this.policyNumber,
       provider: this.provider,
       startDate: this.datePipe.transform(this.startDate, 'yyyy-MM-dd') || '',
@@ -148,6 +147,7 @@ export class InsuranceComponent implements OnInit {
       status: this.status,
       vehicleID: this.vehicleID
     };
+    
 
     this.insuranceService.createInsurance(newInsurance).subscribe(
       (record) => {

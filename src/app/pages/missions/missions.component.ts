@@ -1,5 +1,4 @@
-// missions.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core'; // Make sure AfterViewInit and ViewChild are imported
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { IMission } from 'src/app/interfaces/IMission';
@@ -24,6 +23,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { DriverDetailsDialogComponent } from './driver-details-dialog.component';
 import { CarDetailsDialogComponent } from './car-details-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator'; // Import MatPaginatorModule and MatPaginator
 
 @Component({
   selector: 'app-missions',
@@ -43,10 +43,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatDatepickerModule,
     MatMenuModule,
     MatNativeDateModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatPaginatorModule // Add MatPaginatorModule to imports
   ]
 })
-export class MissionsComponent implements OnInit {
+export class MissionsComponent implements OnInit, AfterViewInit {
   missions: IMission[] = [];
   vehicles: ICars[] = [];
   drivers: IDriver[] = [];
@@ -54,7 +55,7 @@ export class MissionsComponent implements OnInit {
   showAddForm: boolean = false;
   isEditing: boolean = false;
   selectedMission: IMission | null = null;
-  
+
   // Filter toggle
   filtersExpanded: boolean = false;
 
@@ -82,18 +83,24 @@ export class MissionsComponent implements OnInit {
   vehicleModels: { [key: number]: string } = {};
   driverNames: { [key: number]: string } = {};
 
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   constructor(
     private missionsService: MissionsService,
     private carsService: CarsService,
     private driverService: DriverService,
     private userService: UserService,
     public dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.fetchMissions();
     this.fetchVehicles();
     this.fetchDrivers();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
   }
 
   fetchMissions(): void {
@@ -236,6 +243,13 @@ export class MissionsComponent implements OnInit {
     );
   }
 
+  // Added a confirmation before deletion
+  confirmDelete(id: number): void {
+    if (confirm('Are you sure you want to delete this mission?')) {
+      this.deleteMission(id);
+    }
+  }
+
   deleteMission(id: number): void {
     this.missionsService.deleteMission(id).subscribe(
       () => {
@@ -245,6 +259,13 @@ export class MissionsComponent implements OnInit {
       },
       error => console.error('Error deleting mission:', error)
     );
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.showAddForm = false;
+    this.selectedMission = null;
+    this.resetForm();
   }
 
   resetForm(): void {
@@ -264,43 +285,41 @@ export class MissionsComponent implements OnInit {
     let filteredData = [...this.missions];
 
     if (this.filterDestination) {
-      filteredData = filteredData.filter(mission => 
+      filteredData = filteredData.filter(mission =>
         mission.destination.toLowerCase().includes(this.filterDestination.toLowerCase())
       );
     }
 
     if (this.filterStartDate) {
-      filteredData = filteredData.filter(mission => 
+      filteredData = filteredData.filter(mission =>
         new Date(mission.startDate) >= this.filterStartDate!
       );
     }
     if (this.filterEndDate) {
-      filteredData = filteredData.filter(mission => 
+      filteredData = filteredData.filter(mission =>
         new Date(mission.endDate) <= this.filterEndDate!
       );
     }
 
     if (this.filterStatus && this.filterStatus !== 'All') {
-      filteredData = filteredData.filter(mission => 
+      filteredData = filteredData.filter(mission =>
         mission.status.toLowerCase() === this.filterStatus.toLowerCase()
       );
     }
 
     if (this.filterVehicle) {
-      filteredData = filteredData.filter(mission => 
-        this.getVehicleModel(mission.vehicleID).toLowerCase()
-          .includes(this.filterVehicle.toLowerCase())
+      filteredData = filteredData.filter(mission =>
+        this.getVehicleModel(mission.vehicleID).toLowerCase().includes(this.filterVehicle.toLowerCase())
       );
     }
 
     if (this.filterUsername) {
-      filteredData = filteredData.filter(mission => 
-        this.getDriverNameFromMission(mission.driverID).toLowerCase()
-          .includes(this.filterUsername.toLowerCase())
+      filteredData = filteredData.filter(mission =>
+        this.getDriverNameFromMission(mission.driverID).toLowerCase().includes(this.filterUsername.toLowerCase())
       );
     }
 
-    filteredData.sort((a, b) => 
+    filteredData.sort((a, b) =>
       this.sortDistanceAsc ? a.distance! - b.distance! : b.distance! - a.distance!
     );
 
@@ -343,6 +362,36 @@ export class MissionsComponent implements OnInit {
         width: '500px',
         data: vehicle
       });
+    }
+  }
+
+  getRowClass(mission: any): string {
+    switch (mission.status) {
+      case 'pending':
+        return 'mission-pending-row';
+      case 'in-progress':
+        return 'mission-in-progress-row';
+      case 'Completed':
+        return 'mission-completed-row';
+      case 'Cancelled':
+        return 'mission-cancelled-row';
+      default:
+        return '';
+    }
+  }
+
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'pending':
+        return 'status-pending-badge';
+      case 'in-progress':
+        return 'status-in-progress-badge';
+      case 'Completed':
+        return 'status-completed-badge';
+      case 'Cancelled':
+        return 'status-cancelled-badge';
+      default:
+        return '';
     }
   }
 }

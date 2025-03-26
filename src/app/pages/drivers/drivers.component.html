@@ -1,66 +1,70 @@
-<mat-card class="cardWithShadow">
+<mat-card class="cardWithShadow modern-card">
   <mat-card-content>
-    <div class="page-header">
-      <mat-card-title>Drivers Management</mat-card-title>
+    <!-- Page Header Section -->
+    <section class="page-header page-header-modern">
+      <div class="header-content">
+        <mat-card-title class="mat-headline-5">Drivers Management</mat-card-title>
+        <p class="mat-subtitle-1">Manage your Drivers</p>
+      </div>
 
       <div class="header-actions" *ngIf="!showAddForm">
-        <button mat-flat-button color="primary" (click)="showAddForm = true">
-          <mat-icon>add</mat-icon> Add Driver
+        <div class="header-action-buttons">
+          <button mat-flat-button color="primary" class="add-button" (click)="showAddForm = true">
+            <mat-icon>add</mat-icon> Add Driver
+          </button>
+          <button mat-button class="filter-toggle-modern header-filter-button" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+            <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+            {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
         </button>
+        </div>
       </div>
-    </div>
+    </section>
 
     <!-- Main Content Area -->
-    <div *ngIf="!showAddForm" class="main-content">
+    <section *ngIf="!showAddForm" class="main-content">
       <!-- Filter Section -->
-      <div class="filter-section">
-        <button mat-flat-button class="filter-toggle-btn" (click)="filtersExpanded = !filtersExpanded">
-          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          Filters
-        </button>
-      </div>
+      <section class="filter-section-modern">
+        <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+          <div class="filter-grid-modern">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Filter by Username</mat-label>
+              <input matInput [(ngModel)]="filterUsername" (ngModelChange)="applyFilters()">
+              <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
 
-      <!-- Collapsible Filter Section -->
-      <div class="filter-container" *ngIf="filtersExpanded">
-        <div class="filter-grid">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Filter by Username</mat-label>
-            <input matInput [(ngModel)]="filterUsername" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>person</mat-icon>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Filter by Status</mat-label>
+              <mat-select [(value)]="filterStatus" (selectionChange)="applyFilters()">
+                <mat-option *ngFor="let status of availableStatuses" [value]="status">
+                  {{ status }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>filter_list</mat-icon>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Filter by Status</mat-label>
-            <mat-select [(value)]="filterStatus" (selectionChange)="applyFilters()">
-              <mat-option *ngFor="let status of availableStatuses" [value]="status">
-                {{ status }}
-              </mat-option>
-            </mat-select>
-            <mat-icon matSuffix>filter_list</mat-icon>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Filter by License Number</mat-label>
+              <input matInput [(ngModel)]="filterLicenseNumber" (ngModelChange)="applyFilters()">
+              <mat-icon matSuffix>card_membership</mat-icon>
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Filter by License Number</mat-label>
-            <input matInput [(ngModel)]="filterLicenseNumber" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>card_membership</mat-icon>
-          </mat-form-field>
+          <div class="filter-actions-modern">
+            <button mat-stroked-button color="warn" class="reset-button" (click)="resetFilters()">
+              <mat-icon>clear</mat-icon> Reset Filters
+            </button>
+          </div>
         </div>
-
-        <div class="filter-actions">
-          <button mat-flat-button color="warn" (click)="resetFilters()">
-            <mat-icon>clear</mat-icon> Reset Filters
-          </button>
-        </div>
-      </div>
+      </section>
 
       <!-- Drivers Table -->
-      <div class="table-container">
+      <section class="table-container-modern">
         <div class="table-header">
           <!-- Add button is now in the page header -->
         </div>
         <div class="table-card">
           <mat-card-content>
-            <table mat-table [dataSource]="dataSource" class="assignment-table w-100">
+            <table mat-table [dataSource]="dataSource" class="modern-table w-100">
               <!-- ID Column -->
               <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef class="mat-column-id"> ID </th>
@@ -70,26 +74,34 @@
               <!-- License Number Column -->
               <ng-container matColumnDef="licenseNumber">
                 <th mat-header-cell *matHeaderCellDef> License Number </th>
-                <td mat-cell *matCellDef="let driver"> {{ driver.licenseNumber }} </td>
+                <td mat-cell *matCellDef="let driver">
+                  <div class="cell-content">
+                    {{ driver.licenseNumber }}
+                  </div>
+                </td>
               </ng-container>
 
               <!-- Phone Number Column -->
               <ng-container matColumnDef="phoneNumber">
                 <th mat-header-cell *matHeaderCellDef> Phone Number </th>
-                <td mat-cell *matCellDef="let driver"> {{ driver.phoneNumber }} </td>
+                <td mat-cell *matCellDef="let driver">
+                  <div class="cell-content">
+                    {{ driver.phoneNumber }}
+                  </div>
+                </td>
               </ng-container>
 
               <!-- Status Column with Select -->
               <ng-container matColumnDef="status-actions">
                 <th mat-header-cell *matHeaderCellDef> Status </th>
                 <td mat-cell *matCellDef="let driver">
-                  <mat-form-field appearance="outline" class="status-select">
+                  <mat-form-field appearance="outline" class="status-select form-field">
                     <mat-select
                       [value]="driver.status"
                       (selectionChange)="updateDriverStatus(driver, $event.value)"
                       [disabled]="isProcessing"
-                      class="status-badge"
-                      [ngClass]="{'status-active': driver.status === 'Active', 'status-suspended': driver.status === 'Suspended'}">
+                      class="status-badge-modern"
+                      [ngClass]="{'active-badge': driver.status === 'Active', 'expired-badge': driver.status === 'Suspended'}">
                       <mat-option value="Active">Active</mat-option>
                       <mat-option value="Suspended">Suspended</mat-option>
                     </mat-select>
@@ -100,16 +112,20 @@
               <!-- User Column -->
               <ng-container matColumnDef="user">
                 <th mat-header-cell *matHeaderCellDef> User </th>
-                <td mat-cell *matCellDef="let driver"> {{ getUserName(driver.userId) }} </td>
+                <td mat-cell *matCellDef="let driver">
+                  <div class="cell-content">
+                    {{ getUserName(driver.userId) }}
+                  </div>
+                </td>
               </ng-container>
 
               <!-- Vehicle Column -->
               <ng-container matColumnDef="vehicle">
                 <th mat-header-cell *matHeaderCellDef> Vehicle </th>
                 <td mat-cell *matCellDef="let driver">
-                  <div class="vehicle-info">
+                  <div class="vehicle-info cell-content">
                     <mat-icon>directions_car</mat-icon>
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" class="form-field">
                       <mat-select [value]="driver.affectedVehicleID" (selectionChange)="updateVehicleAssignment(driver, $event.value)" [disabled]="driver.status === 'Suspended' || isProcessing">
                         <mat-option [value]="null">No Vehicle</mat-option>
                         <mat-option *ngFor="let car of cars" [value]="car.id" [disabled]="isVehicleAssigned(car.id!) && driver.affectedVehicleID !== car.id">
@@ -125,8 +141,8 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="mat-column-actions"> Actions</th>
                 <td mat-cell *matCellDef="let driver">
-                  <div class="action-buttons">
-                    <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="isProcessing" matTooltip="More Actions">
+                  <div class="action-buttons-modern">
+                    <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="isProcessing" matTooltip="More Actions" aria-label="More Actions">
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #menu="matMenu">
@@ -142,22 +158,25 @@
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row-modern"></tr>
             </table>
           </mat-card-content>
         </div>
-      </div>
-    </div>
+      </section>
+    </section>
 
     <!-- Add/Edit Form -->
-    <div *ngIf="showAddForm" class="form-container">
-      <div class="section-header">
+    <section *ngIf="showAddForm" class="form-container-modern">
+      <div class="form-header">
         <h2>{{ isEditing ? 'Edit Driver' : 'Add Driver' }}</h2>
+        <button mat-icon-button color="primary" (click)="cancelEdit()" matTooltip="Close Form" aria-label="Close Form">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
       <mat-card class="form-card">
-        <mat-card-content>
+        <mat-card-content class="form-content">
           <!-- Radio buttons to choose between existing user and new user (only when adding) -->
-          <div *ngIf="!isEditing">
+          <div *ngIf="!isEditing" class="form-section">
             <mat-radio-group [(ngModel)]="addNewUser">
               <mat-radio-button [value]="false">Select Existing User</mat-radio-button>
               <mat-radio-button [value]="true">Add New User</mat-radio-button>
@@ -165,8 +184,8 @@
           </div>
 
           <!-- Existing user selection (shown when editing or when addNewUser is false) -->
-          <div *ngIf="isEditing || (!isEditing && !addNewUser)">
-            <mat-form-field appearance="outline" class="w-100">
+          <div *ngIf="isEditing || (!isEditing && !addNewUser)" class="form-section">
+            <mat-form-field appearance="outline" class="w-100 form-field">
               <mat-label>User</mat-label>
               <mat-select [(ngModel)]="userId" required>
                 <mat-option *ngFor="let user of users" [value]="user.id">
@@ -177,62 +196,76 @@
           </div>
 
           <!-- New user fields (shown only when adding and addNewUser is true) -->
-          <div *ngIf="!isEditing && addNewUser">
-            <h3>Add New User</h3>
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Username</mat-label>
-              <input matInput type="text" [(ngModel)]="newUserUsername" required />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" [(ngModel)]="newUserEmail" required />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Password</mat-label>
-              <input matInput type="password" [(ngModel)]="newUserPassword" required />
-            </mat-form-field>
+          <div *ngIf="!isEditing && addNewUser" class="form-section">
+            <h3 class="section-title">Add New User</h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Username</mat-label>
+                <input matInput type="text" [(ngModel)]="newUserUsername" required />
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" [(ngModel)]="newUserEmail" required />
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" [(ngModel)]="newUserPassword" required />
+              </mat-form-field>
+            </div>
           </div>
 
           <!-- Driver fields -->
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>License Number</mat-label>
-            <input matInput type="text" [(ngModel)]="licenseNumber" required />
-          </mat-form-field>
+          <section class="form-section">
+            <h3 class="section-title">Driver Information</h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>License Number</mat-label>
+                <input matInput type="text" [(ngModel)]="licenseNumber" required />
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Phone Number</mat-label>
+                <input matInput type="text" [(ngModel)]="phoneNumber" required />
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Status</mat-label>
+                <mat-select [(value)]="status" required (selectionChange)="onStatusChange($event.value)">
+                  <mat-option value="Active">Active</mat-option>
+                  <mat-option value="Suspended">Suspended</mat-option>
+                </mat-select>
+                <span class="status-badge-modern" [ngClass]="{'active-badge': status === 'Active', 'expired-badge': status === 'Suspended'}">
+                  {{ status || 'Select Status' }}
+                </span>
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Vehicle</mat-label>
+                <mat-select [(ngModel)]="affectedVehicleID" [disabled]="status === 'Suspended'">
+                  <mat-option [value]="null">No Vehicle</mat-option>
+                  <mat-option *ngFor="let car of cars" [value]="car.id" [disabled]="isVehicleAssigned(car.id!) && affectedVehicleID !== car.id">
+                    {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </section>
 
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Phone Number</mat-label>
-            <input matInput type="text" [(ngModel)]="phoneNumber" required />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Status</mat-label>
-            <mat-select [(value)]="status" required (selectionChange)="onStatusChange($event.value)">
-              <mat-option value="Active">Active</mat-option>
-              <mat-option value="Suspended">Suspended</mat-option>
-            </mat-select>
-            <span class="status-badge" [ngClass]="{'status-active': status === 'Active', 'status-suspended': status === 'Suspended'}">
-              {{ status || 'Select Status' }}
-            </span>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Vehicle</mat-label>
-            <mat-select [(ngModel)]="affectedVehicleID" [disabled]="status === 'Suspended'">
-              <mat-option [value]="null">No Vehicle</mat-option>
-              <mat-option *ngFor="let car of cars" [value]="car.id" [disabled]="isVehicleAssigned(car.id!) && affectedVehicleID !== car.id">
-                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-flat-button color="primary" (click)="isEditing ? updateDriver() : addDriver()" [disabled]="isProcessing">
+          <div class="form-actions-modern">
+            <button mat-flat-button color="primary" class="submit-button" (click)="isEditing ? updateDriver() : addDriver()" [disabled]="isProcessing">
               {{ isEditing ? 'Save Changes' : 'Add Driver' }}
             </button>
-            <button mat-stroked-button color="warn" (click)="cancelEdit()" [disabled]="isProcessing">Cancel</button>
+            <button mat-stroked-button color="warn" class="cancel-button" (click)="cancelEdit()" [disabled]="isProcessing">Cancel</button>
           </div>
         </mat-card-content>
       </mat-card>
-    </div>
+    </section>
   </mat-card-content>
 </mat-card>
