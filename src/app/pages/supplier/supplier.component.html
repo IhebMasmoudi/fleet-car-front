@@ -1,144 +1,215 @@
-<mat-card class="cardWithShadow">
+<mat-card class="modern-card">
   <mat-card-content>
-    <div class="page-header">
-      <mat-card-title>Suppliers Management</mat-card-title>
-
-      <div class="header-actions" *ngIf="!showAddForm && !isEditing">
-        <button mat-flat-button color="primary" (click)="openAddForm()">
-          <mat-icon>add</mat-icon> Add Supplier
-        </button>
-      </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div *ngIf="!showAddForm && !isEditing" class="main-content">
-      <!-- Filter Section -->
-      <div class="filter-section">
-        <button mat-flat-button class="filter-toggle-btn" (click)="filtersExpanded = !filtersExpanded">
-          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          Filters
-        </button>
-      </div>
-
-      <!-- Collapsible Filter Section -->
-      <div class="filter-container" *ngIf="filtersExpanded">
-        <div class="filter-grid">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="filterName" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>person</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Contact Info</mat-label>
-            <input matInput [(ngModel)]="filterContactInfo" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>phone</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Services Offered</mat-label>
-            <input matInput [(ngModel)]="filterServices" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>build</mat-icon>
-          </mat-form-field>
-        </div>
-
-        <div class="filter-actions">
-          <button mat-flat-button class="sort-btn" (click)="toggleNameSort()"
-                  [matTooltip]="sortNameAsc ? 'Sort Name Descending' : 'Sort Name Ascending'">
-            <mat-icon>sort</mat-icon> Name {{sortNameAsc ? '↑' : '↓'}}
-          </button>
-
-          <button mat-flat-button color="warn" (click)="resetFilters()">
-            <mat-icon>clear</mat-icon> Reset Filters
-          </button>
-        </div>
-      </div>
-
-      <!-- Suppliers Table -->
-      <div class="table-container">
-        <div class="table-header">
-          <!-- Add button moved to page header -->
-        </div>
-        <div class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="suppliers" class="w-100">
-              <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef> ID </th>
-                <td mat-cell *matCellDef="let supplier"> {{ supplier.id }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef> Name </th>
-                <td mat-cell *matCellDef="let supplier"> {{ supplier.name }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="contactInfo">
-                <th mat-header-cell *matHeaderCellDef> Contact Info </th>
-                <td mat-cell *matCellDef="let supplier"> {{ supplier.contactInfo }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="servicesOffered">
-                <th mat-header-cell *matHeaderCellDef> Services Offered </th>
-                <td mat-cell *matCellDef="let supplier"> {{ supplier.servicesOffered }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> Actions</th>
-                <td mat-cell *matCellDef="let supplier">
-                  <div class="action-buttons">
-                    <button mat-icon-button color="primary" (click)="startEdit(supplier)" matTooltip="Edit Supplier">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="deleteSupplier(supplier.id)" matTooltip="Delete Supplier">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
-          </mat-card-content>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add/Edit Form -->
-    <div *ngIf="showAddForm || isEditing" class="form-container">
-      <div class="section-header">
-        <h2>{{ isEditing ? 'Edit Supplier' : 'Add Supplier' }}</h2>
-      </div>
-      <mat-card class="form-card">
-        <mat-card-content>
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="supplierForm.name" name="name" required
-                   placeholder="Enter supplier name"/>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Contact Info</mat-label>
-            <input matInput [(ngModel)]="supplierForm.contactInfo" name="contactInfo" required
-                   placeholder="Enter contact info"/>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Services Offered</mat-label>
-            <input matInput [(ngModel)]="supplierForm.servicesOffered" name="servicesOffered"
-                   required placeholder="Enter services offered"/>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-flat-button color="primary"
-                    (click)="isEditing ? saveEditedSupplier() : addSupplier()"
-                    [disabled]="!supplierForm.name || !supplierForm.contactInfo || !supplierForm.servicesOffered">
-              {{ isEditing ? 'Save Changes' : 'Add Supplier' }}
-            </button>
-            <button mat-stroked-button color="warn" (click)="closeForm()">Cancel</button>
+      <!-- Page Header Section -->
+      <section class="page-header-modern">
+          <div class="header-content">
+              <h1 class="mat-headline-5">Suppliers</h1>
+              <p class="mat-subtitle-1">Manage service providers and contacts</p>
           </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+          <div class="header-actions">
+              <div class="header-action-buttons">
+                  <button mat-flat-button class="add-button" (click)="toggleAddForm()" aria-label="Add New Supplier">
+                      <mat-icon>add_business</mat-icon> New Supplier
+                  </button>
+                   <button mat-button class="filter-toggle-modern header-filter-button" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+                      <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+                      {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
+                  </button>
+              </div>
+          </div>
+      </section>
+
+      <!-- Filter Section -->
+      <section class="filter-section-modern">
+          <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+              <div class="filter-grid-modern">
+                   <!-- Name Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Name</mat-label>
+                      <input matInput [(ngModel)]="filterName" (ngModelChange)="applyFilters()" placeholder="e.g., Auto Repair Shop">
+                      <button *ngIf="filterName" matSuffix mat-icon-button aria-label="Clear Name" (click)="clearFilterName()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Contact Info Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Contact Info</mat-label>
+                      <input matInput [(ngModel)]="filterContactInfo" (ngModelChange)="applyFilters()" placeholder="Phone, Email, Address">
+                       <button *ngIf="filterContactInfo" matSuffix mat-icon-button aria-label="Clear Contact Info" (click)="clearFilterContactInfo()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Services Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Services Offered</mat-label>
+                      <input matInput [(ngModel)]="filterServices" (ngModelChange)="applyFilters()" placeholder="e.g., Oil change, Tires">
+                       <button *ngIf="filterServices" matSuffix mat-icon-button aria-label="Clear Services" (click)="clearFilterServices()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+              </div>
+
+              <div class="filter-actions-modern">
+                   <button mat-stroked-button (click)="toggleNameSort()"
+                          [matTooltip]="sortNameAsc ? 'Sort Name Descending' : 'Sort Name Ascending'">
+                      <mat-icon>sort_by_alpha</mat-icon> Name {{sortNameAsc ? '↑' : '↓'}}
+                  </button>
+                  <button mat-stroked-button color="primary" (click)="applyFilters()" aria-label="Apply Filters">
+                      <mat-icon>search</mat-icon> Apply Filters
+                  </button>
+                  <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset Filters">
+                      <mat-icon>clear</mat-icon> Reset
+                  </button>
+              </div>
+          </div>
+      </section>
+
+      <!-- Error Display Section -->
+      <section class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+      </section>
+
+      <!-- Table Section -->
+      <section *ngIf="!showAddForm" class="table-container-modern">
+          <!-- Table Stats -->
+           <div class="table-stats" *ngIf="!isLoading && totalRecordsCount > 0">
+                <div class="stat-item">
+                    <span class="stat-value">{{ totalRecordsCount }}</span>
+                    <span class="stat-label">Total Suppliers</span>
+                </div>
+                 <div class="stat-item filtered"> <!-- Example styling -->
+                    <span class="stat-value">{{ displayedCount }}</span>
+                    <span class="stat-label">Showing</span>
+                </div>
+                <!-- Add more relevant stats if desired -->
+            </div>
+
+          <!-- Empty State (No Data Overall) -->
+          <div *ngIf="!isLoading && totalRecordsCount === 0" class="empty-state">
+              <mat-icon>storefront</mat-icon>
+              <h3>No suppliers added yet</h3>
+              <p>Add your first supplier to manage contacts and services.</p>
+              <button mat-flat-button color="primary" (click)="toggleAddForm()">Add Supplier</button>
+          </div>
+
+           <!-- Empty State (Filtered) -->
+          <div *ngIf="!isLoading && totalRecordsCount > 0 && displayedCount === 0" class="empty-state">
+              <mat-icon>search_off</mat-icon>
+              <h3>No suppliers match your filters</h3>
+              <p>Try adjusting or resetting your search criteria.</p>
+              <button mat-stroked-button color="primary" (click)="resetFilters()">Reset Filters</button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoading" class="loading-state">
+              <mat-spinner diameter="50"></mat-spinner>
+              <p>Loading supplier records...</p>
+          </div>
+
+          <!-- Data Table -->
+           <div *ngIf="!isLoading && displayedCount > 0" class="table-responsive">
+              <table mat-table [dataSource]="dataSource" class="modern-table w-100">
+
+                   <!-- Name Column -->
+                  <ng-container matColumnDef="name">
+                      <th mat-header-cell *matHeaderCellDef> Name </th>
+                      <td mat-cell *matCellDef="let record">
+                          <div class="cell-content">
+                              <span class="primary-text">{{ record.name }}</span>
+                          </div>
+                      </td>
+                  </ng-container>
+
+                  <!-- Contact Info Column -->
+                  <ng-container matColumnDef="contactInfo">
+                      <th mat-header-cell *matHeaderCellDef> Contact Info </th>
+                      <td mat-cell *matCellDef="let record">
+                         <div class="cell-content">
+                            <span>{{ record.contactInfo }}</span>
+                         </div>
+                      </td>
+                  </ng-container>
+
+                  <!-- Services Offered Column -->
+                  <ng-container matColumnDef="servicesOffered">
+                      <th mat-header-cell *matHeaderCellDef> Services Offered </th>
+                      <td mat-cell *matCellDef="let record">
+                         <div class="cell-content">
+                             <span class="wrap-text">{{ record.servicesOffered }}</span> <!-- Add wrap-text class if needed -->
+                         </div>
+                      </td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                      <th mat-header-cell *matHeaderCellDef> Actions</th>
+                      <td mat-cell *matCellDef="let record">
+                          <div class="action-buttons-modern">
+                              <button mat-mini-fab color="primary" (click)="startEdit(record)" matTooltip="Edit Supplier">
+                                  <mat-icon>edit</mat-icon>
+                              </button>
+                              <button mat-mini-fab color="warn" (click)="deleteSupplier(record.id!)" matTooltip="Delete Supplier">
+                                  <mat-icon>delete</mat-icon>
+                              </button>
+                          </div>
+                      </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-modern"></tr>
+              </table>
+          </div>
+          <!-- Paginator (Add if needed) -->
+          <!-- <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator> -->
+      </section>
+
+      <!-- Add/Edit Form Section -->
+      <section *ngIf="showAddForm" class="form-container-modern">
+          <div class="form-header">
+              <h2>{{ isEditing ? 'Edit Supplier' : 'Add New Supplier' }}</h2>
+              <button mat-icon-button color="primary" (click)="cancelEdit()" matTooltip="Close Form" aria-label="Close Form" [disabled]="loading">
+                  <mat-icon>close</mat-icon>
+              </button>
+          </div>
+          <div class="form-content">
+              <form #supplierForm="ngForm" (ngSubmit)="submitSupplierForm()">
+                  <!-- Supplier Details Section -->
+                  <section class="form-section">
+                      <h3 class="section-title">Supplier Information</h3>
+                      <div class="form-row"> <!-- Use form-row for consistent spacing if needed, or just stack fields -->
+                           <mat-form-field appearance="outline" class="form-field full-width">
+                              <mat-label>Supplier Name</mat-label>
+                              <input matInput [(ngModel)]="supplierName" name="supplierName" required placeholder="Company or Person Name" />
+                               <mat-error *ngIf="supplierForm.controls['supplierName']?.errors?.['required']">Name is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                      <div class="form-row">
+                           <mat-form-field appearance="outline" class="form-field full-width">
+                              <mat-label>Contact Information</mat-label>
+                              <textarea matInput [(ngModel)]="supplierContactInfo" name="supplierContactInfo" required placeholder="Enter phone, email, address, etc."></textarea>
+                               <mat-error *ngIf="supplierForm.controls['supplierContactInfo']?.errors?.['required']">Contact Info is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                      <div class="form-row">
+                           <mat-form-field appearance="outline" class="form-field full-width">
+                              <mat-label>Services Offered</mat-label>
+                               <textarea matInput [(ngModel)]="supplierServicesOffered" name="supplierServicesOffered" required placeholder="List services like: Oil Change, Tire Rotation, Parts, etc."></textarea>
+                              <mat-error *ngIf="supplierForm.controls['supplierServicesOffered']?.errors?.['required']">Services Offered is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                  </section>
+
+                   <!-- Form Actions -->
+                  <div class="form-actions-modern">
+                      <button mat-flat-button color="primary" type="submit" [disabled]="supplierForm.invalid || loading">
+                          <mat-icon>{{ isEditing ? 'save' : 'add_circle' }}</mat-icon>
+                          {{ isEditing ? 'Save Changes' : 'Add Supplier' }}
+                      </button>
+                      <button mat-stroked-button type="button" (click)="cancelEdit()" [disabled]="loading">Cancel</button>
+                  </div>
+              </form>
+          </div>
+      </section>
+
   </mat-card-content>
 </mat-card>

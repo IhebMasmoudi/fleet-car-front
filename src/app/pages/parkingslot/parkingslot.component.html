@@ -1,64 +1,227 @@
-<mat-card class="card-container">
-  <mat-card-title>Parking Slots Reservation</mat-card-title>
-  
-  <!-- Show Add Slot Form Card when showAddForm is true -->
-  <ng-container *ngIf="showAddForm; else slotsDisplay">
-    <mat-card class="add-slot-card">
-      <mat-card-title>Add Parking Slot</mat-card-title>
-      <mat-card-content>
-        <!-- Placeholder image -->
-        <img src="assets/images/logos/spot.png" alt="Spot Image" class="spot-image" />
-        <mat-form-field appearance="outline" class="w-100" color="primary">
-          <mat-label>Location</mat-label>
-          <input matInput placeholder="Enter location" [(ngModel)]="newParkingSlotLocation" name="location" required>
-        </mat-form-field>
-        <div class="actions">
-          <button mat-raised-button color="primary" (click)="addParkingSlot()">Add Slot</button>
-          <button mat-stroked-button color="warn" (click)="toggleAddForm()">Cancel</button>
+<mat-card class="modern-card">
+  <mat-card-content>
+    <!-- Page Header Section -->
+    <section class="page-header-modern">
+      <div class="header-content">
+        <h1 class="mat-headline-5">Parking Slots</h1>
+        <p class="mat-subtitle-1">Manage parking slot reservations</p>
+      </div>
+      <div class="header-actions">
+        <div class="header-action-buttons">
+          <button mat-flat-button class="add-button" (click)="toggleAddForm()" aria-label="Add New Parking Slot">
+            <mat-icon>add</mat-icon> New Slot
+          </button>
+          <button mat-button class="filter-toggle-modern header-filter-button" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+            <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+            {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
+          </button>
         </div>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
-  
-  <!-- Display Parking Slot Cards when not adding a new slot -->
-  <ng-template #slotsDisplay>
-    <!-- Button to add a new parking slot -->
-    <div class="add-slot-button">
-      <button mat-raised-button color="primary" (click)="toggleAddForm()">Add Parking Slot</button>
-    </div>
-    
-    <div class="cards-container">
-      <mat-card *ngFor="let slot of parkingSlots" class="slot-card"
-                [ngClass]="{'reserved-card': slot.status === 'Reserved', 'available-card': slot.status === 'Available'}">
-        <mat-card-title class="spot-title">{{ slot.location }}</mat-card-title>
-        <mat-card-content>
-          <!-- Placeholder image in the middle (replace src with your local image later) -->
-          <img src="assets/images/logos/spot.png" alt="Spot Image" class="spot-image" />
-          <div *ngIf="slot.status === 'Reserved'">
-            <p><strong>Car:</strong> {{ getCarModel(slot.assignedVehicleID) }}</p>
-          </div>
-          <div *ngIf="slot.status === 'Available'">
-            <p>This spot is free.</p>
-            <div *ngIf="!slot.editMode">
-              <button mat-raised-button color="accent" (click)="enableReservation(slot)">Reserve</button>
+      </div>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="filter-section-modern">
+      <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+        <div class="filter-grid-modern">
+          <!-- Location Filter -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Location</mat-label>
+            <input matInput [(ngModel)]="filterLocation" (ngModelChange)="applyFilters()" placeholder="e.g., A1, B2">
+             <button *ngIf="filterLocation" matSuffix mat-icon-button aria-label="Clear Location" (click)="clearFilterLocation()">
+                <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <!-- Status Filter -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="filterStatus" (selectionChange)="applyFilters()">
+              <mat-option value="">All</mat-option>
+              <mat-option value="Available">Available</mat-option>
+              <mat-option value="Reserved">Reserved</mat-option>
+            </mat-select>
+             <button *ngIf="filterStatus" matSuffix mat-icon-button aria-label="Clear Status" (click)="clearFilterStatus()">
+                <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <!-- Vehicle Filter -->
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Assigned Vehicle</mat-label>
+            <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()" placeholder="Brand, Model, Plate">
+            <button *ngIf="filterVehicle" matSuffix mat-icon-button aria-label="Clear Vehicle" (click)="clearFilterVehicle()">
+                <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-actions-modern">
+           <button mat-stroked-button (click)="toggleLocationSort()"
+                  [matTooltip]="sortLocationAsc ? 'Sort Location Descending' : 'Sort Location Ascending'">
+              <mat-icon>sort_by_alpha</mat-icon> Location {{sortLocationAsc ? '↑' : '↓'}}
+          </button>
+          <button mat-stroked-button color="primary" (click)="applyFilters()" aria-label="Apply Filters">
+            <mat-icon>search</mat-icon> Apply Filters
+          </button>
+          <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset Filters">
+            <mat-icon>clear</mat-icon> Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error Display Section -->
+    <section class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </section>
+
+    <!-- Main Content Area: Slots Display -->
+    <section *ngIf="!showAddForm" class="slots-container-modern">
+        <!-- Stats Bar -->
+        <div class="slots-stats" *ngIf="!isLoading && totalSlotsCount > 0">
+            <div class="stat-item">
+                <span class="stat-value">{{ totalSlotsCount }}</span>
+                <span class="stat-label">Total Slots</span>
             </div>
-            <div *ngIf="slot.editMode">
-              <mat-form-field appearance="outline" class="w-100" color="primary">
-                <mat-label>Select Car</mat-label>
-                <mat-select [(ngModel)]="slot.selectedCarId" name="selectedCar{{slot.id}}" required>
-                  <mat-option *ngFor="let car of cars" [value]="car.id">
-                    {{ car.model }} ({{ car.year }})
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-              <button mat-raised-button color="primary" (click)="confirmReservation(slot)">Confirm Reservation</button>
+            <div class="stat-item available">
+                <span class="stat-value">{{ availableSlotsCount }}</span>
+                <span class="stat-label">Available</span>
             </div>
+             <div class="stat-item reserved">
+                <span class="stat-value">{{ reservedSlotsCount }}</span>
+                <span class="stat-label">Reserved</span>
+            </div>
+             <div class="stat-item filtered">
+                <span class="stat-value">{{ displayedSlotsCount }}</span>
+                <span class="stat-label">Showing</span>
+            </div>
+        </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading parking slots...</p>
+      </div>
+
+      <!-- Empty State (After Load) -->
+      <div *ngIf="!isLoading && totalSlotsCount === 0" class="empty-state">
+         <mat-icon>local_parking</mat-icon>
+        <h3>No parking slots created yet</h3>
+        <p>Add your first parking slot to get started.</p>
+        <button mat-flat-button color="primary" (click)="toggleAddForm()">Add Slot</button>
+      </div>
+
+      <!-- Empty State (Filtered) -->
+       <div *ngIf="!isLoading && totalSlotsCount > 0 && displayedSlotsCount === 0" class="empty-state">
+         <mat-icon>search_off</mat-icon>
+        <h3>No parking slots match your filters</h3>
+        <p>Try adjusting or resetting your search criteria.</p>
+        <button mat-stroked-button color="primary" (click)="resetFilters()">Reset Filters</button>
+      </div>
+
+
+      <!-- Slots Grid -->
+      <div *ngIf="!isLoading && displayedSlotsCount > 0" class="slots-grid-modern">
+        <mat-card *ngFor="let slot of filteredParkingSlots"
+                  class="slot-card-modern"
+                  [ngClass]="getSlotStatusClass(slot)">
+
+          <!-- Loading Overlay for Actions -->
+          <div *ngIf="loadingActionSlotId === slot.id" class="card-loading-overlay">
+             <mat-spinner diameter="30"></mat-spinner>
           </div>
-        </mat-card-content>
-        <mat-card-actions *ngIf="slot.status === 'Reserved'">
-          <button mat-stroked-button color="warn" (click)="resetSlot(slot)">Reset</button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-  </ng-template>
+
+          <mat-card-header class="slot-card-header">
+            <mat-card-title>{{ slot.location }}</mat-card-title>
+            <mat-card-subtitle [ngClass]="slot.status === 'Available' ? 'status-available' : 'status-reserved'">
+                {{ slot.status }}
+            </mat-card-subtitle>
+             <!-- Optional: Icon indicating status -->
+             <mat-icon class="status-icon">{{ slot.status === 'Available' ? 'check_circle_outline' : 'car_rental' }}</mat-icon>
+          </mat-card-header>
+
+          <mat-card-content class="slot-card-content">
+            <!-- Image (optional) -->
+             <img src="assets/images/logos/spot.png" alt="Parking Spot" class="spot-image" />
+
+            <!-- Content based on status -->
+            <div *ngIf="slot.status === 'Reserved'" class="reserved-details">
+               <span class="details-label">Assigned:</span>
+               <div class="car-chip" matTooltip="Vehicle Details"> <!-- Reuse car-chip styling -->
+                  <mat-icon>directions_car</mat-icon>
+                  <span>{{ getCarDetails(slot.assignedVehicleID) }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="slot.status === 'Available'">
+              <!-- Reservation Form (shown when editMode is true) -->
+              <div *ngIf="slot.editMode" class="reservation-form">
+                <mat-form-field appearance="outline" class="w-100 reservation-select">
+                  <mat-label>Select Car for Reservation</mat-label>
+                  <mat-select [(ngModel)]="slot.selectedCarId" name="selectedCar{{slot.id}}" required>
+                     <mat-option *ngIf="cars.length === 0" [disabled]="true">Loading cars...</mat-option>
+                    <mat-option *ngFor="let car of cars" [value]="car.id">
+                      {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="!slot.selectedCarId">Car selection is required</mat-error>
+                </mat-form-field>
+                <div class="reservation-actions">
+                  <button mat-flat-button color="primary" (click)="confirmReservation(slot)" [disabled]="!slot.selectedCarId">Confirm</button>
+                  <button mat-stroked-button (click)="cancelReservationEdit(slot)">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+          </mat-card-content>
+
+          <mat-card-actions class="slot-card-actions" [align]="'end'">
+            <ng-container *ngIf="slot.status === 'Available' && !slot.editMode">
+              <button mat-flat-button color="accent" (click)="enableReservation(slot)">
+                 <mat-icon>event_available</mat-icon> Reserve
+              </button>
+            </ng-container>
+            <ng-container *ngIf="slot.status === 'Reserved'">
+              <button mat-stroked-button color="warn" (click)="resetSlot(slot)">
+                 <mat-icon>refresh</mat-icon> Make Available
+              </button>
+            </ng-container>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Add New Slot Form Section (Overlay style) -->
+    <section *ngIf="showAddForm" class="form-container-modern add-form-overlay">
+        <div class="form-header">
+            <h2>Add New Parking Slot</h2>
+            <button mat-icon-button color="primary" (click)="toggleAddForm()" matTooltip="Close Form" aria-label="Close Form" [disabled]="loadingAdd">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+         <div class="form-content">
+             <form #addSlotForm="ngForm" (ngSubmit)="submitAddSlotForm()">
+                 <section class="form-section">
+                     <!-- <h3 class="section-title">Slot Details</h3> -->
+                     <div class="form-row">
+                         <mat-form-field appearance="outline" class="form-field full-width">
+                            <mat-label>Location Name/Number</mat-label>
+                            <input matInput [(ngModel)]="newParkingSlotLocation" name="newLocation" required placeholder="e.g., A-101, Staff Parking 5" />
+                            <mat-error *ngIf="addSlotForm.controls['newLocation']?.errors?.['required']">Location is required</mat-error>
+                        </mat-form-field>
+                     </div>
+                 </section>
+                  <!-- Form Actions -->
+                  <div class="form-actions-modern">
+                      <button mat-flat-button color="primary" type="submit" [disabled]="addSlotForm.invalid || loadingAdd">
+                          <mat-icon>add_circle</mat-icon>
+                          {{ loadingAdd ? 'Adding...' : 'Add Slot' }}
+                      </button>
+                      <button mat-stroked-button type="button" (click)="toggleAddForm()" [disabled]="loadingAdd">Cancel</button>
+                  </div>
+             </form>
+         </div>
+    </section>
+
+  </mat-card-content>
 </mat-card>

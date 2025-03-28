@@ -1,219 +1,321 @@
-<mat-card class="cardWithShadow">
+<mat-card class="modern-card">
   <mat-card-content>
-    <div class="page-header">
-      <mat-card-title>Fuel Consumption Records</mat-card-title>
+      <!-- Page Header Section -->
+      <section class="page-header-modern">
+          <div class="header-content">
+              <h1 class="mat-headline-5">Fuel Consumption</h1>
+              <p class="mat-subtitle-1">Track vehicle refueling records</p>
+          </div>
+          <div class="header-actions">
+              <div class="header-action-buttons">
+                  <button mat-flat-button class="add-button" (click)="toggleAddForm()" aria-label="Add New Fuel Record">
+                      <mat-icon>add</mat-icon> New Record
+                  </button>
+                   <button mat-button class="filter-toggle-modern header-filter-button" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+                      <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+                      {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
+                  </button>
+              </div>
+          </div>
+      </section>
 
-      <div class="header-actions" *ngIf="!showAddForm">
-        <button mat-flat-button color="primary" (click)="showAddForm = true">
-          <mat-icon>add</mat-icon> Add Fuel Consumption
-        </button>
-      </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div *ngIf="!showAddForm" class="main-content">
       <!-- Filter Section -->
-      <div class="filter-section">
-        <button mat-flat-button class="filter-toggle-btn" (click)="filtersExpanded = !filtersExpanded">
-          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          Filters
-        </button>
-      </div>
+      <section class="filter-section-modern" >
+          <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+              <div class="filter-grid-modern">
+                   <!-- Date From -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Date From</mat-label>
+                      <input matInput [matDatepicker]="startFilter" [(ngModel)]="filterStartDate" (dateChange)="applyFilters()">
+                      <mat-datepicker-toggle matSuffix [for]="startFilter"></mat-datepicker-toggle>
+                      <mat-datepicker #startFilter></mat-datepicker>
+                       <button *ngIf="filterStartDate" matSuffix mat-icon-button aria-label="Clear Date From" (click)="clearFilterStartDate()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Date To -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Date To</mat-label>
+                      <input matInput [matDatepicker]="endFilter" [(ngModel)]="filterEndDate" (dateChange)="applyFilters()">
+                      <mat-datepicker-toggle matSuffix [for]="endFilter"></mat-datepicker-toggle>
+                      <mat-datepicker #endFilter></mat-datepicker>
+                       <button *ngIf="filterEndDate" matSuffix mat-icon-button aria-label="Clear Date To" (click)="clearFilterEndDate()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Min Amount -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Min Amount (L)</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMinAmount" (ngModelChange)="applyFilters()">
+                       <button *ngIf="filterMinAmount !== null && filterMinAmount !== undefined" matSuffix mat-icon-button aria-label="Clear Min Amount" (click)="clearFilterMinAmount()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Max Amount -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Max Amount (L)</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMaxAmount" (ngModelChange)="applyFilters()">
+                       <button *ngIf="filterMaxAmount !== null && filterMaxAmount !== undefined" matSuffix mat-icon-button aria-label="Clear Max Amount" (click)="clearFilterMaxAmount()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Min Cost -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Min Cost (TND)</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMinCost" (ngModelChange)="applyFilters()">
+                       <button *ngIf="filterMinCost !== null && filterMinCost !== undefined" matSuffix mat-icon-button aria-label="Clear Min Cost" (click)="clearFilterMinCost()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                  <!-- Max Cost -->
+                   <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Max Cost (TND)</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMaxCost" (ngModelChange)="applyFilters()">
+                       <button *ngIf="filterMaxCost !== null && filterMaxCost !== undefined" matSuffix mat-icon-button aria-label="Clear Max Cost" (click)="clearFilterMaxCost()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Min Mileage -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Min Mileage</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMinMileage" (ngModelChange)="applyFilters()">
+                       <button *ngIf="filterMinMileage !== null && filterMinMileage !== undefined" matSuffix mat-icon-button aria-label="Clear Min Mileage" (click)="clearFilterMinMileage()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Max Mileage -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Max Mileage</mat-label>
+                      <input matInput type="number" [(ngModel)]="filterMaxMileage" (ngModelChange)="applyFilters()">
+                      <button *ngIf="filterMaxMileage !== null && filterMaxMileage !== undefined" matSuffix mat-icon-button aria-label="Clear Max Mileage" (click)="clearFilterMaxMileage()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+                   <!-- Vehicle Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Vehicle</mat-label>
+                      <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()" placeholder="Brand, Model, Plate">
+                       <button *ngIf="filterVehicle" matSuffix mat-icon-button aria-label="Clear Vehicle" (click)="clearFilterVehicle()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+              </div>
 
-      <!-- Collapsible Filter Section -->
-      <div class="filter-container" *ngIf="filtersExpanded">
-        <div class="filter-grid">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Date From</mat-label>
-            <input matInput [matDatepicker]="startFilter" [(ngModel)]="filterStartDate"
-                   (ngModelChange)="applyFilters()">
-            <mat-datepicker-toggle matSuffix [for]="startFilter"></mat-datepicker-toggle>
-            <mat-datepicker #startFilter></mat-datepicker>
-          </mat-form-field>
+              <div class="filter-actions-modern">
+                  <button mat-stroked-button (click)="toggleCostSort()"
+                          [matTooltip]="sortCostAsc ? 'Sort Cost Descending' : 'Sort Cost Ascending'">
+                      <mat-icon>sort</mat-icon> Cost {{sortCostAsc ? '↑' : '↓'}}
+                  </button>
+                  <button mat-stroked-button color="primary" (click)="applyFilters()" aria-label="Apply Filters">
+                      <mat-icon>search</mat-icon> Apply Filters
+                  </button>
+                  <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset Filters">
+                      <mat-icon>clear</mat-icon> Reset
+                  </button>
+              </div>
+          </div>
+      </section>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Date To</mat-label>
-            <input matInput [matDatepicker]="endFilter" [(ngModel)]="filterEndDate"
-                   (ngModelChange)="applyFilters()">
-            <mat-datepicker-toggle matSuffix [for]="endFilter"></mat-datepicker-toggle>
-            <mat-datepicker #endFilter></mat-datepicker>
-          </mat-form-field>
+      <!-- Error Display Section -->
+      <section class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+      </section>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Min Amount (L)</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMinAmount" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>local_gas_station</mat-icon>
-          </mat-form-field>
+      <!-- Table Section -->
+      <section *ngIf="!showAddForm" class="table-container-modern">
+          <!-- Table Stats -->
+           <div class="table-stats" *ngIf="dataSource.data.length > 0 || isLoading">
+                <div class="stat-item">
+                    <span class="stat-value">{{ totalRecordsCount }}</span>
+                    <span class="stat-label">Total Records</span>
+                </div>
+                 <div class="stat-item">
+                    <span class="stat-value">{{ totalFuelAmount | number:'1.0-2' }} L</span>
+                    <span class="stat-label">Total Fuel</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ totalFuelCost | currency:'TND ':'symbol' }}</span>
+                    <span class="stat-label">Total Cost</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ averageConsumption | number:'1.1-2' }} L/100km</span>
+                    <span class="stat-label">Avg. Consumption</span>
+                </div>
+            </div>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Max Amount (L)</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMaxAmount" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>local_gas_station</mat-icon>
-          </mat-form-field>
+          <!-- Empty State -->
+          <div *ngIf="!isLoading && totalRecordsCount === 0" class="empty-state">
+              <mat-icon>local_gas_station</mat-icon> <!-- Changed icon -->
+              <h3>No fuel records found</h3>
+              <p>Try adjusting your filters or add a new fuel consumption record</p>
+              <button mat-flat-button color="primary" (click)="toggleAddForm()">Add Record</button>
+          </div>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Min Cost (TND)</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMinCost" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>attach_money</mat-icon>
-          </mat-form-field>
+          <!-- Loading State -->
+          <div *ngIf="isLoading" class="loading-state">
+              <mat-spinner diameter="50"></mat-spinner>
+              <p>Loading fuel records...</p>
+          </div>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Max Cost (TND)</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMaxCost" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>attach_money</mat-icon>
-          </mat-form-field>
+          <!-- Data Table -->
+           <div *ngIf="!isLoading && totalRecordsCount > 0" class="table-responsive">
+              <table mat-table [dataSource]="dataSource" class="modern-table w-100">
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                      <th mat-header-cell *matHeaderCellDef> Date & Time </th>
+                      <td mat-cell *matCellDef="let record">
+                          <div class="cell-content">
+                              <span>{{ record.date | date:'yyyy-MM-dd HH:mm' }}</span>
+                          </div>
+                      </td>
+                  </ng-container>
+                   <!-- Amount Column -->
+                  <ng-container matColumnDef="amount">
+                      <th mat-header-cell *matHeaderCellDef> Amount (L) </th>
+                      <td mat-cell *matCellDef="let record">
+                         <div class="cell-content">
+                            <span>{{ record.amount | number:'1.0-2' }}</span>
+                         </div>
+                      </td>
+                  </ng-container>
+                  <!-- Cost Column -->
+                  <ng-container matColumnDef="cost">
+                      <th mat-header-cell *matHeaderCellDef> Cost (TND) </th>
+                      <td mat-cell *matCellDef="let record">
+                         <div class="cell-content cost-cell">
+                             <span class="cost-value">{{ record.cost | currency:'TND ':'symbol' }}</span>
+                         </div>
+                      </td>
+                  </ng-container>
+                   <!-- Mileage Column -->
+                  <ng-container matColumnDef="mileage">
+                      <th mat-header-cell *matHeaderCellDef> Mileage (km) </th>
+                      <td mat-cell *matCellDef="let record">
+                         <div class="cell-content">
+                            <span>{{ record.mileage | number }}</span>
+                         </div>
+                      </td>
+                  </ng-container>
+                  <!-- Vehicle Column -->
+                  <ng-container matColumnDef="vehicle">
+                      <th mat-header-cell *matHeaderCellDef> Vehicle </th>
+                      <td mat-cell *matCellDef="let record">
+                           <div class="car-chip" (click)="openVehicleDetails(record.vehicleID)" matTooltip="View Vehicle Details">
+                              <mat-icon>directions_car</mat-icon>
+                              <span>{{ getVehicleModel(record.vehicleID) }}</span>
+                          </div>
+                      </td>
+                  </ng-container>
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                      <th mat-header-cell *matHeaderCellDef> Actions</th>
+                      <td mat-cell *matCellDef="let record">
+                          <div class="action-buttons-modern">
+                              <button mat-mini-fab color="primary" (click)="startEdit(record)" matTooltip="Edit Record">
+                                  <mat-icon>edit</mat-icon>
+                              </button>
+                              <button mat-mini-fab color="warn" (click)="deleteFuelConsumption(record.id!)" matTooltip="Delete Record">
+                                  <mat-icon>delete</mat-icon>
+                              </button>
+                          </div>
+                      </td>
+                  </ng-container>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Min Mileage</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMinMileage" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>speed</mat-icon>
-          </mat-form-field>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-modern"></tr>
+              </table>
+          </div>
+          <!-- Paginator (Add if needed) -->
+          <!-- <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator> -->
+      </section>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Max Mileage</mat-label>
-            <input matInput type="number" [(ngModel)]="filterMaxMileage" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>speed</mat-icon>
-          </mat-form-field>
+      <!-- Add/Edit Form Section -->
+      <section *ngIf="showAddForm" class="form-container-modern">
+          <div class="form-header">
+              <h2>{{ isEditing ? 'Edit Fuel Consumption' : 'Add New Fuel Record' }}</h2>
+              <button mat-icon-button color="primary" (click)="cancelEdit()" matTooltip="Close Form" aria-label="Close Form">
+                  <mat-icon>close</mat-icon>
+              </button>
+          </div>
+          <div class="form-content">
+              <form #fuelForm="ngForm" (ngSubmit)="submitFuelForm()">
+                  <!-- Date & Time Section -->
+                   <section class="form-section">
+                      <h3 class="section-title">Date & Time</h3>
+                      <div class="form-row">
+                          <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Date</mat-label>
+                              <input matInput [matDatepicker]="picker" [(ngModel)]="fuelDate" name="fuelDate" required />
+                              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                              <mat-datepicker #picker></mat-datepicker>
+                              <mat-error *ngIf="fuelForm.controls['fuelDate']?.errors?.['required']">Date is required</mat-error>
+                          </mat-form-field>
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Time</mat-label>
+                              <input matInput type="time" [(ngModel)]="fuelTime" name="fuelTime" required />
+                               <mat-error *ngIf="fuelForm.controls['fuelTime']?.errors?.['required']">Time is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                  </section>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Vehicle</mat-label>
-            <input matInput [(ngModel)]="filterVehicle" (ngModelChange)="applyFilters()">
-            <mat-icon matSuffix>directions_car</mat-icon>
-          </mat-form-field>
-        </div>
+                   <!-- Refuel Details Section -->
+                  <section class="form-section">
+                      <h3 class="section-title">Refuel Details</h3>
+                      <div class="form-row">
+                          <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Amount (Liters)</mat-label>
+                              <input matInput type="number" [(ngModel)]="fuelAmount" name="fuelAmount" required min="0" />
+                              <span matSuffix>L</span>
+                               <mat-error *ngIf="fuelForm.controls['fuelAmount']?.errors?.['required']">Amount is required</mat-error>
+                               <mat-error *ngIf="fuelForm.controls['fuelAmount']?.errors?.['min']">Amount must be positive</mat-error>
+                          </mat-form-field>
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Cost (TND)</mat-label>
+                              <input matInput type="number" [(ngModel)]="fuelCost" name="fuelCost" required min="0" />
+                              <span matPrefix>TND </span>
+                               <mat-error *ngIf="fuelForm.controls['fuelCost']?.errors?.['required']">Cost is required</mat-error>
+                               <mat-error *ngIf="fuelForm.controls['fuelCost']?.errors?.['min']">Cost must be positive</mat-error>
+                          </mat-form-field>
+                      </div>
+                       <div class="form-row">
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Mileage at Refuel (km)</mat-label>
+                              <input matInput type="number" [(ngModel)]="fuelMileage" name="fuelMileage" required min="0" />
+                              <span matSuffix>km</span>
+                              <mat-hint>Odometer reading when refueling</mat-hint>
+                              <mat-error *ngIf="fuelForm.controls['fuelMileage']?.errors?.['required']">Mileage is required</mat-error>
+                              <mat-error *ngIf="fuelForm.controls['fuelMileage']?.errors?.['min']">Mileage must be positive</mat-error>
+                          </mat-form-field>
+                      </div>
+                  </section>
 
-        <div class="filter-actions">
-          <button mat-flat-button class="sort-btn" (click)="toggleCostSort()"
-                  [matTooltip]="sortCostAsc ? 'Sort Cost Descending' : 'Sort Cost Ascending'">
-            <mat-icon>sort</mat-icon> Cost {{sortCostAsc ? '↑' : '↓'}}
-          </button>
+                  <!-- Vehicle Association Section -->
+                   <section class="form-section">
+                      <h3 class="section-title">Vehicle</h3>
+                       <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field full-width"> <!-- Use full-width if only one field in row -->
+                              <mat-label>Vehicle</mat-label>
+                              <mat-select [(ngModel)]="fuelVehicleID" name="fuelVehicleID" required>
+                                  <mat-option *ngFor="let car of cars" [value]="car.id">
+                                      {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                                  </mat-option>
+                              </mat-select>
+                               <mat-error *ngIf="fuelForm.controls['fuelVehicleID']?.errors?.['required']">Vehicle is required</mat-error>
+                          </mat-form-field>
+                       </div>
+                  </section>
 
-          <button mat-flat-button color="warn" (click)="resetFilters()">
-            <mat-icon>clear</mat-icon> Reset Filters
-          </button>
-        </div>
-      </div>
-
-      <!-- Fuel Consumption Table -->
-      <div class="table-container">
-        <div class="table-header">
-          <!-- Add button moved to page header -->
-        </div>
-        <div class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="dataSource" class="w-100">
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef> Date </th>
-                <td mat-cell *matCellDef="let record"> {{ record.date | date:'yyyy-MM-dd HH:mm' }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="amount">
-                <th mat-header-cell *matHeaderCellDef> Amount (L) </th>
-                <td mat-cell *matCellDef="let record"> {{ record.amount }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="cost">
-                <th mat-header-cell *matHeaderCellDef> Cost (TND) </th>
-                <td mat-cell *matCellDef="let record"> {{ record.cost | currency:'TND ' }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="mileage">
-                <th mat-header-cell *matHeaderCellDef> Mileage (km) </th>
-                <td mat-cell *matCellDef="let record"> {{ record.mileage }} </td>
-              </ng-container>
-
-              <ng-container matColumnDef="vehicle">
-                <th mat-header-cell *matHeaderCellDef> Vehicle </th>
-                <td mat-cell *matCellDef="let record">
-                  <div class="info-chip" (click)="openVehicleDetails(record.vehicleID)" matTooltip="View Vehicle Details">
-                    <mat-icon>directions_car</mat-icon>
-                    <span>{{ getVehicleModel(record.vehicleID) }}</span>
+                   <!-- Form Actions -->
+                  <div class="form-actions-modern">
+                      <button mat-flat-button color="primary" type="submit" [disabled]="fuelForm.invalid || loading">
+                          <mat-icon>{{ isEditing ? 'save' : 'add_circle' }}</mat-icon>
+                          {{ isEditing ? 'Save Changes' : 'Add Record' }}
+                      </button>
+                      <button mat-stroked-button type="button" (click)="cancelEdit()" [disabled]="loading">Cancel</button>
                   </div>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> Actions</th>
-                <td mat-cell *matCellDef="let record">
-                  <div class="action-buttons">
-                    <button mat-icon-button color="primary" (click)="startEdit(record)" matTooltip="Edit Record">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="deleteFuelConsumption(record.id)" matTooltip="Delete Record">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
-          </mat-card-content>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add/Edit Form -->
-    <div *ngIf="showAddForm" class="form-container">
-      <div class="section-header">
-        <h2>{{ isEditing ? 'Edit Fuel Consumption' : 'Add Fuel Consumption' }}</h2>
-      </div>
-      <mat-card class="form-card">
-        <mat-card-content>
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Date</mat-label>
-            <input matInput [matDatepicker]="picker" [(ngModel)]="fuelDate" required />
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Time</mat-label>
-              <input matInput type="time" [(ngModel)]="fuelTime" required />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Amount (Liters)</mat-label>
-              <input matInput type="number" [(ngModel)]="fuelAmount" required />
-              <span matSuffix>L</span>
-            </mat-form-field>
+              </form>
           </div>
+      </section>
 
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Cost (TND)</mat-label>
-              <input matInput type="number" [(ngModel)]="fuelCost" required />
-              <span matPrefix>TND </span>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Mileage (km)</mat-label>
-              <input matInput type="number" [(ngModel)]="fuelMileage" required />
-              <span matSuffix>km</span>
-            </mat-form-field>
-          </div>
-
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Vehicle</mat-label>
-            <mat-select [(ngModel)]="fuelVehicleID" required>
-              <mat-option *ngFor="let car of cars" [value]="car.id">
-                {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-flat-button color="primary" (click)="isEditing ? saveEditedFuelConsumption() : addFuelConsumption()">
-              {{ isEditing ? 'Save Changes' : 'Add Fuel Consumption' }}
-            </button>
-            <button mat-stroked-button color="warn" (click)="resetForm()">Cancel</button>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
   </mat-card-content>
 </mat-card>

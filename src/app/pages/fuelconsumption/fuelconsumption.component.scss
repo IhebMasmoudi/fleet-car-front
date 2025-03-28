@@ -1,287 +1,481 @@
-// fuelconsumption.component.scss
-.cardWithShadow {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-  margin: 24px;
-  overflow: hidden;
-  background-color: #ffffff;
-}
+@use 'sass:color';
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
+// ----------------------------------------
+// Color Variables - Modern Theme
+// ----------------------------------------
+$primary-color: #3f51b5;
+$primary-light: #e8eaf6;
+$primary-dark: #303f9f;
+$accent-color: #ff4081;
+$warning-color: #ff9800;
+$success-color: #4caf50;
+$danger-color: #f44336;
+$neutral-bg: #f5f7fa;
+$card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+$border-radius: 12px;
+$transition-speed: 0.3s;
 
-.mat-card-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.section-header {
-  margin-bottom: 20px;
-
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: #424242;
-    margin: 0;
-  }
-}
-
-.main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.filter-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.filter-toggle-btn {
-  background-color: #f5f5f5;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 8px;
-  padding: 8px 16px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e0e0e0;
-  }
-}
-
-.filter-container {
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  animation: fadeIn 0.3s ease;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.filter-field {
-  width: 100%;
-  margin: 0;
-}
-
-.filter-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.sort-btn {
-  background-color: #f0f0f0;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 8px;
-  padding: 8px 16px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e0e0e0;
-  }
-}
-
-.table-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
-
-.add-btn {
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-}
-
-.mat-table {
-  width: 100%;
-}
-
-.mat-header-cell {
-  background-color: #f5f5f5;
-  color: #424242;
-  font-weight: 500;
-  font-size: 0.9rem;
-  padding: 16px;
-}
-
-.mat-cell {
-  padding: 16px;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.mat-row {
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #f9f9f9;
-  }
-}
-
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
-  padding: 0.5em 0;
-}
-
-::ng-deep .mat-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-flex {
-  padding: 0 0.75em;
-  margin-top: 0;
-}
-
-.info-chip {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f5f5f5;
+// ----------------------------------------
+// Mixins - Reusable Styles
+// ----------------------------------------
+@mixin rounded-button {
   border-radius: 50px;
-  padding: 6px 12px;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0 20px;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all $transition-speed ease;
 
-  &:hover {
-    background-color: #e0e0e0;
+  &:hover,
+  &:focus {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
   }
+
+  mat-icon {
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+}
+
+@mixin card-container {
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  background-color: white;
+}
+
+
+// ----------------------------------------
+// Card Component Styling
+// ----------------------------------------
+.modern-card {
+  @include card-container;
+  margin: 24px;
+}
+
+// ----------------------------------------
+// Page Header Section - Updated
+// ----------------------------------------
+.page-header-modern {
+  background: linear-gradient(135deg, $primary-color, $primary-dark);
+  color: white;
+  padding: 24px;
+  border-radius: $border-radius $border-radius 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .header-content {
+    h1 {
+      margin: 0;
+      font-weight: 500;
+      font-size: 24px;
+    }
+    p {
+      margin: 4px 0 0;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center; // Vertically align buttons
+    .header-action-buttons {  // Style the button container
+      display: flex;
+      gap: 12px; // Space between buttons in the header
+    }
+
+    .add-button {
+      @include rounded-button;
+      background-color: white;
+      color: $primary-color;
+      padding: 0 20px;
+    }
+
+    .header-filter-button { // Style for the "Show Filters" button in header
+      @include rounded-button; // Re-use rounded button mixin
+      background-color: $primary-light;
+      color: $primary-color;
+      padding: 4px 16px; // Adjust padding to be smaller if needed
+
+      &:hover,
+      &:focus {
+        background-color: color.adjust($primary-light, $lightness: -5%);
+        outline: none;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+        transition: transform $transition-speed ease;
+      }
+    }
+  }
+}
+
+// ----------------------------------------
+// Filter Section
+// ----------------------------------------
+.filter-section-modern {
+  margin: 0 24px 24px;
+
+  .filter-toggle-modern {
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: $primary-color;
+    background-color: $primary-light;
+    @include rounded-button;
+    padding: 4px 16px;
+
+    mat-icon {
+      margin-right: 8px;
+      transition: transform $transition-speed ease;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: color.adjust($primary-light, $lightness: -5%);
+      outline: none;
+    }
+  }
+
+  .filter-container-modern {
+    background-color: $neutral-bg;
+    border-radius: $border-radius;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all $transition-speed ease;
+
+    &.expanded {
+      padding: 20px;
+      max-height: 500px;
+    }
+
+    .filter-grid-modern {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .filter-actions-modern {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+
+      button {
+        @include rounded-button;
+        padding: 0 16px;
+
+        mat-icon {
+          margin-right: 4px;
+        }
+
+        &:focus {
+          outline: 2px solid $primary-color;
+          outline-offset: 2px;
+        }
+      }
+    }
+  }
+}
+
+// ----------------------------------------
+// Table Container Section
+// ----------------------------------------
+.table-container-modern {
+  @include card-container;
+  margin: 0 24px 24px;
+
+  .table-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 16px 24px;
+    background-color: $neutral-bg;
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 500;
+        color: $primary-color;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6);
+      }
+    }
+  }
+
+  .modern-table {
+    width: 100%;
+
+    th.mat-header-cell {
+      color: rgba(0, 0, 0, 0.7);
+      font-weight: 500;
+      font-size: 14px;
+      padding: 16px;
+      background-color: $neutral-bg;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+    }
+
+    td.mat-cell {
+      padding: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+
+      .cell-content {
+        display: flex;
+        flex-direction: column;
+
+        .primary-text {
+          font-weight: 500;
+        }
+        &.with-icon {
+          flex-direction: row;
+          align-items: center;
+          mat-icon {
+            margin-right: 8px;
+            color: rgba(0, 0, 0, 0.5);
+          }
+        }
+        &.cost-cell .cost-value {
+          font-weight: 500;
+          color: $primary-color;
+        }
+        .expiry-tag {
+          font-size: 12px;
+          color: $warning-color;
+          margin-top: 4px;
+        }
+      }
+    }
+
+    .table-row-modern:hover {
+      background-color: rgba(63, 81, 181, 0.03);
+    }
+  }
+
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+
+    mat-icon {
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+      color: rgba(0, 0, 0, 0.2);
+      margin-bottom: 16px;
+    }
+    h3 {
+      margin: 0 0 8px;
+      font-weight: 500;
+    }
+    p {
+      margin: 0 0 24px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  .loading-state {
+    padding: 48px 24px;
+    text-align: center;
+
+    mat-spinner {
+      margin: 0 auto 16px;
+    }
+    p {
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+}
+
+// ----------------------------------------
+// Status Badge Styling
+// ----------------------------------------
+.status-badge-modern {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 500;
+
+  .status-dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  &.active-badge {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: $success-color;
+    .status-dot { background-color: $success-color; }
+  }
+
+  &.expired-badge {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: $danger-color;
+    .status-dot { background-color: $danger-color; }
+  }
+
+  &.warning-badge {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: $warning-color;
+    .status-dot { background-color: $warning-color; }
+  }
+}
+
+// ----------------------------------------
+// Car Chip Styling
+// ----------------------------------------
+.car-chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: $neutral-bg;
+  padding: 6px 12px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all $transition-speed ease;
 
   mat-icon {
     font-size: 18px;
     height: 18px;
     width: 18px;
-    color: #555;
+    margin-right: 6px;
+    color: rgba(0, 0, 0, 0.6);
   }
 
-  span {
-    font-size: 0.9rem;
-    color: #333;
+  &:hover,
+  &:focus {
+    background-color: $primary-light;
+    transform: translateY(-2px);
+    outline: none;
   }
 }
 
-.action-buttons {
+// ----------------------------------------
+// Action Buttons Styling
+// ----------------------------------------
+.action-buttons-modern {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-}
 
-.form-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-  animation: slideIn 0.3s ease;
-}
+  button.mat-mini-fab {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all $transition-speed ease;
 
-.form-card {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
-
-  .form-field {
-    flex: 1;
+    &:hover,
+    &:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      outline: none;
+    }
   }
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+// ----------------------------------------
+// Form Container Styling - Updated for field spacing
+// ----------------------------------------
+.form-container-modern {
+  @include card-container;
+
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background-color: $primary-light;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    h2 {
+      margin: 0;
+      font-weight: 500;
+      color: $primary-color;
+    }
+  }
+
+  .form-content {
+    padding: 24px;
+
+    .form-section {
+      margin-bottom: 28px;
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 16px;
+        color: rgba(0, 0, 0, 0.7);
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px; // Add margin below each form-row for spacing
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      // Add margin to form-field within form-row for spacing between fields in a row
+      .form-field {
+        margin-bottom: 10px; // Example: Add 10px margin below each field
+      }
+    }
+
+    .w-100 {
+      width: 100%;
+    }
+
+    .form-actions-modern {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+
+      button {
+        @include rounded-button;
+        padding: 0 24px;
+
+        mat-icon {
+          margin-right: 8px;
+          vertical-align: middle;
+        }
+
+        &:focus {
+          outline: 2px solid $primary-color;
+          outline-offset: 2px;
+        }
+      }
+    }
+  }
 }
 
-.w-100 {
-  width: 100%;
+// ----------------------------------------
+// Error Message Styling
+// ----------------------------------------
+.error-message {
+  color: $danger-color;
+  padding: 12px 24px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: $border-radius;
+  margin: 0 24px 24px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+// ----------------------------------------
+// Row State Styling
+// ----------------------------------------
+.expired-row {
+  background-color: rgba(244, 67, 54, 0.05);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .filter-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.warning-row {
+  background-color: rgba(255, 152, 0, 0.05);
 }

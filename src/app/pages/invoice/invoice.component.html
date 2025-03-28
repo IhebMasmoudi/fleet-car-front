@@ -1,66 +1,144 @@
-<mat-card class="cardWithShadow">
+<mat-card class="modern-card">
   <mat-card-content>
-    <div class="page-header">
-      <mat-card-title>Invoice Records</mat-card-title>
+      <!-- Page Header Section -->
+      <section class="page-header-modern">
+          <div class="header-content">
+              <h1 class="mat-headline-5">Invoice Records</h1>
+              <p class="mat-subtitle-1">Manage billing and payment records</p>
+          </div>
+          <div class="header-actions">
+              <div class="header-action-buttons">
+                  <button mat-flat-button class="add-button" (click)="toggleAddForm()" aria-label="Add New Invoice">
+                      <mat-icon>add</mat-icon> New Invoice
+                  </button>
+                   <button mat-button class="filter-toggle-modern header-filter-button" (click)="filtersExpanded = !filtersExpanded" aria-label="Toggle Filters">
+                      <mat-icon>{{ filtersExpanded ? 'expand_less' : 'filter_list' }}</mat-icon>
+                      {{ filtersExpanded ? 'Hide Filters' : 'Show Filters' }}
+                  </button>
+              </div>
+          </div>
+      </section>
 
-      <div class="header-actions" *ngIf="!showAddForm">
-        <button mat-flat-button color="primary" (click)="toggleAddForm()">
-          <mat-icon>add</mat-icon> Add Invoice
-        </button>
-      </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div *ngIf="!showAddForm" class="main-content">
       <!-- Filter Section -->
-      <div class="filter-section">
-        <button mat-flat-button class="filter-toggle-btn" (click)="filtersExpanded = !filtersExpanded">
-          <mat-icon>{{ filtersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          Filters
-        </button>
-      </div>
+      <section class="filter-section-modern" >
+          <div class="filter-container-modern" [class.expanded]="filtersExpanded">
+              <div class="filter-grid-modern">
+                  <!-- Status Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Status</mat-label>
+                      <mat-select [(ngModel)]="filterStatus" (selectionChange)="applyFilters()">
+                          <mat-option value="">All</mat-option>
+                          <mat-option value="Paid">Paid</mat-option>
+                          <mat-option value="Pending">Pending</mat-option>
+                          <mat-option value="Unpaid">Unpaid</mat-option>
+                      </mat-select>
+                       <!-- No clear button needed for select with 'All' -->
+                  </mat-form-field>
 
-      <!-- Collapsible Filter Section -->
-      <div class="filter-container" *ngIf="filtersExpanded">
-        <div class="filter-grid">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Filter by Status</mat-label>
-            <mat-select [(ngModel)]="filterStatus" (selectionChange)="applyFilters()">
-              <mat-option value="">All</mat-option>
-              <mat-option value="Paid">Paid</mat-option>
-              <mat-option value="Pending">Pending</mat-option>
-              <mat-option value="Unpaid">Unpaid</mat-option>
-            </mat-select>
-            <mat-icon matSuffix>filter_list</mat-icon>
-          </mat-form-field>
+                  <!-- Search Term Filter -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Search Supplier/Vehicle</mat-label>
+                      <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="e.g., Supplier Inc, Camry">
+                      <button *ngIf="searchTerm" matSuffix mat-icon-button aria-label="Clear Search" (click)="clearSearchTerm()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                       <mat-icon matPrefix>search</mat-icon>
+                  </mat-form-field>
 
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Search Supplier/Vehicle</mat-label>
-            <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search">
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-        </div>
-        <div class="filter-actions">
-          <button mat-flat-button color="warn" (click)="resetFilters()">
-            <mat-icon>clear</mat-icon> Reset Filters
-          </button>
-        </div>
-      </div>
+                   <!-- Add more filters here if needed (e.g., Date Range) -->
+                  <mat-form-field appearance="outline" class="filter-field">
+                    <mat-label>Issue Date From</mat-label>
+                    <input matInput [matDatepicker]="issueDateFromPicker" [(ngModel)]="filterIssueDateFrom" (dateChange)="applyFilters()">
+                    <mat-datepicker-toggle matSuffix [for]="issueDateFromPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #issueDateFromPicker></mat-datepicker>
+                    <button *ngIf="filterIssueDateFrom" matSuffix mat-icon-button aria-label="Clear Issue Date From" (click)="clearIssueDateFrom()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
 
-      <!-- Invoice Table -->
-      <div class="table-container">
-        <div class="table-header">
-          <!-- Add button moved to page header -->
-        </div>
-        <div class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="filteredDataSource" class="w-100">
+                  <mat-form-field appearance="outline" class="filter-field">
+                      <mat-label>Due Date To</mat-label>
+                      <input matInput [matDatepicker]="dueDateToPicker" [(ngModel)]="filterDueDateTo" (dateChange)="applyFilters()">
+                      <mat-datepicker-toggle matSuffix [for]="dueDateToPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #dueDateToPicker></mat-datepicker>
+                      <button *ngIf="filterDueDateTo" matSuffix mat-icon-button aria-label="Clear Due Date To" (click)="clearDueDateTo()">
+                          <mat-icon>close</mat-icon>
+                      </button>
+                  </mat-form-field>
+
+              </div>
+
+              <div class="filter-actions-modern">
+                  <!-- Add Sort button if needed -->
+                   <!-- <button mat-stroked-button (click)="toggleSort()" matTooltip="Sort by Amount">
+                       <mat-icon>sort</mat-icon> Amount {{ sortAsc ? '↑' : '↓' }}
+                   </button> -->
+                  <button mat-stroked-button color="primary" (click)="applyFilters()" aria-label="Apply Filters">
+                      <mat-icon>search</mat-icon> Apply Filters
+                  </button>
+                  <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset Filters">
+                      <mat-icon>clear</mat-icon> Reset
+                  </button>
+              </div>
+          </div>
+      </section>
+
+      <!-- Error Display Section -->
+      <section class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+      </section>
+
+      <!-- Table Section -->
+      <section *ngIf="!showAddForm" class="table-container-modern">
+          <!-- Table Stats -->
+           <div class="table-stats" *ngIf="dataSource.data.length > 0 || isLoading">
+                <div class="stat-item">
+                    <span class="stat-value">{{ totalInvoicesCount }}</span>
+                    <span class="stat-label">Total Invoices</span>
+                </div>
+                 <div class="stat-item">
+                    <span class="stat-value">{{ paidInvoicesCount }}</span>
+                    <span class="stat-label">Paid</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ pendingInvoicesCount }}</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ unpaidInvoicesCount }}</span>
+                    <span class="stat-label">Unpaid</span>
+                </div>
+                 <div class="stat-item">
+                    <span class="stat-value">{{ totalAmount | currency:'TND ':'symbol' }}</span>
+                    <span class="stat-label">Total Amount</span>
+                </div>
+            </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoading && totalInvoicesCount === 0" class="empty-state">
+              <mat-icon>receipt_long</mat-icon> <!-- Changed icon -->
+              <h3>No invoices found</h3>
+              <p>Try adjusting your filters or add a new invoice</p>
+              <button mat-flat-button color="primary" (click)="toggleAddForm()">Add Invoice</button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoading" class="loading-state">
+              <mat-spinner diameter="50"></mat-spinner>
+              <p>Loading invoices...</p>
+          </div>
+
+          <!-- Data Table -->
+          <div *ngIf="!isLoading && totalInvoicesCount > 0" class="table-responsive">
+            <table mat-table [dataSource]="dataSource" class="modern-table w-100">
 
               <!-- Issue Date Column -->
               <ng-container matColumnDef="issueDate">
                 <th mat-header-cell *matHeaderCellDef>Issue Date</th>
                 <td mat-cell *matCellDef="let invoice">
-                  {{ invoice.issueDate | date:'yyyy-MM-dd' }}
+                   <div class="cell-content">
+                       <span>{{ invoice.issueDate | date:'yyyy-MM-dd' }}</span>
+                   </div>
                 </td>
               </ng-container>
 
@@ -68,15 +146,21 @@
               <ng-container matColumnDef="dueDate">
                 <th mat-header-cell *matHeaderCellDef>Due Date</th>
                 <td mat-cell *matCellDef="let invoice">
-                  {{ invoice.dueDate | date:'yyyy-MM-dd' }}
+                  <div class="cell-content">
+                      <span>{{ invoice.dueDate | date:'yyyy-MM-dd' }}</span>
+                      <!-- Optional: Highlight overdue -->
+                      <span *ngIf="isOverdue(invoice.dueDate, invoice.status)" class="expiry-tag">Overdue</span>
+                  </div>
                 </td>
               </ng-container>
 
               <!-- Amount Column -->
               <ng-container matColumnDef="amount">
-                <th mat-header-cell *matHeaderCellDef>Amount</th>
+                <th mat-header-cell *matHeaderCellDef>Amount (TND)</th>
                 <td mat-cell *matCellDef="let invoice">
-                  {{ invoice.amount | currency }}
+                  <div class="cell-content cost-cell"> <!-- Re-use cost-cell style -->
+                     <span class="cost-value">{{ invoice.amount | currency:'TND ':'symbol' }}</span>
+                  </div>
                 </td>
               </ng-container>
 
@@ -84,19 +168,11 @@
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let invoice">
-                  <mat-form-field appearance="outline" class="status-select">
-                    <mat-select [value]="invoice.status" disabled
-                                class="status-badge"
-                                [ngClass]="{
-                                  'status-paid': invoice.status === 'Paid',
-                                  'status-pending': invoice.status === 'Pending',
-                                  'status-unpaid': invoice.status === 'Unpaid'
-                                }">
-                      <mat-option value="Paid">Paid</mat-option>
-                      <mat-option value="Pending">Pending</mat-option>
-                      <mat-option value="Unpaid">Unpaid</mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                  <!-- Use modern status badge -->
+                  <div [class]="'status-badge-modern ' + getStatusClass(invoice.status)">
+                     <span class="status-dot"></span>
+                     {{ invoice.status }}
+                  </div>
                 </td>
               </ng-container>
 
@@ -104,12 +180,11 @@
               <ng-container matColumnDef="supplier">
                 <th mat-header-cell *matHeaderCellDef>Supplier</th>
                 <td mat-cell *matCellDef="let invoice">
-                  <div class="info-chip" (click)="openSupplierDetails(invoice.supplierID)" matTooltip="View Supplier Details">
-                    <mat-icon>person</mat-icon>
-                    <span>
-                      {{ getSupplierName(invoice.supplierID) }}
-                    </span>
-                  </div>
+                   <!-- Use car-chip style for consistency -->
+                   <div class="car-chip" (click)="openSupplierDetails(invoice.supplierID)" matTooltip="View Supplier Details">
+                        <mat-icon>store</mat-icon> <!-- Changed icon -->
+                        <span>{{ getSupplierName(invoice.supplierID) }}</span>
+                    </div>
                 </td>
               </ng-container>
 
@@ -117,11 +192,9 @@
               <ng-container matColumnDef="vehicle">
                 <th mat-header-cell *matHeaderCellDef>Vehicle</th>
                 <td mat-cell *matCellDef="let invoice">
-                  <div class="info-chip" (click)="openCarDetails(invoice.vehicleID)" matTooltip="View Vehicle Details">
-                    <mat-icon>directions_car</mat-icon>
-                    <span>
-                      {{ getVehicleModel(invoice.vehicleID) }}
-                    </span>
+                  <div class="car-chip" (click)="openCarDetails(invoice.vehicleID)" matTooltip="View Vehicle Details">
+                      <mat-icon>directions_car</mat-icon>
+                      <span>{{ getVehicleModel(invoice.vehicleID) }}</span>
                   </div>
                 </td>
               </ng-container>
@@ -130,97 +203,119 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let invoice">
-                  <div class="action-buttons">
-                    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="More Actions">
-                      <mat-icon>more_vert</mat-icon>
-                    </button>
-                    <mat-menu #menu="matMenu">
-                      <button mat-menu-item (click)="startEdit(invoice)">
-                        <mat-icon>edit</mat-icon>
-                        <span>Edit</span>
+                   <div class="action-buttons-modern">
+                      <button mat-mini-fab color="primary" (click)="startEdit(invoice)" matTooltip="Edit Invoice">
+                          <mat-icon>edit</mat-icon>
                       </button>
-                      <button mat-menu-item color="warn" (click)="deleteInvoice(invoice.id)">
-                        <mat-icon>delete</mat-icon>
-                        <span>Delete</span>
+                      <button mat-mini-fab color="warn" (click)="deleteInvoice(invoice.id!)" matTooltip="Delete Invoice">
+                          <mat-icon>delete</mat-icon>
                       </button>
-                      <button mat-menu-item (click)="printInvoice(invoice)">
-                        <mat-icon>print</mat-icon>
-                        <span>Print</span>
+                       <button mat-mini-fab color="accent" (click)="printInvoice(invoice)" matTooltip="Print Invoice">
+                          <mat-icon>print</mat-icon>
                       </button>
-                    </mat-menu>
-                  </div>
+                      <!-- Add more actions like 'Mark as Paid' if needed -->
+                      <!-- <button *ngIf="invoice.status !== 'Paid'" mat-mini-fab (click)="markAsPaid(invoice.id!)" matTooltip="Mark as Paid">
+                          <mat-icon>check</mat-icon>
+                      </button> -->
+                    </div>
                 </td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-modern"></tr>
             </table>
-          </mat-card-content>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add/Edit Form -->
-    <div *ngIf="showAddForm" class="form-container">
-      <div class="section-header">
-        <h2>{{ isEditing ? 'Edit Invoice' : 'Add Invoice' }}</h2>
-      </div>
-      <mat-card class="form-card">
-        <mat-card-content>
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Issue Date</mat-label>
-            <input matInput [matDatepicker]="issuePicker" [(ngModel)]="invoiceIssueDate" required>
-            <mat-datepicker-toggle matSuffix [for]="issuePicker"></mat-datepicker-toggle>
-            <mat-datepicker #issuePicker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Due Date</mat-label>
-            <input matInput [matDatepicker]="duePicker" [(ngModel)]="invoiceDueDate" required>
-            <mat-datepicker-toggle matSuffix [for]="duePicker"></mat-datepicker-toggle>
-            <mat-datepicker #duePicker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Amount</mat-label>
-            <input matInput type="number" [(ngModel)]="invoiceAmount" required>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Status</mat-label>
-            <mat-select [(ngModel)]="invoiceStatus" required>
-              <mat-option value="Paid">Paid</mat-option>
-              <mat-option value="Pending">Pending</mat-option>
-              <mat-option value="Unpaid">Unpaid</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Supplier</mat-label>
-            <mat-select [(ngModel)]="invoiceSupplierID" required>
-              <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
-                {{ supplier.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Vehicle</mat-label>
-            <mat-select [(ngModel)]="invoiceVehicleID" required>
-              <mat-option *ngFor="let car of cars" [value]="car.id">
-                {{ car.model }} ({{ car.licensePlate }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-flat-button color="primary" (click)="isEditing ? saveEditedInvoice() : addInvoice()">
-              {{ isEditing ? 'Save Changes' : 'Add Invoice' }}
-            </button>
-            <button mat-stroked-button color="warn" (click)="cancelEdit()">Cancel</button>
           </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+          <!-- Paginator (Add if needed) -->
+          <!-- <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator> -->
+
+      </section>
+
+      <!-- Add/Edit Form Section -->
+      <section *ngIf="showAddForm" class="form-container-modern">
+          <div class="form-header">
+              <h2>{{ isEditing ? 'Edit Invoice' : 'Add New Invoice' }}</h2>
+              <button mat-icon-button color="primary" (click)="cancelEdit()" matTooltip="Close Form" aria-label="Close Form">
+                  <mat-icon>close</mat-icon>
+              </button>
+          </div>
+          <div class="form-content">
+              <!-- Use NgForm for template-driven validation -->
+              <form #invoiceForm="ngForm" (ngSubmit)="submitInvoiceForm()">
+                   <!-- Invoice Details Section -->
+                  <section class="form-section">
+                      <h3 class="section-title">Invoice Details</h3>
+                      <div class="form-row">
+                          <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Issue Date</mat-label>
+                              <input matInput [matDatepicker]="issuePicker" [(ngModel)]="invoiceIssueDate" name="issueDate" required>
+                              <mat-datepicker-toggle matSuffix [for]="issuePicker"></mat-datepicker-toggle>
+                              <mat-datepicker #issuePicker></mat-datepicker>
+                              <mat-error *ngIf="invoiceForm.controls['issueDate']?.errors?.['required']">Issue Date is required</mat-error>
+                          </mat-form-field>
+                          <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Due Date</mat-label>
+                              <input matInput [matDatepicker]="duePicker" [(ngModel)]="invoiceDueDate" name="dueDate" required>
+                              <mat-datepicker-toggle matSuffix [for]="duePicker"></mat-datepicker-toggle>
+                              <mat-datepicker #duePicker></mat-datepicker>
+                               <mat-error *ngIf="invoiceForm.controls['dueDate']?.errors?.['required']">Due Date is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                      <div class="form-row">
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Amount (TND)</mat-label>
+                              <input matInput type="number" [(ngModel)]="invoiceAmount" name="amount" required min="0">
+                              <span matPrefix>TND </span>
+                               <mat-error *ngIf="invoiceForm.controls['amount']?.errors?.['required']">Amount is required</mat-error>
+                               <mat-error *ngIf="invoiceForm.controls['amount']?.errors?.['min']">Amount must be positive</mat-error>
+                          </mat-form-field>
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Status</mat-label>
+                              <mat-select [(ngModel)]="invoiceStatus" name="status" required>
+                                  <mat-option value="Paid">Paid</mat-option>
+                                  <mat-option value="Pending">Pending</mat-option>
+                                  <mat-option value="Unpaid">Unpaid</mat-option>
+                              </mat-select>
+                               <mat-error *ngIf="invoiceForm.controls['status']?.errors?.['required']">Status is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                  </section>
+
+                   <!-- Association Section -->
+                  <section class="form-section">
+                      <h3 class="section-title">Associated Records</h3>
+                      <div class="form-row">
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Supplier</mat-label>
+                              <mat-select [(ngModel)]="invoiceSupplierID" name="supplierID" required>
+                                  <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
+                                      {{ supplier.name }}
+                                  </mat-option>
+                              </mat-select>
+                               <mat-error *ngIf="invoiceForm.controls['supplierID']?.errors?.['required']">Supplier is required</mat-error>
+                          </mat-form-field>
+                           <mat-form-field appearance="outline" class="form-field">
+                              <mat-label>Vehicle</mat-label>
+                              <mat-select [(ngModel)]="invoiceVehicleID" name="vehicleID" required>
+                                  <mat-option *ngFor="let car of cars" [value]="car.id">
+                                      {{ car.brand }} {{ car.model }} ({{ car.licensePlate }})
+                                  </mat-option>
+                              </mat-select>
+                               <mat-error *ngIf="invoiceForm.controls['vehicleID']?.errors?.['required']">Vehicle is required</mat-error>
+                          </mat-form-field>
+                      </div>
+                  </section>
+
+                   <!-- Form Actions -->
+                  <div class="form-actions-modern">
+                      <button mat-flat-button color="primary" type="submit" [disabled]="invoiceForm.invalid || loading">
+                          <mat-icon>{{ isEditing ? 'save' : 'add_circle' }}</mat-icon>
+                          {{ isEditing ? 'Save Changes' : 'Add Invoice' }}
+                      </button>
+                      <button mat-stroked-button type="button" (click)="cancelEdit()" [disabled]="loading">Cancel</button>
+                  </div>
+              </form>
+          </div>
+      </section>
+
   </mat-card-content>
 </mat-card>
