@@ -1,24 +1,273 @@
-<div class="row">
-  <div class="col-lg-8">
-    <app-sales-profit></app-sales-profit>
-  </div>
-  <div class="col-lg-4">
-    <div class="row">
-      <div class="col-12">
-        <app-total-followers></app-total-followers>
+<div class="dashboard-container" [@fadeInOut]>
+  <!-- Header with toggle and refresh buttons -->
+  <mat-card class="dashboard-header">
+    <mat-card-header>
+      <mat-card-title>{{ showChat ? 'Fleet AI Assistant' : 'Fleet Dashboard' }}</mat-card-title>
+      <div class="header-actions">
+        <button mat-icon-button (click)="toggleView()" matTooltip="{{ showChat ? 'Show Dashboard' : 'Show Chat' }}">
+          <mat-icon>{{ showChat ? 'dashboard' : 'chat' }}</mat-icon>
+        </button>
+        <button mat-icon-button *ngIf="!showChat" (click)="refreshData()" [disabled]="isLoading" matTooltip="Refresh dashboard">
+          <mat-icon>refresh</mat-icon>
+        </button>
       </div>
-      <div class="col-12">
-        <app-total-income></app-total-income>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state" [@fadeInOut]>
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error State -->
+  <mat-card *ngIf="errorMessage && !isLoading" class="error-state" [@fadeInOut]>
+    <mat-card-content>
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button mat-raised-button color="primary" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Chat Interface -->
+  <div *ngIf="showChat" class="chat-container" [@fadeInOut]>
+    <div class="chat-messages">
+      <mat-card class="chat-intro">
+        <mat-card-content>
+          <h3>Welcome to Fleet AI Assistant</h3>
+          <p>Ask me anything about your fleet management data!</p>
+          <div class="example-queries">
+            <p>Example queries:</p>
+            <ul>
+              <li>"How many vehicles are currently available?"</li>
+              <li>"Show me maintenance costs for last month"</li>
+              <li>"What is the average fuel consumption?"</li>
+              <li>"List all vehicles with insurance expiring soon"</li>
+            </ul>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div *ngIf="isChatLoading" class="chat-loading">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Processing your query...</span>
+      </div>
+
+      <div *ngIf="chatResponse" class="chat-response">
+        <mat-card>
+          <mat-card-content>
+            <div class="response-text">{{ chatResponse.response }}</div>
+            
+            <div *ngIf="chatResponse?.results && chatResponse.results.length > 0" class="response-table">
+              <table mat-table [dataSource]="chatResponse.results">
+                <ng-container *ngFor="let column of chatResponse?.columns || []; let i = index">
+                  <ng-container [matColumnDef]="column">
+                    <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+                    <td mat-cell *matCellDef="let element">{{ element[i] }}</td>
+                  </ng-container>
+                </ng-container>
+                
+                <tr mat-header-row *matHeaderRowDef="chatResponse?.columns || []"></tr>
+                <tr mat-row *matRowDef="let row; columns: chatResponse?.columns || [];"></tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </div>
     </div>
+
+    <div class="chat-input">
+      <mat-form-field appearance="fill" class="query-input">
+        <mat-label>Ask a question...</mat-label>
+        <input matInput [(ngModel)]="userQuery" (keyup.enter)="sendQuery()" [disabled]="isChatLoading">
+        <button mat-icon-button matSuffix (click)="sendQuery()" [disabled]="isChatLoading || !userQuery.trim()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
   </div>
-  <div class="col-lg-8">
-    <app-popular-products></app-popular-products>
-  </div>
-  <div class="col-lg-4">
-    <app-earning-reports></app-earning-reports>
-  </div>
-  <div class="col-12">
-    <app-blog-card></app-blog-card>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!showChat && summaryData && !isLoading && !errorMessage" [@fadeInOut]>
+    <!-- Widgets Grid -->
+    <div class="widgets-grid">
+      <!-- Vehicle Availability -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon [style.color]="getStatusColor('Available')">directions_car</mat-icon>
+            <span>Vehicle Availability</span>
+          </div>
+          <div class="card-value">{{ summaryData.vehicleAvailabilityPercentage | number:'1.0-1' }}%</div>
+          <div class="card-subtitle">
+            {{ summaryData.vehicleCountByStatus['Available'] || 0 }} of {{ summaryData.totalVehicles || 0 }} vehicles available
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Maintenance Status -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon [style.color]="getStatusColor('Under Maintenance')">build</mat-icon>
+            <span>Requires Attention</span>
+          </div>
+          <div class="card-value">{{ summaryData.vehiclesRequiringAttentionCount || 0 }}</div>
+          <div class="card-subtitle">
+            {{ summaryData.upcomingInsuranceExpirationsCount30Days || 0 }} insurance expiring soon
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Operating Costs -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon class="cost-icon">account_balance_wallet</mat-icon>
+            <span>Monthly Costs</span>
+          </div>
+          <div class="card-value">{{ formatCurrency(summaryData.totalOperatingCostLast30Days || 0) }}</div>
+          <div class="card-details">
+            <div class="cost-item">
+              <mat-icon>build</mat-icon>
+              <span>Maintenance: {{ formatCurrency(summaryData.totalMaintenanceCostLast30Days || 0) }}</span>
+            </div>
+            <div class="cost-item">
+              <mat-icon>local_gas_station</mat-icon>
+              <span>Fuel: {{ formatCurrency(summaryData.totalFuelCostLast30Days || 0) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Active Missions -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon>map</mat-icon>
+            <span>Active Missions</span>
+          </div>
+          <div class="card-value">{{ summaryData.activeMissionsCount || 0 }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Drivers Status -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon>people</mat-icon>
+            <span>Driver Status</span>
+          </div>
+          <div class="card-value">{{ summaryData.activeDriversCount || 0 }}</div>
+          <div class="card-subtitle">
+            Active of {{ summaryData.totalDrivers || 0 }} total drivers
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Parking Status -->
+      <mat-card class="dashboard-card">
+        <mat-card-content>
+          <div class="card-header">
+            <mat-icon>local_parking</mat-icon>
+            <span>Parking Status</span>
+          </div>
+          <div class="card-value">
+            {{ summaryData.parkingSlotStatusCounts['Available'] || 0 }}
+          </div>
+          <div class="card-subtitle">
+            Available parking slots
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+    <!-- Vehicle Status Distribution -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <h3>Vehicle Status Distribution</h3>
+        <ngx-charts-pie-chart
+          [results]="vehicleStatusData"
+          [scheme]="pieColorScheme"
+          [legend]="showLegend"
+          [view]="view"
+          [gradient]="gradient"
+          [animations]="animations"
+          [legendPosition]="LegendPosition.Below"
+          (window:resize)="onResize($event)">
+        </ngx-charts-pie-chart>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Cost Breakdown -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <h3>Cost Breakdown (Last 30 Days)</h3>
+        <ngx-charts-bar-vertical
+          [results]="costBreakdownData"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [scheme]="costColorScheme"
+          [view]="view"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Category'"
+          [yAxisLabel]="'Amount ($)'"
+          [gradient]="gradient"
+          [animations]="animations"
+          [legendPosition]="LegendPosition.Below"
+          (window:resize)="onResize($event)">
+        </ngx-charts-bar-vertical>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Top Vehicles by Mileage -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <h3>Top Vehicles by Mileage</h3>
+        <ngx-charts-bar-horizontal
+          [results]="topMileageData"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [scheme]="colorScheme"
+          [view]="view"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Mileage'"
+          [yAxisLabel]="'Vehicle'"
+          [gradient]="gradient"
+          [animations]="animations"
+          [legendPosition]="LegendPosition.Below"
+          (window:resize)="onResize($event)">
+        </ngx-charts-bar-horizontal>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Insurance Expiry Timeline -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <h3>Insurance Expiry Timeline</h3>
+        <ngx-charts-bar-vertical
+          [results]="insuranceExpiryData"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [scheme]="colorScheme"
+          [view]="view"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Expiry Date'"
+          [yAxisLabel]="'Cost'"
+          [gradient]="gradient"
+          [animations]="animations"
+          [legendPosition]="LegendPosition.Below"
+          (window:resize)="onResize($event)">
+        </ngx-charts-bar-vertical>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>
