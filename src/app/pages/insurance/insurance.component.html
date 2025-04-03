@@ -112,7 +112,8 @@
           </div>
 
           <!-- Data Table -->
-          <table mat-table [dataSource]="dataSource" class="modern-table" *ngIf="dataSource.data.length > 0">
+          <div class="table-wrapper mat-elevation-z2">
+            <table mat-table [dataSource]="dataSource" class="modern-table" *ngIf="dataSource.data.length > 0">
               <!-- Policy Number Column -->
               <ng-container matColumnDef="policyNumber">
                   <th mat-header-cell *matHeaderCellDef> Policy # </th>
@@ -138,8 +139,8 @@
               <ng-container matColumnDef="startDate">
                   <th mat-header-cell *matHeaderCellDef> Start Date </th>
                   <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
-                      <div class="cell-content">
-                          <span>{{ record.startDate | date:'yyyy-MM-dd' }}</span>
+                      <div class="cell-content date-cell">
+                          {{ record.startDate | date:'shortDate' }}
                       </div>
                   </td>
               </ng-container>
@@ -148,9 +149,9 @@
               <ng-container matColumnDef="endDate">
                   <th mat-header-cell *matHeaderCellDef> End Date </th>
                   <td mat-cell *matCellDef="let record" [ngClass]="getRowClass(record)">
-                      <div class="cell-content">
-                          <span>{{ record.endDate | date:'yyyy-MM-dd' }}</span>
-                          <span *ngIf="isExpiring(record.endDate)" class="expiry-tag">Expiring soon</span>
+                      <div class="cell-content date-cell">
+                          {{ record.endDate | date:'shortDate' }}
+                          <span *ngIf="isExpiring(record.endDate)" class="expiry-tag" matTooltip="Policy expires soon">!</span>
                       </div>
                   </td>
               </ng-container>
@@ -206,9 +207,14 @@
                   </td>
               </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="getRowClass(row)" class="table-row-modern"></tr>
           </table>
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
+                        showFirstLastButtons
+                        aria-label="Select page">
+          </mat-paginator>
+          </div>
       </section>
 
       <!-- Form Section -->

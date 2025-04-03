@@ -359,11 +359,11 @@ $transition-speed: 0.25s;
 
 // Badge Colors (using .status-badge-modern)
 .status-badge-modern {
-    &.status-active, &.parking-available, &.mission-completed, &.invoice-paid { background-color: rgba($success-color, 0.1); color: darken($success-color, 10%); .status-dot { background-color: $success-color; } }
-    &.status-maintenance, &.invoice-pending { background-color: rgba($warning-color, 0.1); color: darken($warning-color, 15%); .status-dot { background-color: $warning-color; } }
-    &.status-inactive, &.invoice-overdue { background-color: rgba($danger-color, 0.1); color: darken($danger-color, 10%); .status-dot { background-color: $danger-color; } }
+    &.status-active, &.parking-available, &.mission-completed, &.invoice-paid { background-color: rgba($success-color, 0.1); color: color.adjust($success-color, $lightness: -10%); .status-dot { background-color: $success-color; } }
+    &.status-maintenance, &.invoice-pending { background-color: rgba($warning-color, 0.1); color: color.adjust($warning-color, $lightness: -15%); .status-dot { background-color: $warning-color; } }
+    &.status-inactive, &.invoice-overdue { background-color: rgba($danger-color, 0.1); color: color.adjust($danger-color, $lightness: -10%); .status-dot { background-color: $danger-color; } }
     &.parking-occupied, &.mission-ongoing { background-color: rgba($primary-color, 0.1); color: $primary-dark; .status-dot { background-color: $primary-color; } }
-    &.mission-planned { background-color: rgba($accent-color, 0.1); color: darken($accent-color, 10%); .status-dot { background-color: $accent-color; } }
+    &.mission-planned { background-color: rgba($accent-color, 0.1); color: color.adjust($accent-color, $lightness: -10%); .status-dot { background-color: $accent-color; } }
     &.status-unknown { background-color: rgba(158, 158, 158, 0.1); color: #616161; .status-dot { background-color: #9e9e9e; } }
 }
 

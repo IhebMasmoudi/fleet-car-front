@@ -1,5 +1,3 @@
-// components/insurance/insurance.component.ts
-
 // --- Core Angular Imports ---
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'; // Core decorators, lifecycle hooks, and change detection tools
 import { DatePipe, CommonModule } from '@angular/common'; // For date formatting and common directives (*ngIf, *ngFor)
@@ -19,6 +17,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatNativeDateModule } from '@angular/material/core'; // Required by MatDatepicker
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 
 // --- Application Specific Imports ---
 import { Insurance } from '../../interfaces/IInsurance'; // Data model for insurance records
@@ -34,7 +35,8 @@ import { CarsService } from 'src/app/services/Cars.service'; // Service to fetch
   imports: [ // List required modules for the template
     MatTableModule, MatCardModule, MatButtonModule, CommonModule, MatIconModule,
     MatSelectModule, FormsModule, MatFormFieldModule, MatInputModule, MatDatepickerModule,
-    MatMenuModule, MatNativeDateModule, MatTooltipModule, MatProgressSpinnerModule
+    MatMenuModule, MatNativeDateModule, MatTooltipModule, MatProgressSpinnerModule,
+    MatPaginatorModule
   ],
   providers: [DatePipe], // Provides DatePipe for formatting dates in the component logic (e.g., before sending to API)
   changeDetection: ChangeDetectionStrategy.OnPush // Optimizes performance; requires manual change detection triggers (`cdr.markForCheck()`) for async operations or state changes not automatically detected.
@@ -80,6 +82,7 @@ export class InsuranceComponent implements OnInit {
   readonly displayedColumns: string[] = ['policyNumber', 'provider', 'startDate', 'endDate', 'cost', 'status', 'car', 'actions'];
   /** Material Table data source; connects the filtered insurance data to the table component. */
   dataSource = new MatTableDataSource<Insurance>(this.insurances);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   /**
    * Component constructor. Injects necessary services and utilities.
@@ -98,6 +101,10 @@ export class InsuranceComponent implements OnInit {
   ngOnInit(): void {
     this.fetchInsurances(); // Load insurance records
     this.fetchCars();      // Load car data for dropdown/lookup
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
   }
 
   /**

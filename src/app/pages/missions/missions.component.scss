@@ -344,20 +344,20 @@ $transition-speed: 0.3s;
 
         // Apply status colors to the select trigger background/text
         &.status-pending {
-             .mat-mdc-select-trigger { background-color: rgba($warning-color, 0.1); color: darken($warning-color, 15%); }
-             .mat-mdc-select-arrow { color: darken($warning-color, 15%); }
+             .mat-mdc-select-trigger { background-color: rgba($warning-color, 0.1); color: color.adjust($warning-color, $lightness: -15%); }
+             .mat-mdc-select-arrow { color: color.adjust($warning-color, $lightness: -15%); }
         }
         &.status-in-progress {
-             .mat-mdc-select-trigger { background-color: rgba($info-color, 0.1); color: darken($info-color, 10%); }
-             .mat-mdc-select-arrow { color: darken($info-color, 10%); }
+             .mat-mdc-select-trigger { background-color: rgba($info-color, 0.1); color: color.adjust($info-color, $lightness: -10%); }
+             .mat-mdc-select-arrow { color: color.adjust($info-color, $lightness: -10%); }
         }
         &.status-completed {
-             .mat-mdc-select-trigger { background-color: rgba($success-color, 0.1); color: darken($success-color, 10%); }
-             .mat-mdc-select-arrow { color: darken($success-color, 10%); }
+             .mat-mdc-select-trigger { background-color: rgba($success-color, 0.1); color: color.adjust($success-color, $lightness: -10%); }
+             .mat-mdc-select-arrow { color: color.adjust($success-color, $lightness: -10%); }
         }
         &.status-cancelled {
-             .mat-mdc-select-trigger { background-color: rgba($danger-color, 0.1); color: darken($danger-color, 10%); }
-             .mat-mdc-select-arrow { color: darken($danger-color, 10%); }
+             .mat-mdc-select-trigger { background-color: rgba($danger-color, 0.1); color: color.adjust($danger-color, $lightness: -10%); }
+             .mat-mdc-select-arrow { color: color.adjust($danger-color, $lightness: -10%); }
         }
          &.status-unknown {
              .mat-mdc-select-trigger { background-color: rgba(158, 158, 158, 0.1); color: #616161; }

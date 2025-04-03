@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Notification } from 'src/app/interfaces/Notification';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
 import { Subscription } from 'rxjs';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +24,18 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('150ms ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('150ms ease-out', style({ opacity: 0 }))
+      ])
+    ])
+  ],
   imports: [
     CommonModule,
     MatCardModule,
@@ -48,19 +61,26 @@ export class NotificationComponent implements OnInit, OnDestroy {
   constructor(
     private notificationService: NotificationService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     // Determine if user is admin
     this.isAdmin = this.authService.getRole() === 'ADMIN';
-
-    // Subscribe to notifications and unread count streams
+    // Subscribe to notifications and unread count streams with change detection
     this.subscriptions.push(
-      this.notificationService.notifications$.subscribe(notifs => this.notifications = notifs)
+      this.notificationService.notifications$.subscribe(notifs => {
+        this.notifications = notifs;
+        this.cdr.markForCheck();
+      })
     );
+
     this.subscriptions.push(
-      this.notificationService.unreadCount$.subscribe(count => this.unreadCount = count)
+      this.notificationService.unreadCount$.subscribe(count => {
+        this.unreadCount = count;
+        this.cdr.markForCheck();
+      })
     );
 
     // Load initial notifications from REST endpoints
@@ -96,18 +116,17 @@ export class NotificationComponent implements OnInit, OnDestroy {
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) {
-      return 'just now';
-    } else if (diffMins < 60) {
-      return `${diffMins} min ago`;
-    } else if (diffMins < 1440) {
-      const hours = Math.floor(diffMins / 60);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else {
-      const days = Math.floor(diffMins / 1440);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    }
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 30) return 'just now';
+    if (diffMins < 1) return `${diffSecs}s`;
+    if (diffHours < 1) return `${diffMins}m`;
+    if (diffDays < 1) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString();
   }
 
   navigateToNotificationList(): void {

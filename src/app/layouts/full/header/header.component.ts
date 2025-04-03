@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from 'src/app/services/AuthService.Service';
+import { NotificationComponent } from 'src/app/pages/extra/notification/notification.component';
 
 @Component({
   selector: 'app-header',
@@ -22,8 +23,10 @@ import { AuthService } from 'src/app/services/AuthService.Service';
     NgScrollbarModule,
     TablerIconsModule,
     MaterialModule,
-    MatBadgeModule
+    MatBadgeModule,
+    NotificationComponent
   ],
+  standalone: true,
   templateUrl: './header.component.html',
   encapsulation: ViewEncapsulation.None,
 })

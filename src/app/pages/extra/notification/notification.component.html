@@ -1,18 +1,25 @@
 <!-- Notification bell button that triggers a dropdown menu -->
 <button mat-icon-button aria-label="Notifications" [matMenuTriggerFor]="menu" class="notification-button">
-  <mat-icon matBadgeColor="warn" *ngIf="unreadCount > 0" [matBadge]="unreadCount" matBadgeSize="small" matBadgeOverlap="false">
-    notifications
-  </mat-icon>
-  <mat-icon *ngIf="unreadCount === 0">
-    notifications
+  <mat-icon [matBadge]="unreadCount"
+           [matBadgeHidden]="unreadCount === 0"
+           matBadgeColor="warn"
+           matBadgeSize="small"
+           matBadgeOverlap="false"
+           [@fadeInOut]="'in'">
+    notifications_none
   </mat-icon>
 </button>
 
 <mat-menu #menu="matMenu" class="notification-menu">
   <div class="notification-header">
     <h4 class="menu-title">Notifications</h4>
-    <button mat-flat-button color="primary" *ngIf="unreadCount > 0" (click)="markAllAsRead(); $event.stopPropagation()">
-      <mat-icon>done_all</mat-icon> Mark all as read
+    <button mat-stroked-button
+            color="primary"
+            *ngIf="unreadCount > 0"
+            (click)="markAllAsRead(); $event.stopPropagation()"
+            class="mark-read-btn">
+      <mat-icon class="small-icon">done_all</mat-icon>
+      <span>Clear all</span>
     </button>
   </div>
 
@@ -46,6 +53,7 @@
 
 
   <button mat-menu-item class="view-all" (click)="navigateToNotificationList()">
-    View all notifications
+    <span>View all</span>
+    <mat-icon class="small-icon">chevron_right</mat-icon>
   </button>
 </mat-menu>

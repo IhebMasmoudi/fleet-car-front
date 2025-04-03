@@ -45,14 +45,14 @@ export const ExtraRoutes: Routes = [
           urls: [{ title: 'notification-list', url: '/notification-list' }, { title: 'notification-list' }],
         },
       },
-      {
+     /* {
         path: 'notification', 
         component: NotificationComponent,
         data: {
           title: 'Notification',
           urls: [{ title: 'Notification', url: '/Notification' }, { title: 'Notification' }],
         },
-      },
+      },*/
       {
         path: 'DriverTasks', 
         component: DrivertasksComponent,
