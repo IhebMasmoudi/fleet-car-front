@@ -4,6 +4,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { UserService } from 'src/app/services/UserService.service';
 import { IUser } from 'src/app/interfaces/IUser';
+import { TokenService } from './token.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +12,12 @@ import { IUser } from 'src/app/interfaces/IUser';
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api';
   user: IUser | null = null;
-  token: string | null = null;
 
-  constructor(private http: HttpClient, private userService: UserService) {}
+  constructor(
+    private http: HttpClient,
+    private userService: UserService,
+    private tokenService: TokenService
+  ) {}
 
   /**
    * Login user.
@@ -69,29 +73,28 @@ register(username: string, password: string, email: string, roleId: number): Obs
    * Check if the user is authenticated.
    */
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    return !!this.tokenService.getToken();
   }
 
   /**
    * Get the JWT token from local storage.
    */
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.tokenService.getToken();
   }
 
   /**
    * Set the JWT token in local storage.
    */
   setToken(token: string): void {
-    localStorage.setItem('token', token);
-    this.token = token;
+    this.tokenService.setToken(token);
   }
 
   /**
    * Get the user role from local storage.
    */
   getRole(): string | null {
-    const role = localStorage.getItem('role');
+    const role = this.tokenService.getRole();
     console.log('Retrieved role from local storage:', role);
     return role;
   }
@@ -101,35 +104,35 @@ register(username: string, password: string, email: string, roleId: number): Obs
    */
   setRole(role: string): void {
     console.log('Setting role in local storage:', role);
-    localStorage.setItem('role', role);
+    this.tokenService.setRole(role);
   }
 
   /**
    * Get the user ID from local storage.
    */
   getUserId(): string | null {
-    return localStorage.getItem('userId');
+    return this.tokenService.getUserId();
   }
 
   /**
    * Set the user ID in local storage.
    */
   setUserId(userId: string): void {
-    localStorage.setItem('userId', userId);
+    this.tokenService.setUserId(userId);
   }
 
   /**
    * Get the user name from local storage.
    */
   getUserName(): string | null {
-    return localStorage.getItem('userName');
+    return this.tokenService.getUserName();
   }
 
   /**
    * Set the user name in local storage.
    */
   setUserName(userName: string): void {
-    localStorage.setItem('userName', userName);
+    this.tokenService.setUserName(userName);
   }
 
   /**
@@ -138,9 +141,10 @@ register(username: string, password: string, email: string, roleId: number): Obs
    */
   loadUserProfile(): Observable<string | null> {
     let userId = this.getUserId();
-    if (!userId && this.token) {
+    const token = this.getToken();
+    if (!userId && token) {
       // Decode the token to get the email (assuming token payload contains "sub")
-      const decoded = this.decodeToken(this.token);
+      const decoded = this.decodeToken(token);
       const email = decoded?.sub;
       if (email) {
         console.log('Email from token:', email);

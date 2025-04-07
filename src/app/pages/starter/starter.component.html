@@ -4,8 +4,9 @@
     <mat-card-header>
       <mat-card-title>{{ showChat ? 'Fleet AI Assistant' : 'Fleet Dashboard' }}</mat-card-title>
       <div class="header-actions">
-        <button mat-icon-button (click)="toggleView()" matTooltip="{{ showChat ? 'Show Dashboard' : 'Show Chat' }}">
+        <button mat-button (click)="toggleView()" matTooltip="{{ showChat ? 'Show Dashboard' : 'Show Chat' }}">
           <mat-icon>{{ showChat ? 'dashboard' : 'chat' }}</mat-icon>
+          <span>{{ showChat ? 'Back to Dashboard' : 'ASK AI!' }}</span>
         </button>
         <button mat-icon-button *ngIf="!showChat" (click)="refreshData()" [disabled]="isLoading" matTooltip="Refresh dashboard">
           <mat-icon>refresh</mat-icon>

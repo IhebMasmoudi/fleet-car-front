@@ -1,18 +1,167 @@
-<mat-card class="example-card" appearance="outlined">
-  <mat-card-header>
-    <div mat-card-avatar class="example-header-image"></div>
-    <mat-card-title>MY Profile</mat-card-title>
-    <mat-card-subtitle>{{ user?.role }}</mat-card-subtitle>
-  </mat-card-header>
-  <img mat-card-image [src]="photoUrl" alt="User Photo" >
-  <mat-card-content>
-    <p>
-      Welcome to your profile
-    </p>
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item"><strong>Email:</strong> {{ user?.email }}</li>
-      <li class="list-group-item"><strong>User name:</strong> {{ user?.username }}</li>
-      <li class="list-group-item"><strong>Role:</strong> {{ user?.role }}</li>
-    </ul>
-  </mat-card-content>
-</mat-card>
+<!-- Loading Indicator -->
+<div *ngIf="isLoading" style="text-align: center; padding: 3rem; color: grey;">
+  <mat-spinner diameter="40" style="margin: 0 auto;"></mat-spinner>
+  <p style="margin-top: 1rem;">Loading Profile...</p>
+</div>
+
+<!-- Error Message if profile fails to load -->
+<div *ngIf="!isLoading && errorMessage && !currentUser" class="error-message main-error">
+  {{ errorMessage }}
+</div>
+
+<!-- Main Profile Container -->
+<div *ngIf="!isLoading && currentUser" class="profile-container">
+  
+  <!-- User Summary Card -->
+  <div class="user-summary">
+    <div class="profile-picture-container">
+      <img [src]="displayPhotoUrl" [alt]="currentUser.username" class="profile-picture">
+    </div>
+    <h2>{{ currentUser.username }}</h2>
+    <span class="user-role">{{ currentUser.role }}</span>
+    <p style="margin-top: 1rem;">{{ currentUser.email }}</p>
+  </div>
+
+  <mat-card class="cardWithShadow">
+    <mat-card-content>
+      <!-- Section Title -->
+      <h1 class="section-title">Profile Settings</h1>
+      <p class="section-subtitle">Manage your account settings and preferences</p>
+
+      <!-- Messages -->
+      <div *ngIf="successMessage" class="success-message">
+        <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+        {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage && currentUser" class="error-message">
+        <mat-icon style="vertical-align: middle; margin-right: 8px;">error</mat-icon>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Grid Layout -->
+      <div class="profile-grid">
+
+        <!-- Profile Picture Card -->
+        <mat-card class="card">
+          <mat-card-title class="card-title">Profile Picture</mat-card-title>
+          <p class="section-subtitle">Customize your profile picture</p>
+          <div class="profile-picture-container">
+            <img [src]="displayPhotoUrl" [alt]="currentUser.username" class="profile-picture">
+          </div>
+          <div class="profile-picture-actions">
+            <button mat-stroked-button color="primary" (click)="onPictureUploadClick()" title="Upload new picture">
+              <mat-icon>cloud_upload</mat-icon> Upload Photo
+            </button>
+            <button mat-stroked-button (click)="onPictureResetClick()" title="Reset to default picture">
+              <mat-icon>restart_alt</mat-icon> Reset
+            </button>
+          </div>
+          <p class="section-subtitle file-info">Supported formats: JPG, PNG (max 5MB)</p>
+        </mat-card>
+
+        <!-- Change Password Card -->
+        <mat-card class="card">
+          <mat-card-title class="card-title">Security Settings</mat-card-title>
+          <form (ngSubmit)="changePassword()">
+            <!-- Current Password Field -->
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Current Password</mat-label>
+              <input matInput [type]="passwordVisible.current ? 'text' : 'password'"
+                     placeholder="Enter your current password"
+                     [(ngModel)]="passwordForm.currentPassword" name="currentPassword" required>
+              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility('current')"
+                      [attr.aria-label]="'Hide current password'"
+                      [attr.aria-pressed]="passwordVisible.current">
+                <mat-icon>{{passwordVisible.current ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <!-- New Password Field -->
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>New Password</mat-label>
+              <input matInput [type]="passwordVisible.new ? 'text' : 'password'"
+                     placeholder="Enter new password (min 6 characters)"
+                     [(ngModel)]="passwordForm.newPassword" name="newPassword" required minlength="6">
+              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility('new')"
+                      [attr.aria-label]="'Hide new password'"
+                      [attr.aria-pressed]="passwordVisible.new">
+                <mat-icon>{{passwordVisible.new ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-hint align="start">Use at least 6 characters</mat-hint>
+            </mat-form-field>
+
+            <!-- Confirm New Password Field -->
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Confirm New Password</mat-label>
+              <input matInput [type]="passwordVisible.confirm ? 'text' : 'password'"
+                     placeholder="Confirm your new password"
+                     [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword" required>
+              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility('confirm')"
+                      [attr.aria-label]="'Hide confirm password'"
+                      [attr.aria-pressed]="passwordVisible.confirm">
+                <mat-icon>{{passwordVisible.confirm ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.newPassword !== passwordForm.confirmPassword && passwordForm.confirmPassword">
+                Passwords do not match
+              </mat-error>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit" class="btn-block"
+                    [disabled]="!passwordForm.currentPassword || !passwordForm.newPassword ||
+                               passwordForm.newPassword !== passwordForm.confirmPassword">
+              <mat-icon>lock</mat-icon>
+              Update Password
+            </button>
+          </form>
+        </mat-card>
+
+        <!-- Personal Details Card -->
+        <mat-card class="card full-width">
+          <mat-card-title class="card-title">Personal Information</mat-card-title>
+          <form class="personal-details-form" (ngSubmit)="updateProfileDetails()">
+            <div class="form-row">
+              <!-- Username Field -->
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Full Name</mat-label>
+                <input matInput placeholder="Enter your full name"
+                       [(ngModel)]="profileForm.username" name="username" required>
+                <mat-icon matSuffix>person</mat-icon>
+              </mat-form-field>
+
+              <!-- Email Field -->
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Email Address</mat-label>
+                <input matInput type="email" placeholder="Your email address"
+                       [(ngModel)]="profileForm.email" name="email" required readonly>
+                <mat-icon matSuffix>email</mat-icon>
+                <mat-hint align="start">Email address cannot be changed</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <!-- Role Display -->
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Role</mat-label>
+                <input matInput [value]="currentUser.role" readonly>
+                <mat-icon matSuffix>badge</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-stroked-button type="button" (click)="resetProfileForm()">
+                <mat-icon>refresh</mat-icon>
+                Reset Changes
+              </button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="!profileForm.username">
+                <mat-icon>save</mat-icon>
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </mat-card>
+
+      </div> <!-- End .profile-grid -->
+    </mat-card-content>
+  </mat-card>
+
+</div> <!-- End .profile-container -->
