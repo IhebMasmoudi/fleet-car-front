@@ -63,7 +63,7 @@
 
     <!-- Main Content Tabs -->
     <section *ngIf="!isLoading && !errorMessage && carDetails" class="details-content">
-       <mat-tab-group animationDuration="300ms" class="modern-tabs">
+       <mat-tab-group animationDuration="300ms" class="modern-tabs" [selectedIndex]="0">
 
         <!-- General Info Tab -->
         <mat-tab>
@@ -170,32 +170,39 @@
            <div class="tab-content-wrapper">
             <div *ngIf="carDetails.tires && carDetails.tires.length > 0; else noTires">
               <h3 class="tab-section-title">Tire History</h3>
-              <div class="table-responsive">
-                <table mat-table [dataSource]="carDetails.tires" class="modern-table w-100">
-                  <ng-container matColumnDef="brand">
-                    <th mat-header-cell *matHeaderCellDef>Brand</th>
-                    <td mat-cell *matCellDef="let tire">{{ tire.brand }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="model">
-                    <th mat-header-cell *matHeaderCellDef>Model</th>
-                    <td mat-cell *matCellDef="let tire">{{ tire.model }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="installationDate">
-                    <th mat-header-cell *matHeaderCellDef>Installed</th>
-                    <td mat-cell *matCellDef="let tire">{{ tire.installationDate | date:'yyyy-MM-dd' }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="mileage">
-                    <th mat-header-cell *matHeaderCellDef>Mileage</th>
-                    <td mat-cell *matCellDef="let tire">{{ tire.mileageAtInstallation | number }} km</td>
-                  </ng-container>
-                  <ng-container matColumnDef="reason">
-                    <th mat-header-cell *matHeaderCellDef>Reason</th>
-                    <td mat-cell *matCellDef="let tire" class="wrap-text">{{ tire.replacementReason || '-' }}</td>
-                  </ng-container>
+              <div class="table-container">
+                <div class="table-responsive">
+                  <table mat-table [dataSource]="tiresDataSource" class="modern-table w-100">
+                    <ng-container matColumnDef="brand">
+                      <th mat-header-cell *matHeaderCellDef>Brand</th>
+                      <td mat-cell *matCellDef="let tire">{{ tire.brand }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="model">
+                      <th mat-header-cell *matHeaderCellDef>Model</th>
+                      <td mat-cell *matCellDef="let tire">{{ tire.model }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="installationDate">
+                      <th mat-header-cell *matHeaderCellDef>Installed</th>
+                      <td mat-cell *matCellDef="let tire">{{ tire.installationDate | date:'yyyy-MM-dd' }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="mileage">
+                      <th mat-header-cell *matHeaderCellDef>Mileage</th>
+                      <td mat-cell *matCellDef="let tire">{{ tire.mileageAtInstallation | number }} km</td>
+                    </ng-container>
+                    <ng-container matColumnDef="reason">
+                      <th mat-header-cell *matHeaderCellDef>Reason</th>
+                      <td mat-cell *matCellDef="let tire" class="wrap-text">{{ tire.replacementReason || '-' }}</td>
+                    </ng-container>
 
-                  <tr mat-header-row *matHeaderRowDef="['brand', 'model', 'installationDate', 'mileage', 'reason']"></tr>
-                  <tr mat-row *matRowDef="let row; columns: ['brand', 'model', 'installationDate', 'mileage', 'reason'];" class="table-row-modern"></tr>
-                </table>
+                    <tr mat-header-row *matHeaderRowDef="['brand', 'model', 'installationDate', 'mileage', 'reason']; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: ['brand', 'model', 'installationDate', 'mileage', 'reason'];" class="table-row-modern"></tr>
+                  </table>
+                </div>
+                <mat-paginator #tiresPaginator
+                  [pageSize]="pageSize"
+                  [pageSizeOptions]="pageSizeOptions"
+                  aria-label="Select page of tires">
+                </mat-paginator>
               </div>
             </div>
             <ng-template #noTires>
@@ -260,29 +267,36 @@
            <div class="tab-content-wrapper">
             <div *ngIf="carDetails.fuelConsumption && carDetails.fuelConsumption.length > 0; else noFuel">
               <h3 class="tab-section-title">Fuel Consumption History</h3>
-               <div class="table-responsive">
-                <table mat-table [dataSource]="carDetails.fuelConsumption" class="modern-table w-100">
-                  <ng-container matColumnDef="date">
-                    <th mat-header-cell *matHeaderCellDef>Date</th>
-                    <td mat-cell *matCellDef="let fuel">{{ fuel.date | date:'yyyy-MM-dd HH:mm' }}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="amount">
-                    <th mat-header-cell *matHeaderCellDef>Amount</th>
-                    <td mat-cell *matCellDef="let fuel">{{ fuel.amount | number:'1.1-2' }} L</td>
-                  </ng-container>
-                  <ng-container matColumnDef="cost">
-                    <th mat-header-cell *matHeaderCellDef>Cost</th>
-                    <td mat-cell *matCellDef="let fuel">{{ fuel.cost | currency:'TND':'symbol' }}</td> <!-- Adjust currency -->
-                  </ng-container>
-                  <ng-container matColumnDef="mileage">
-                    <th mat-header-cell *matHeaderCellDef>Mileage</th>
-                    <td mat-cell *matCellDef="let fuel">{{ fuel.mileage | number }} km</td>
-                  </ng-container>
+               <div class="table-container">
+                 <div class="table-responsive">
+                   <table mat-table [dataSource]="fuelDataSource" class="modern-table w-100">
+                     <ng-container matColumnDef="date">
+                       <th mat-header-cell *matHeaderCellDef>Date</th>
+                       <td mat-cell *matCellDef="let fuel">{{ fuel.date | date:'yyyy-MM-dd HH:mm' }}</td>
+                     </ng-container>
+                     <ng-container matColumnDef="amount">
+                       <th mat-header-cell *matHeaderCellDef>Amount</th>
+                       <td mat-cell *matCellDef="let fuel">{{ fuel.amount | number:'1.1-2' }} L</td>
+                     </ng-container>
+                     <ng-container matColumnDef="cost">
+                       <th mat-header-cell *matHeaderCellDef>Cost</th>
+                       <td mat-cell *matCellDef="let fuel">{{ fuel.cost | currency:'TND':'symbol' }}</td>
+                     </ng-container>
+                     <ng-container matColumnDef="mileage">
+                       <th mat-header-cell *matHeaderCellDef>Mileage</th>
+                       <td mat-cell *matCellDef="let fuel">{{ fuel.mileage | number }} km</td>
+                     </ng-container>
 
-                  <tr mat-header-row *matHeaderRowDef="['date', 'amount', 'cost', 'mileage']"></tr>
-                  <tr mat-row *matRowDef="let row; columns: ['date', 'amount', 'cost', 'mileage'];" class="table-row-modern"></tr>
-                </table>
-              </div>
+                     <tr mat-header-row *matHeaderRowDef="['date', 'amount', 'cost', 'mileage']; sticky: true"></tr>
+                     <tr mat-row *matRowDef="let row; columns: ['date', 'amount', 'cost', 'mileage'];" class="table-row-modern"></tr>
+                   </table>
+                 </div>
+                 <mat-paginator #fuelPaginator
+                   [pageSize]="pageSize"
+                   [pageSizeOptions]="pageSizeOptions"
+                   aria-label="Select page of fuel records">
+                 </mat-paginator>
+               </div>
             </div>
             <ng-template #noFuel>
                <div class="empty-state tab-empty-state">
@@ -306,8 +320,9 @@
           <div class="tab-content-wrapper">
               <div *ngIf="carDetails.invoices && carDetails.invoices.length > 0; else noInvoices">
                 <h3 class="tab-section-title">Associated Invoices</h3>
-                 <div class="card-grid"> <!-- Reusable grid -->
-                  <mat-card *ngFor="let invoice of carDetails.invoices" class="grid-item-card" [ngClass]="getInvoiceStatusClass(invoice.status)">
+                 <div class="scrollable-container">
+                   <div class="card-grid">
+                     <mat-card *ngFor="let invoice of carDetails.invoices" class="grid-item-card" [ngClass]="getInvoiceStatusClass(invoice.status)">
                      <div class="grid-card-header">
                         <div class="grid-card-title">{{ invoice.amount | currency:'TND':'symbol' }}</div> <!-- Adjust currency -->
                         <span class="grid-card-status status-badge-modern" [ngClass]="getInvoiceStatusClass(invoice.status)">
@@ -330,7 +345,8 @@
                             <mat-icon>visibility</mat-icon>
                          </button>
                       </mat-card-actions>
-                  </mat-card>
+                     </mat-card>
+                   </div>
                  </div>
               </div>
               <ng-template #noInvoices>
@@ -381,6 +397,75 @@
           </div>
         </mat-tab>
 
+        <!-- Insurance Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div class="tab-label">
+              <mat-icon>security</mat-icon>
+              <span>Insurance</span>
+            </div>
+          </ng-template>
+          <div class="tab-content-wrapper">
+            <div *ngIf="carDetails.insuranceRecords && carDetails.insuranceRecords.length > 0; else noInsurance">
+              <h3 class="tab-section-title">Insurance History</h3>
+              <div class="filter-container">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Search Insurance</mat-label>
+                  <input matInput placeholder="Search by policy number or provider" (keyup)="applyInsuranceFilter($event)">
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="scrollable-container">
+                <div class="card-grid">
+                  <mat-card *ngFor="let insurance of filteredInsuranceRecords" class="grid-item-card">
+                    <div class="grid-card-header">
+                      <div class="grid-card-title">
+                        <mat-icon class="inline-icon">business</mat-icon>
+                        {{ insurance.provider }}
+                      </div>
+                      <span class="grid-card-status status-badge-modern" [ngClass]="getInsuranceStatusClass(insurance.status)">
+                        <span class="status-dot"></span> {{ insurance.status }}
+                      </span>
+                    </div>
+                    <div class="grid-card-content">
+                      <div class="info-item small">
+                        <span class="info-label">Policy Number</span>
+                        <span class="info-value">{{ insurance.policyNumber }}</span>
+                      </div>
+                      <div class="info-item small">
+                        <span class="info-label">Valid From</span>
+                        <span class="info-value">{{ insurance.startDate | date:'mediumDate' }}</span>
+                      </div>
+                      <div class="info-item small">
+                        <span class="info-label">Valid Until</span>
+                        <span class="info-value">{{ insurance.endDate | date:'mediumDate' }}</span>
+                      </div>
+                      <div class="info-item small">
+                        <span class="info-label">Cost</span>
+                        <span class="info-value">{{ insurance.cost | currency:'TND':'symbol' }}</span>
+                      </div>
+                    </div>
+                  </mat-card>
+                </div>
+              </div>
+              <mat-paginator #insurancePaginator
+                [length]="totalInsuranceRecords"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                (page)="onPageChange($event)"
+                aria-label="Select page of insurance records">
+              </mat-paginator>
+            </div>
+            <ng-template #noInsurance>
+              <div class="empty-state tab-empty-state">
+                <mat-icon>security_off</mat-icon>
+                <h3>No Insurance Records</h3>
+                <p>No insurance records found for this vehicle.</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+
         <!-- Missions Tab -->
         <mat-tab>
           <ng-template mat-tab-label>
@@ -392,23 +477,30 @@
            <div class="tab-content-wrapper">
                <div *ngIf="carDetails.missions && carDetails.missions.length > 0; else noMissions">
                   <h3 class="tab-section-title">Mission History</h3>
-                  <div class="mission-list"> <!-- Use a list style -->
-                     <mat-card *ngFor="let mission of carDetails.missions" class="list-item-card" [ngClass]="getMissionStatusClass(mission.status)">
-                        <mat-icon class="list-item-icon">explore</mat-icon>
-                        <div class="list-item-content">
-                           <div class="list-item-title">{{ mission.destination }}</div>
-                            <div class="list-item-subtitle">
-                              <span>{{ mission.startDate | date:'shortDate' }}</span>
-                              <mat-icon class="separator-icon">arrow_right_alt</mat-icon>
-                              <span>{{ mission.endDate | date:'shortDate' }}</span>
-                              <span class="separator">|</span>
-                              <mat-icon class="inline-icon">straighten</mat-icon> {{ mission.distance }} km
-                           </div>
-                        </div>
-                         <span class="grid-card-status status-badge-modern list-item-status" [ngClass]="getMissionStatusClass(mission.status)">
-                           <span class="status-dot"></span> {{ mission.status }}
-                        </span>
-                     </mat-card>
+                  <div class="scrollable-container">
+                    <div class="mission-list">
+                       <mat-card *ngFor="let mission of missionsDataSource.data" class="list-item-card" [ngClass]="getMissionStatusClass(mission.status)">
+                          <mat-icon class="list-item-icon">explore</mat-icon>
+                          <div class="list-item-content">
+                             <div class="list-item-title">{{ mission.destination }}</div>
+                              <div class="list-item-subtitle">
+                                <span>{{ mission.startDate | date:'shortDate' }}</span>
+                                <mat-icon class="separator-icon">arrow_right_alt</mat-icon>
+                                <span>{{ mission.endDate | date:'shortDate' }}</span>
+                                <span class="separator">|</span>
+                                <mat-icon class="inline-icon">straighten</mat-icon> {{ mission.distance }} km
+                             </div>
+                          </div>
+                           <span class="grid-card-status status-badge-modern list-item-status" [ngClass]="getMissionStatusClass(mission.status)">
+                             <span class="status-dot"></span> {{ mission.status }}
+                          </span>
+                       </mat-card>
+                    </div>
+                    <mat-paginator #missionsPaginator
+                      [pageSize]="pageSize"
+                      [pageSizeOptions]="pageSizeOptions"
+                      aria-label="Select page of missions">
+                    </mat-paginator>
                   </div>
                </div>
                <ng-template #noMissions>

@@ -207,10 +207,37 @@ $transition-speed: 0.3s;
 .table-container-modern.table-container {
   @include card-container;
   margin: 0 24px 24px;
+  overflow: hidden; // Prevent overflow from container
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; // Enable horizontal scrolling
+  position: relative; // For sticky header
+  
+  // For webkit browsers
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #555;
+    }
+  }
 }
 
 .modern-table.mat-table {
   width: 100%;
+  min-width: 800px; // Minimum width to ensure all columns are visible
   border-collapse: collapse; // Ensure clean border rendering
 
   th.mat-header-cell {
@@ -220,7 +247,19 @@ $transition-speed: 0.3s;
     padding: 16px;
     background-color: $neutral-bg;
     border-bottom: 2px solid rgba(0, 0, 0, 0.06);
-    text-align: left; /* Align header text to the left */
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    /* Ensure header cells have a background when sticky */
+    &:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+    }
   }
 
   td.mat-cell {

@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router'; // Import Router if needed for navigation
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +15,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip'; // Import MatTooltipModule
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table'; // Ensure MatTableModule is imported if used
-import { MatOptionModule, MatNativeDateModule } from '@angular/material/core'; // Keep if used by other imports
+import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select'; // Keep if used by other imports
 import { MatMenuModule } from '@angular/material/menu'; // Keep if used by other imports
 import { MatDatepickerModule } from '@angular/material/datepicker'; // Keep if used by other imports
@@ -44,26 +47,49 @@ import { ICarDetails } from 'src/app/interfaces/Icardetails';
     MatTabsModule,
     MatListModule,
     MatProgressSpinnerModule,
-    MatTooltipModule, // Add MatTooltipModule here
+    MatTooltipModule,
     MatSnackBarModule,
-    MatTableModule, // Include MatTableModule if tables are used in the template
-    // Keep other Material modules if they are used in the template
+    MatTableModule,
     MatOptionModule,
     MatSelectModule,
     MatMenuModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatPaginatorModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush // Set Change Detection
 })
 export class CarDetailsComponent implements OnInit, OnDestroy {
-
   // --- State Properties ---
   carId: number | null = null;
   carDetails: ICarDetails | null = null;
-  errorMessage: string = ''; // Use empty string for no error
-  isLoading: boolean = false; // For initial details fetch
-  loadingDocument: { [key: string]: boolean } = {}; // Track loading per document
+  errorMessage: string = '';
+  isLoading: boolean = false;
+  loadingDocument: { [key: string]: boolean } = {};
+
+  // --- Pagination and Filtering ---
+  @ViewChild('insurancePaginator') insurancePaginator!: MatPaginator;
+  @ViewChild('tiresPaginator') tiresPaginator!: MatPaginator;
+  @ViewChild('fuelPaginator') fuelPaginator!: MatPaginator;
+  @ViewChild('missionsPaginator') missionsPaginator!: MatPaginator;
+
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24, 48];
+  
+  // Insurance records
+  totalInsuranceRecords = 0;
+  filteredInsuranceRecords: any[] = [];
+  
+  // Tires records
+  tiresDataSource = new MatTableDataSource<any>();
+  
+  // Fuel consumption records
+  fuelDataSource = new MatTableDataSource<any>();
+  
+  // Missions records
+  missionsDataSource = new MatTableDataSource<any>();
+  private filterValue = '';
+
 
   // --- RxJS Subject for Unsubscribing ---
   private destroy$ = new Subject<void>();
@@ -119,6 +145,10 @@ export class CarDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (details) => {
           this.carDetails = details;
+          this.initializeInsuranceData(details);
+          this.initializeTiresData(details);
+          this.initializeFuelData(details);
+          this.initializeMissionsData(details);
           console.log('Fetched car details:', details);
           this.cdr.markForCheck();
         },
@@ -174,10 +204,7 @@ export class CarDetailsComponent implements OnInit, OnDestroy {
 
     // --- Navigation ---
     goBack(): void {
-        // Example: Navigate back to the cars list or previous page
-        // This requires importing Router and Location if using Location service
-        // this.location.back(); // Needs Location service injected
-         this.router.navigate(['/cars']); // Or specific route
+         this.router.navigate(['/cars']);
     }
 
 
@@ -212,12 +239,91 @@ export class CarDetailsComponent implements OnInit, OnDestroy {
         }
     }
 
+    // Insurance handling methods
+    initializeInsuranceData(details: ICarDetails) {
+      this.carDetails = details;
+      this.totalInsuranceRecords = details.insuranceRecords?.length || 0;
+      this.filteredInsuranceRecords = details.insuranceRecords || [];
+      this.applyPagination();
+      this.cdr.markForCheck();
+    }
+
+    // Initialize data sources
+    initializeTiresData(details: ICarDetails): void {
+      if (details.tires) {
+        this.tiresDataSource.data = details.tires;
+        this.tiresDataSource.paginator = this.tiresPaginator;
+      }
+    }
+
+    initializeFuelData(details: ICarDetails): void {
+      if (details.fuelConsumption) {
+        this.fuelDataSource.data = details.fuelConsumption;
+        this.fuelDataSource.paginator = this.fuelPaginator;
+      }
+    }
+
+    initializeMissionsData(details: ICarDetails): void {
+      if (details.missions) {
+        this.missionsDataSource.data = details.missions;
+        this.missionsDataSource.paginator = this.missionsPaginator;
+      }
+    }
+
+    applyInsuranceFilter(event: Event): void {
+      const filterValue = (event.target as HTMLInputElement).value;
+      this.filterValue = filterValue.trim().toLowerCase();
+      if (this.carDetails?.insuranceRecords) {
+        this.filteredInsuranceRecords = this.carDetails.insuranceRecords.filter(insurance =>
+          insurance.policyNumber.toLowerCase().includes(this.filterValue) ||
+          insurance.provider.toLowerCase().includes(this.filterValue)
+        );
+      }
+      this.totalInsuranceRecords = this.filteredInsuranceRecords.length;
+      if (this.insurancePaginator) {
+        this.insurancePaginator.firstPage();
+      }
+      this.applyPagination();
+      this.cdr.markForCheck();
+    }
+
+    onPageChange(event: any): void {
+      this.pageSize = event.pageSize;
+      this.applyPagination();
+      this.cdr.markForCheck();
+    }
+
+    private applyPagination(): void {
+      if (!this.insurancePaginator) return;
+      
+      const startIndex = this.insurancePaginator.pageIndex * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+      
+      if (this.carDetails?.insuranceRecords) {
+        const filtered = this.filterValue
+          ? this.filteredInsuranceRecords
+          : this.carDetails.insuranceRecords;
+          
+        this.filteredInsuranceRecords = filtered.slice(startIndex, endIndex);
+      }
+    }
+
     getParkingStatusClass(status: string | undefined): string {
         if (!status) return 'parking-unknown';
         switch (status.toLowerCase()) {
         case 'occupied': return 'parking-occupied'; // Or use 'reserved' if that's the status value
         case 'available': return 'parking-available';
         default: return 'parking-unknown';
+        }
+    }
+
+    getInsuranceStatusClass(status: string | undefined): string {
+        if (!status) return 'status-unknown';
+        switch (status.toLowerCase()) {
+            case 'active': return 'status-active';
+            case 'expired': return 'status-inactive';
+            case 'pending': return 'status-pending';
+            default: return 'status-unknown';
         }
     }
 

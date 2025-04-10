@@ -17,6 +17,7 @@ export interface ICarDetails {
   fuelConsumption: FuelConsumption[]; // Array of fuel consumption records
   documents: Document[]; // Array of documents
   invoices: Invoice[]; // Array of invoices
+  insuranceRecords: Insurance[]; // Array of insurances
   parkingSlot: ParkingSlot | null; // Parking slot details (nullable)
   driver: Driver | null; // Driver details (nullable)
 }
@@ -94,4 +95,15 @@ export interface Driver {
   status: string;
   userId: number;
   affectedVehicleID: number;
+}
+
+export interface Insurance {
+  id: number;
+  policyNumber: string;
+  provider: string;
+  startDate: string; 
+  endDate: string;   
+  cost: number;
+  status: string;
+  vehicleID: number; 
 }

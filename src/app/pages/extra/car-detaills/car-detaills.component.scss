@@ -1,5 +1,48 @@
 @use 'sass:color'; // Ensure this is at the very top
 
+.table-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  margin: 1rem 0;
+
+  .table-responsive {
+    overflow-x: auto;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+
+    table {
+      width: 100%;
+      min-width: 600px; // Ensures horizontal scroll on smaller screens
+    }
+
+    th.mat-header-cell {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+    }
+  }
+}
+
+.scrollable-container {
+  overflow-x: auto;
+  padding: 1rem 0;
+  
+  .mission-list, .card-grid {
+    min-width: min-content;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+// Ensure consistent paginator style
+.mat-mdc-paginator {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
 // ----------------------------------------
 // Color Variables - Refined Theme
 // ----------------------------------------

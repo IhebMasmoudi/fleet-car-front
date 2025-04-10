@@ -72,7 +72,13 @@ export class NotificationService {
       console.log('WebSocket connected for userId:', userId);
       this.stompClient?.subscribe(`/user/${userId}/queue/notifications`, message => {
         if (message.body) {
-          const notification: Notification = JSON.parse(message.body);
+          let notification: Notification = JSON.parse(message.body);
+          // Ensure notification has required properties
+          notification = {
+            ...notification,
+            read: notification.read ?? false,
+            isRead: notification.read ?? false
+          };
           this.addNewNotification(notification);
         }
       });
@@ -110,6 +116,11 @@ export class NotificationService {
       });
     }
     return this.http.get<Notification[]>(`${this.apiUrl}/user/${userId}`).pipe(
+      map(notifications => notifications.map(n => ({
+        ...n,
+        read: n.read ?? false,
+        isRead: n.read ?? false
+      }))),
       tap(notifications => {
         this.notificationsSubject.next(notifications);
         this.unreadCountSubject.next(notifications.filter(n => !n.isRead).length);
@@ -187,8 +198,20 @@ export class NotificationService {
       );
   }
 
-  createNotification(title: string, message: string, targetRole: string): Observable<void> {
-    const payload = { title, message, targetRole, senderRole: this.authService.getRole() };
-    return this.http.post<void>(`${this.apiUrl}/create`, payload);
+  createNotification(title: string, message: string, targetRole: string): Observable<Notification> {
+    const payload = {
+      title,
+      message,
+      targetRole,
+      senderRole: this.authService.getRole(),
+      read: false // Set default value
+    };
+    return this.http.post<Notification>(`${this.apiUrl}/create`, payload).pipe(
+      map(notification => ({
+        ...notification,
+        read: notification.read ?? false, // Ensure read property has a default
+        isRead: notification.read ?? false // Map to isRead with default
+      }))
+    );
   }
 }

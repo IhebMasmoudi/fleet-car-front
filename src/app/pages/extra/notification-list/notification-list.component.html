@@ -10,7 +10,7 @@
 
         <!-- Button to toggle between showing all notifications or just the last 5 -->
         <button mat-flat-button *ngIf="notifications.length >= 3" (click)="toggleNotifications()">
-          <mat-icon>{{ showAllNotifications ? 'expand_less' : 'expand_more' }}</mat-icon>
+          <mat-icon [@indicatorRotate]="showAllNotifications ? 'expanded' : 'collapsed'">expand_more</mat-icon>
           {{ showAllNotifications ? 'Collapse' : 'Show All' }}
         </button>
       </div>

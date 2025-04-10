@@ -133,6 +133,7 @@
 
       <!-- Table Section -->
       <section *ngIf="!showAddForm" class="table-container-modern">
+          <div class="table-scroll-container">
           <!-- Table Stats -->
           <div class="table-stats" *ngIf="dataSource.data.length > 0 || isLoading">
               <div class="stat-item">
@@ -278,9 +279,17 @@
                   </td>
               </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="getRowClass(row)" class="table-row-modern"></tr>
           </table>
+          </div>
+          
+          <!-- Paginator -->
+          <mat-paginator
+              [pageSize]="pageSize"
+              [pageSizeOptions]="pageSizeOptions"
+              aria-label="Select page">
+          </mat-paginator>
 
            <!-- Removed the separate Pending Requests Table -->
 

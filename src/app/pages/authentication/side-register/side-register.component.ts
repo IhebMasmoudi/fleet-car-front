@@ -27,7 +27,7 @@ import { IRole } from 'src/app/interfaces/IRole'; // Interface for role
     MatButtonModule,
     MatCheckboxModule,
     MatCardModule,
-    MatSelectModule, // Add MatSelectModule for role selection
+    MatSelectModule, 
     RouterModule
   ],
   templateUrl: './side-register.component.html',

@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, NgForm } from '@angular/forms'; // Import NgForm
+import { FormsModule, ReactiveFormsModule, NgForm } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,8 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip'; // Import MatTooltipModule
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Import MatProgressSpinnerModule
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 import { IMaintenance } from '../../interfaces/IMaintenance';
 import { MaintenancesService } from '../../services/Maintenance.Service';
@@ -25,12 +26,12 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-maintenance',
   templateUrl: './maintenance.component.html',
-  styleUrls: ['./maintenance.component.scss'], // Ensure this points to the correct SCSS file
+  styleUrls: ['./maintenance.component.scss'], 
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule, // Add ReactiveFormsModule if using reactive forms features later
+    ReactiveFormsModule,
     MatTableModule,
     MatCardModule,
     MatButtonModule,
@@ -41,11 +42,12 @@ import { takeUntil } from 'rxjs/operators';
     MatDatepickerModule,
     MatNativeDateModule,
     MatMenuModule,
-    MatTooltipModule, // Add MatTooltipModule
-    MatProgressSpinnerModule // Add MatProgressSpinnerModule
+    MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule
   ],
-  providers: [DatePipe], // Add DatePipe provider if not globally provided
-  changeDetection: ChangeDetectionStrategy.OnPush // Set Change Detection Strategy
+  providers: [DatePipe], 
+  changeDetection: ChangeDetectionStrategy.OnPush 
 })
 export class MaintenanceComponent implements OnInit, OnDestroy {
   maintenances: IMaintenance[] = [];
@@ -77,14 +79,18 @@ export class MaintenanceComponent implements OnInit, OnDestroy {
   filterMaxCost: number | null = null;
   filterStartDate: Date | null = null;
   filterEndDate: Date | null = null;
-  filterVehicle: string = '';
-  // filterNotes: string = ''; // Filter by notes can be less performant/useful, removed for now
+  filterVehicle: string = ''; // Filter by Vehicle (using getVehicleModel)
   sortCostAsc: boolean = true;
   filterStatus: string = ''; // Filter by Status
 
   // Table
   displayedColumns: string[] = ['type', 'cost', 'maintenanceDate', 'notes', 'vehicle', 'status', 'actions'];
   dataSource = new MatTableDataSource<IMaintenance>([]); // Initialize empty
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // Pagination
+  pageSize = 5;
+  pageSizeOptions = [5, 10, 25, 50];
 
   private destroy$ = new Subject<void>(); // For unsubscribing
 
@@ -99,6 +105,10 @@ export class MaintenanceComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadRoleAndFetchData();
     this.fetchCars();
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
   }
 
   ngOnDestroy(): void {
@@ -229,8 +239,7 @@ export class MaintenanceComponent implements OnInit, OnDestroy {
       maintenanceDate: this.formatDateForAPI(this.maintenanceDate),
       notes: this.maintenanceNotes,
       vehicleID: this.maintenanceVehicleID,
-      // Admin/Manager might add completed or scheduled/accepted records directly
-      status: this.determineInitialStatus() // Example: Default to 'Accepted' or let them choose?
+      status: this.determineInitialStatus()
     };
 
     this.isLoading = true; // Show loading indicator
@@ -300,7 +309,6 @@ export class MaintenanceComponent implements OnInit, OnDestroy {
 
   // Helper to determine initial status when Admin/Manager adds
   determineInitialStatus(): string {
-      // Could be based on date (past = completed, future = accepted?)
       // Or always default to 'Accepted'
       return 'Accepted';
   }
@@ -320,8 +328,6 @@ export class MaintenanceComponent implements OnInit, OnDestroy {
 
     this.cdr.markForCheck();
   }
-
-  // Removed startRequestMaintenance - integrated into toggleAddForm
 
   saveEditedMaintenance(): void {
     if (!this.maintenanceType.trim() || !this.maintenanceDate || !this.maintenanceVehicleID || !this.selectedMaintenance || !this.selectedMaintenance.id) {

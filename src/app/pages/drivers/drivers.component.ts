@@ -242,10 +242,12 @@ export class DriversComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Checks if a vehicle is assigned to any *other* driver. */
   isVehicleAssigned(vehicleId: number): boolean {
-    // If editing, exclude the current driver. Otherwise, check all drivers.
-    const driverIdToExclude = this.isEditing ? this.selectedDriverId : null;
+    // Always exclude the current driver (either in edit mode or in table)
+    const driverIdToExclude = this.isEditing ? this.selectedDriverId :
+                             this.allDrivers.find(d => d.affectedVehicleID === vehicleId)?.id;
     return this.allDrivers.some(driver =>
-        driver.id !== driverIdToExclude && driver.affectedVehicleID === vehicleId
+        driver.id !== driverIdToExclude &&
+        driver.affectedVehicleID === vehicleId
     );
   }
 
@@ -340,35 +342,64 @@ export class DriversComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!this.isEditing || !this.selectedDriverId || this.isProcessing) return;
 
       // --- Validation ---
-       if (this.status === 'Suspended' && this.affectedVehicleID !== null) {
-           this.snackBar.open('Suspended drivers cannot have a vehicle.', 'Close', { duration: 3000 }); return;
-       }
-        if (this.affectedVehicleID && this.isVehicleAssigned(this.affectedVehicleID)) {
-           this.snackBar.open('Vehicle already assigned to another driver.', 'Close', { duration: 3000 }); return;
-       }
-       if (!this.userId) {
-          this.snackBar.open('User is required.', 'Close', { duration: 3000 }); return;
-       }
+      if (this.status === 'Suspended' && this.affectedVehicleID !== null) {
+          this.snackBar.open('Suspended drivers cannot have a vehicle.', 'Close', { duration: 3000 });
+          return;
+      }
+      if (this.affectedVehicleID && this.isVehicleAssigned(this.affectedVehicleID)) {
+          this.snackBar.open('Vehicle already assigned to another driver.', 'Close', { duration: 3000 });
+          return;
+      }
+      if (!this.userId) {
+          this.snackBar.open('User is required.', 'Close', { duration: 3000 });
+          return;
+      }
 
       this.isProcessing = true;
+
+      // Store original vehicle ID to check if it changed
+      const originalDriver = this.allDrivers.find(d => d.id === this.selectedDriverId);
+      const originalVehicleId = originalDriver?.affectedVehicleID;
+
+      // First update basic driver info without vehicle
       const driverData: IDriver = {
           id: this.selectedDriverId,
           licenseNumber: this.licenseNumber,
           phoneNumber: this.phoneNumber,
           status: this.status,
-          userId: this.userId, // User ID cannot be changed here usually, but send it
-          affectedVehicleID: this.affectedVehicleID
+          userId: this.userId,
+          affectedVehicleID: originalVehicleId ?? null // Assign null if undefined
       };
 
+      // Update driver basic info first
       this.driverService.updateDriver(this.selectedDriverId, driverData).pipe(
+          // Handle vehicle assignment/removal if needed
+          switchMap(updatedDriver => {
+              // If vehicle assignment changed
+              if (this.affectedVehicleID !== originalVehicleId) {
+                  if (this.affectedVehicleID === null) {
+                      // Remove vehicle
+                      return this.driverService.removeVehicle(this.selectedDriverId!).pipe(
+                          map(finalDriver => ({ success: true, driver: finalDriver }))
+                      );
+                  } else {
+                      // Assign new vehicle
+                      return this.driverService.assignVehicle(this.selectedDriverId!, this.affectedVehicleID).pipe(
+                          map(finalDriver => ({ success: true, driver: finalDriver }))
+                      );
+                  }
+              }
+              // No vehicle change needed
+              return of({ success: true, driver: updatedDriver });
+          }),
           finalize(() => this.isProcessing = false),
           takeUntil(this.destroy$)
       ).subscribe({
-          next: (updatedDriver) => {
+          next: (result) => {
               const index = this.allDrivers.findIndex(d => d.id === this.selectedDriverId);
               if (index > -1) {
-                  this.allDrivers[index] = updatedDriver;
-                  this.dataSource.data = this.allDrivers;
+                  this.allDrivers[index] = result.driver;
+                  this.dataSource.data = [...this.allDrivers];
                   this.applyFilters();
               }
               this.snackBar.open('Driver updated successfully!', 'Close', { duration: 3000 });
@@ -384,39 +415,37 @@ export class DriversComponent implements OnInit, AfterViewInit, OnDestroy {
   updateDriverStatus(driver: IDriver, newStatus: string): void {
       if (this.isProcessing || !driver.id) return;
 
-      let vehicleUpdateNeeded = false;
-      let updatedVehicleId: number | null | undefined = driver.affectedVehicleID;
-
+      // Validation for suspended status
       if (newStatus === 'Suspended' && driver.affectedVehicleID !== null) {
-          updatedVehicleId = null;
-          vehicleUpdateNeeded = true;
+          this.snackBar.open('Vehicle will be unassigned when status is set to Suspended.', 'Close', { duration: 3000 });
       }
 
       this.isProcessing = true;
-      const updatePayload: Partial<IDriver> = { status: newStatus };
-      if (vehicleUpdateNeeded) {
-          updatePayload.affectedVehicleID = updatedVehicleId;
-      }
+      const updatedDriver: IDriver = {
+          ...driver,
+          status: newStatus,
+          // If suspended, remove vehicle assignment
+          affectedVehicleID: newStatus === 'Suspended' ? null : driver.affectedVehicleID
+      };
 
-      this.driverService.updateDriver(driver.id, updatePayload as IDriver).pipe(
+      this.driverService.updateDriver(driver.id, updatedDriver).pipe(
           finalize(() => this.isProcessing = false),
           takeUntil(this.destroy$)
       ).subscribe({
-          next: (updatedDriver) => {
+          next: (result) => {
               const index = this.allDrivers.findIndex(d => d.id === driver.id);
               if (index > -1) {
-                  this.allDrivers[index] = updatedDriver;
-                  this.dataSource.data = this.allDrivers;
-                  this.applyFilters(); // Re-apply filters to reflect change
+                  this.allDrivers[index] = result;
+                  this.dataSource.data = [...this.allDrivers]; // Force refresh
+                  this.applyFilters();
               }
               this.snackBar.open(`Driver status updated to ${newStatus}`, 'Close', { duration: 3000 });
-              if (vehicleUpdateNeeded) {
-                   this.snackBar.open('Vehicle unassigned due to suspension.', 'Close', { duration: 3000 });
+              if (newStatus === 'Suspended' && driver.affectedVehicleID !== null) {
+                  this.snackBar.open('Vehicle unassigned due to suspension.', 'Close', { duration: 3000 });
               }
           },
           error: (err) => {
               console.error("Error updating status:", err);
-              // Revert visual state if possible, or just show error
               this.snackBar.open(`Error: ${err.message || 'Could not update status'}`, 'Close', { duration: 5000 });
           }
       });
@@ -425,27 +454,24 @@ export class DriversComponent implements OnInit, AfterViewInit, OnDestroy {
   updateVehicleAssignment(driver: IDriver, vehicleId: number | null): void {
       if (this.isProcessing || !driver.id) return;
 
-       // --- Validation ---
-       if (driver.status === 'Suspended' && vehicleId !== null) {
-           this.snackBar.open('Suspended drivers cannot have a vehicle.', 'Close', { duration: 3000 });
-           // Maybe revert the selection visually here? For now, just block.
-           return;
-       }
-        // Check if the target vehicle is assigned to *another* driver
-       const otherDriverHasVehicle = this.allDrivers.some(d =>
-            d.id !== driver.id && d.affectedVehicleID === vehicleId
-       );
-       if (vehicleId !== null && otherDriverHasVehicle) {
-            this.snackBar.open('Vehicle already assigned to another driver.', 'Close', { duration: 3000 });
-            // Maybe revert the selection visually here?
-            return;
-       }
+      // --- Validation ---
+      if (driver.status === 'Suspended' && vehicleId !== null) {
+          this.snackBar.open('Suspended drivers cannot have a vehicle.', 'Close', { duration: 3000 });
+          return;
+      }
+      if (vehicleId !== null && this.isVehicleAssigned(vehicleId)) {
+          this.snackBar.open('Vehicle already assigned to another driver.', 'Close', { duration: 3000 });
+          return;
+      }
 
       this.isProcessing = true;
-      // Using updateDriver endpoint as assign/remove might not exist
-      const updatePayload: Partial<IDriver> = { affectedVehicleID: vehicleId };
 
-      this.driverService.updateDriver(driver.id, updatePayload as IDriver).pipe(
+      // Use assignVehicle or removeVehicle based on whether vehicleId is provided
+      const operation$ = vehicleId === null ?
+          this.driverService.removeVehicle(driver.id) :
+          this.driverService.assignVehicle(driver.id, vehicleId);
+
+      operation$.pipe(
           finalize(() => this.isProcessing = false),
           takeUntil(this.destroy$)
       ).subscribe({

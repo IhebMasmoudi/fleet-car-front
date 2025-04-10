@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/AuthService.Service';
 import { NotificationService } from 'src/app/services/Notification.Service';
 import { Subscription } from 'rxjs';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -24,6 +25,15 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.scss'],
   standalone: true,
+  animations: [
+    trigger('indicatorRotate', [
+      state('collapsed', style({ transform: 'rotate(0deg)' })),
+      state('expanded', style({ transform: 'rotate(180deg)' })),
+      transition('expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4,0.0,0.2,1)')
+      ),
+    ])
+  ],
   imports: [
     CommonModule,
     MatCardModule,
@@ -135,9 +145,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       this.subscriptions.add(
         this.notificationService.createNotification(data.title, data.message, data.targetRole).subscribe({
           next: (newNotification) => {
-            // Assuming the backend returns the newly created notification with correct 'read' status
-            this.notifications = [newNotification!, ...this.notifications];
-            this.notificationService.updateNotificationList(this.notifications); // Update shared list
+            // Backend now returns the newly created notification
+            const updatedNotifications = [newNotification, ...this.notifications];
+            this.notifications = updatedNotifications;
+            this.notificationService.updateNotificationList(updatedNotifications);
             this.snackBar.open('Notification sent successfully', 'Close', { duration: 3000 });
           },
           error: err => {
