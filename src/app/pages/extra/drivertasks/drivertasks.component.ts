@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { AuthService } from 'src/app/services/AuthService.Service';
 import { UserService } from 'src/app/services/UserService.service';
 import { IUser } from 'src/app/interfaces/IUser';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +15,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MissionsService } from 'src/app/services/Mission.Service';
 import { IMission } from 'src/app/interfaces/IMission';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -38,15 +41,24 @@ import { MatDialog } from '@angular/material/dialog';
     MatInputModule,
     MatDatepickerModule,
     MatMenuModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    MatSortModule
   ]
 })
-export class DrivertasksComponent implements OnInit {
+export class DrivertasksComponent implements OnInit, AfterViewInit {
   user: IUser | null = null;
   token: string | null = null;
   missions: IMission[] = [];
   filteredMissions: IMission[] = [];
   isUpdating: Set<number> = new Set(); // Track updating missions
+  isTableView: boolean = false; // Toggle between table and card view
+  displayedColumns: string[] = ['destination', 'status', 'startDate', 'endDate', 'distance', 'actions'];
+  missionsDataSource!: MatTableDataSource<IMission>;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) matSort!: MatSort;
   
   // Filter variables
   statusFilter: string = 'all';
@@ -138,6 +150,7 @@ export class DrivertasksComponent implements OnInit {
       next: (missions: IMission[]) => {
         this.missions = missions;
         this.filteredMissions = [...missions];
+        this.initializeTableDataSource();
         console.log('Missions loaded for driver:', missions);
       },
       error: (err) => {
@@ -173,7 +186,61 @@ export class DrivertasksComponent implements OnInit {
     this.dateRange.start = null;
     this.dateRange.end = null;
     this.filteredMissions = [...this.missions];
+    this.initializeTableDataSource();
   }
+
+  ngAfterViewInit() {
+    if (this.missionsDataSource) {
+      this.missionsDataSource.paginator = this.paginator;
+      this.missionsDataSource.sort = this.matSort;
+    }
+  }
+
+  private initializeTableDataSource() {
+    this.missionsDataSource = new MatTableDataSource(this.filteredMissions);
+    if (this.paginator) {
+      this.missionsDataSource.paginator = this.paginator;
+    }
+    if (this.matSort) {
+      this.missionsDataSource.sort = this.matSort;
+    }
+
+    // Custom sorting for dates
+    this.missionsDataSource.sortingDataAccessor = (item: IMission, sortHeaderId: string) => {
+      switch (sortHeaderId) {
+        case 'startDate':
+        case 'endDate':
+          const value = item[sortHeaderId as keyof IMission];
+          return value ? new Date(value).getTime() : 0;
+        case 'status':
+        case 'destination':
+          return (item[sortHeaderId as keyof IMission] as string).toLowerCase();
+        case 'distance':
+        case 'id':
+        case 'vehicleID':
+        case 'driverID':
+          return item[sortHeaderId as keyof IMission] as number;
+        default:
+          return '';
+      }
+    };
+  }
+
+  toggleView(): void {
+    this.isTableView = !this.isTableView;
+    if (this.isTableView) {
+      setTimeout(() => {
+        this.initializeTableDataSource();
+      });
+    }
+  }
+
+  sortData(event: any): void {
+    if (this.missionsDataSource) {
+      this.missionsDataSource.sort = this.matSort;
+    }
+  }
+
 
   getStatusIcon(mission: IMission): string {
     switch (mission.status.toLowerCase()) {

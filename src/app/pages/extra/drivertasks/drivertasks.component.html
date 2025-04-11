@@ -9,11 +9,16 @@
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
+      <div class="view-controls">
+        <button mat-icon-button [matTooltip]="isTableView ? 'Switch to Cards' : 'Switch to Table'" (click)="toggleView()">
+          <mat-icon>{{ isTableView ? 'grid_view' : 'table_chart' }}</mat-icon>
+        </button>
+      </div>
       <div class="filter-controls">
         <mat-form-field appearance="outline">
           <mat-label>Filter by Status</mat-label>
           <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
-            <mat-option value="all">All Statuses</mat-option>
+            <mat-option value="all">All Status</mat-option>
             <mat-option value="pending">Pending</mat-option>
             <mat-option value="in-progress">In Progress</mat-option>
             <mat-option value="completed">Completed</mat-option>
@@ -76,73 +81,153 @@
     <mat-icon>search_off</mat-icon>
     <p>No missions found with the current filters.</p>
   </div>
+<!-- Table View -->
+<div class="missions-table" *ngIf="isTableView">
+  <table mat-table [dataSource]="missionsDataSource" matSort (matSortChange)="sortData($event)" class="mat-elevation-z8">
+    <!-- ID Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> ID </th>
+      <td mat-cell *matCellDef="let mission"> {{mission.id}} </td>
+    </ng-container>
 
-  <div class="missions-list">
-    <mat-card *ngFor="let mission of filteredMissions" 
-              class="mission-card" 
-              [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
-      <mat-card-header>
-        <div mat-card-avatar>
-          <mat-icon [ngClass]="getStatusIconClass(mission)">{{getStatusIcon(mission)}}</mat-icon>
-        </div>
-        <mat-card-title>Mission to {{mission.destination}}</mat-card-title>
-        <mat-card-subtitle>{{mission.distance}} km • ID: {{mission.id}}</mat-card-subtitle>
-        
-        <div class="status-badge" 
-             [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
+    <!-- Destination Column -->
+    <ng-container matColumnDef="destination">
+      <th mat-header-cell *matHeaderCellDef> Destination </th>
+      <td mat-cell *matCellDef="let mission"> {{mission.destination}} </td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+      <td mat-cell *matCellDef="let mission">
+        <span class="status-badge table-status" [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
+          <mat-icon [ngClass]="getStatusIconClass(mission)" class="status-icon">{{getStatusIcon(mission)}}</mat-icon>
           {{mission.status}}
-        </div>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <div class="mission-details">
-          <div class="detail-item">
-            <mat-icon>event</mat-icon>
-            <div class="detail-content">
-              <div class="detail-label">Start Date</div>
-              <div class="detail-value">{{mission.startDate | date:'MMM dd, yyyy'}}</div>
-            </div>
-          </div>
-          
-          <div class="detail-item">
-            <mat-icon>event_busy</mat-icon>
-            <div class="detail-content">
-              <div class="detail-label">End Date</div>
-              <div class="detail-value">{{mission.endDate | date:'MMM dd, yyyy'}}</div>
-            </div>
-          </div>
-          
-          <div class="detail-item">
-            <mat-icon>directions_car</mat-icon>
-            <div class="detail-content">
-              <div class="detail-label">Vehicle ID</div>
-              <div class="detail-value">{{mission.vehicleID}}</div>
-            </div>
-          </div>
-        </div>
-      </mat-card-content>
-      
-      <mat-card-actions>
-        <button mat-button color="primary" [matMenuTriggerFor]="missionMenu">
-          <mat-icon>more_vert</mat-icon> ACTIONS
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Start Date Column -->
+    <ng-container matColumnDef="startDate">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Start Date </th>
+      <td mat-cell *matCellDef="let mission"> {{mission.startDate | date:'MMM dd, yyyy'}} </td>
+    </ng-container>
+
+    <!-- End Date Column -->
+    <ng-container matColumnDef="endDate">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> End Date </th>
+      <td mat-cell *matCellDef="let mission"> {{mission.endDate | date:'MMM dd, yyyy'}} </td>
+    </ng-container>
+
+    <!-- Distance Column -->
+    <ng-container matColumnDef="distance">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Distance </th>
+      <td mat-cell *matCellDef="let mission"> {{mission.distance}} km </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> Actions </th>
+      <td mat-cell *matCellDef="let mission">
+        <button mat-icon-button [matMenuTriggerFor]="missionMenu">
+          <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #missionMenu="matMenu">
-          <button mat-menu-item 
-                  (click)="updateMissionStatus(mission, 'in-progress')" 
+          <button mat-menu-item
+                  (click)="updateMissionStatus(mission, 'in-progress')"
                   *ngIf="mission.status === 'pending'"
                   [disabled]="!mission.id || isUpdating.has(mission.id)">
             <mat-icon>play_arrow</mat-icon>
             {{isUpdating.has(mission.id!) ? 'Starting...' : 'Start Mission'}}
           </button>
-          <button mat-menu-item 
-                  (click)="updateMissionStatus(mission, 'Completed')" 
+          <button mat-menu-item
+                  (click)="updateMissionStatus(mission, 'Completed')"
                   *ngIf="mission.status === 'in-progress'"
                   [disabled]="!mission.id || isUpdating.has(mission.id)">
             <mat-icon>check</mat-icon>
             {{isUpdating.has(mission.id!) ? 'Completing...' : 'Complete Mission'}}
           </button>
         </mat-menu>
-      </mat-card-actions>
-    </mat-card>
-  </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+  <mat-paginator [length]="filteredMissions.length"
+                 [pageSize]="10"
+                 [pageSizeOptions]="[5, 10, 25, 100]"
+                 aria-label="Select page">
+  </mat-paginator>
+</div>
+
+<!-- Card View -->
+<div class="missions-list" *ngIf="!isTableView">
+  <mat-card *ngFor="let mission of filteredMissions"
+            class="mission-card compact"
+            [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon [ngClass]="getStatusIconClass(mission)">{{getStatusIcon(mission)}}</mat-icon>
+      </div>
+      <mat-card-title>Mission to {{mission.destination}}</mat-card-title>
+      <mat-card-subtitle>{{mission.distance}} km • ID: {{mission.id}}</mat-card-subtitle>
+      
+      <div class="status-badge"
+           [ngClass]="'status-' + mission.status.toLowerCase().replace(' ', '-')">
+        {{mission.status}}
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="mission-details">
+        <div class="detail-item">
+          <mat-icon>event</mat-icon>
+          <div class="detail-content">
+            <div class="detail-label">Start Date</div>
+            <div class="detail-value">{{mission.startDate | date:'MMM dd, yyyy'}}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <mat-icon>event_busy</mat-icon>
+          <div class="detail-content">
+            <div class="detail-label">End Date</div>
+            <div class="detail-value">{{mission.endDate | date:'MMM dd, yyyy'}}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <mat-icon>directions_car</mat-icon>
+          <div class="detail-content">
+            <div class="detail-label">Vehicle ID</div>
+            <div class="detail-value">{{mission.vehicleID}}</div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+    
+    <mat-card-actions>
+      <button mat-button color="primary" [matMenuTriggerFor]="missionMenu">
+        <mat-icon>more_vert</mat-icon> ACTIONS
+      </button>
+      <mat-menu #missionMenu="matMenu">
+        <button mat-menu-item
+                (click)="updateMissionStatus(mission, 'in-progress')"
+                *ngIf="mission.status === 'pending'"
+                [disabled]="!mission.id || isUpdating.has(mission.id)">
+          <mat-icon>play_arrow</mat-icon>
+          {{isUpdating.has(mission.id!) ? 'Starting...' : 'Start Mission'}}
+        </button>
+        <button mat-menu-item
+                (click)="updateMissionStatus(mission, 'Completed')"
+                *ngIf="mission.status === 'in-progress'"
+                [disabled]="!mission.id || isUpdating.has(mission.id)">
+          <mat-icon>check</mat-icon>
+          {{isUpdating.has(mission.id!) ? 'Completing...' : 'Complete Mission'}}
+        </button>
+      </mat-menu>
+    </mat-card-actions>
+  </mat-card>
+</div>
 </div>

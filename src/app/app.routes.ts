@@ -16,7 +16,7 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
-        canActivate: [AuthGuard], // Add the guard here
+        canActivate: [AuthGuard], 
       },
       {
         path: '',
@@ -37,6 +37,7 @@ export const routes: Routes = [
         path: 'extra',
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
+        canActivate: [AuthGuard], 
       },
     ],
   },
